@@ -14,14 +14,30 @@ export default [
     {
         path: '/profile',
         component: () =>
-            import ('./pages/Profile.vue')
+            import ('./pages/Profile.vue'),
+        name: 'Profile',
+        meta: { title: 'Профиль', requiresAuth: true }
+    },
+    {
+        path: '/tasks',
+        component: () =>
+            import ('./pages/Tasks.vue'),
+        name: 'Tasks',
+        meta: { title: 'Задачи', requiresAuth: true }
     },
     {
         path: '/help',
         component: () =>
-            import ('./pages/Help.vue')
+            import ('./pages/Help.vue'),
+        name: 'Help',
+        meta: { title: 'Помощь' }
     },
-    { path: '/messages', component: () =>
-            import ('./pages/Messages.vue') },
+    {
+        path: '/messages',
+        component: () =>
+            import ('./pages/Messages.vue'),
+        name: 'Messages',
+        meta: { title: 'Сообщения', requiresAuth: true }
+    },
     { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound, meta: { title: '404' } },
 ]

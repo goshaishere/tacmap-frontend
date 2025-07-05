@@ -1,16 +1,431 @@
 <template>
   <div class="profile-page">
-    <h1>Профиль</h1>
-    <p>Здесь будет информация о пользователе.</p>
+    <v-card v-if="localProfile" class="mx-auto my-8 profile-card" max-width="600">
+      <v-card-title class="d-flex align-center">
+        <v-icon class="me-2">mdi-account-edit</v-icon>
+        Редактирование профиля
+      </v-card-title>
+      <v-card-text>
+        <v-form ref="form" v-model="isFormValid">
+          <v-row>
+            <v-col cols="12" class="d-flex justify-center">
+              <v-avatar size="96" class="mb-4">
+                <v-img v-if="localProfile.avatar && localProfile.avatar.startsWith('data:')" :src="localProfile.avatar" />
+                <v-img v-else-if="localProfile.avatar && localProfile.avatar.startsWith('http')" :src="localProfile.avatar" />
+                <v-icon v-else size="48">mdi-account</v-icon>
+              </v-avatar>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field 
+                v-model="localProfile.firstName" 
+                label="Имя" 
+                :rules="[rules.required, rules.minLength]"
+                prepend-icon="mdi-account"
+                variant="outlined"
+                required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field 
+                v-model="localProfile.lastName" 
+                label="Фамилия" 
+                :rules="[rules.required, rules.minLength]"
+                prepend-icon="mdi-account"
+                variant="outlined"
+                required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field 
+                v-model="localProfile.callsign" 
+                label="Позывной" 
+                :rules="[rules.required, rules.minLength]"
+                prepend-icon="mdi-radio"
+                variant="outlined"
+                required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-file-input 
+                v-model="avatarFile" 
+                label="Аватарка" 
+                accept="image/*"
+                prepend-icon="mdi-camera"
+                variant="outlined"
+                :show-size="true"
+                :rules="[rules.imageSize]"
+              ></v-file-input>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-select
+                v-model="localProfile.rank"
+                :items="ranks"
+                item-title="title"
+                label="Звание"
+                return-object
+                :item-props="item => ({ prependIcon: item.icon })"
+                variant="outlined"
+                prepend-icon="mdi-star"
+              >
+                <template #selection="{ item }">
+                  <v-icon v-if="item && item.raw && item.raw.icon" class="me-2">{{ item.raw.icon }}</v-icon>{{ item.raw?.title || '' }}
+                </template>
+              </v-select>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-select
+                v-model="localProfile.role"
+                :items="roles"
+                item-title="title"
+                label="Должность"
+                return-object
+                :item-props="item => ({ prependIcon: item.icon })"
+                variant="outlined"
+                prepend-icon="mdi-badge-account"
+              >
+                <template #selection="{ item }">
+                  <v-icon v-if="item && item.raw && item.raw.icon" class="me-2">{{ item.raw.icon }}</v-icon>{{ item.raw?.title || '' }}
+                </template>
+              </v-select>
+            </v-col>
+            <v-col cols="12" md="4">
+              <div class="d-flex align-center">
+                <v-select
+                  v-model="localProfile.squad"
+                  :items="squads"
+                  item-title="title"
+                  label="Сквад"
+                  return-object
+                  :item-props="item => ({ prependIcon: item.icon })"
+                  class="flex-grow-1"
+                  variant="outlined"
+                  prepend-icon="mdi-account-group"
+                >
+                  <template #selection="{ item }">
+                    <v-icon v-if="item && item.raw && item.raw.icon" class="me-2">{{ item.raw.icon }}</v-icon>{{ item.raw?.title || '' }}
+                  </template>
+                </v-select>
+              </div>
+            </v-col>
+            <v-col cols="12">
+              <v-divider class="my-4"></v-divider>
+              <div class="d-flex align-center mb-2">
+                <v-icon class="me-2">mdi-information</v-icon>
+                <span class="text-subtitle-2">Предварительный просмотр</span>
+              </div>
+              <v-card variant="outlined" class="pa-3">
+                <div class="d-flex align-center">
+                  <v-avatar size="40" class="me-3">
+                    <v-img v-if="localProfile.avatar && localProfile.avatar.startsWith('data:')" :src="localProfile.avatar" />
+                    <v-img v-else-if="localProfile.avatar && localProfile.avatar.startsWith('http')" :src="localProfile.avatar" />
+                    <v-icon v-else>mdi-account</v-icon>
+                  </v-avatar>
+                  <div class="flex-grow-1">
+                    <div class="text-h6">{{ localProfile.firstName }} {{ localProfile.lastName }}</div>
+                    <div class="text-subtitle-2 text-medium-emphasis">{{ localProfile.callsign }}</div>
+                  </div>
+                  <div class="d-flex align-center">
+                    <v-avatar size="24" color="surface-variant" class="me-1">
+                      <v-icon size="16">{{ localProfile.squad?.icon }}</v-icon>
+                    </v-avatar>
+                    <v-avatar size="24" color="surface-variant" class="me-1">
+                      <v-icon size="16">{{ localProfile.rank?.icon }}</v-icon>
+                    </v-avatar>
+                    <v-avatar size="24" color="surface-variant">
+                      <v-icon size="16">{{ localProfile.role?.icon }}</v-icon>
+                    </v-avatar>
+                  </div>
+                </div>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-form>
+        
+        <v-dialog v-model="dialog" max-width="400">
+          <v-card>
+            <v-card-title>Создать сквад</v-card-title>
+            <v-card-text>
+              <v-text-field v-model="newSquad.title" label="Название сквада" required></v-text-field>
+              <v-select
+                v-model="newSquad.icon"
+                :items="iconOptions"
+                item-title="title"
+                item-value="icon"
+                label="Иконка"
+                :item-props="item => ({ prependIcon: item.icon })"
+              >
+                <template #selection="{ item }">
+                  <v-icon class="me-2">{{ item.raw.icon }}</v-icon>{{ item.raw.title }}
+                </template>
+              </v-select>
+              <v-text-field v-model="newSquad.description" label="Описание"></v-text-field>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer />
+              <v-btn color="accent" variant="outlined" @click="createSquad">Создать</v-btn>
+              <v-btn color="accent" variant="text" @click="dialog = false">Отмена</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn 
+          color="error" 
+          variant="outlined" 
+          @click="resetProfile"
+          :disabled="!hasChanges"
+        >
+          Отменить
+        </v-btn>
+        <v-btn 
+          color="accent" 
+          variant="flat" 
+          @click="saveProfile"
+          :disabled="!isFormValid || !hasChanges"
+          :loading="isSaving"
+        >
+          <v-icon class="me-2">mdi-content-save</v-icon>
+          Сохранить
+        </v-btn>
+        <v-btn color="accent" variant="flat" prepend-icon="mdi-plus" @click="dialog = true">
+          Создать сквад
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+    
+    <!-- Уведомление о сохранении -->
+    <v-snackbar v-model="showNotification" :color="notificationColor" timeout="3000">
+      {{ notificationMessage }}
+      <template #actions>
+        <v-btn variant="text" @click="showNotification = false">Закрыть</v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
 <script setup>
-// Здесь можно добавить логику для профиля
+import { ref, computed, watchEffect, watch } from 'vue'
+import { ranks } from '../data/ranks.js'
+import { roles } from '../data/roles.js'
+import { defaultSquads, createSquad as createSquadFn } from '../data/squads.js'
+import { useProfileStore } from '../store/profile.js'
+
+const squads = ref([...defaultSquads])
+const profileStore = useProfileStore()
+const form = ref(null)
+const isFormValid = ref(true)
+const isSaving = ref(false)
+const showNotification = ref(false)
+const notificationMessage = ref('')
+const notificationColor = ref('success')
+
+// Правила валидации
+const rules = {
+  required: v => !!v || 'Это поле обязательно для заполнения',
+  minLength: v => v.length >= 2 || 'Минимум 2 символа',
+  imageSize: v => !v || v.size < 5000000 || 'Размер файла должен быть меньше 5MB'
+}
+
+function deepClone(obj) {
+  return JSON.parse(JSON.stringify(obj))
+}
+
+// Инициализируем localProfile с данными из store
+const localProfile = ref(deepClone(profileStore.user))
+const originalProfile = ref(deepClone(profileStore.user))
+
+// Синхронизируем с store при изменениях
+watchEffect(() => {
+  if (profileStore.user) {
+    localProfile.value = deepClone(profileStore.user)
+    originalProfile.value = deepClone(profileStore.user)
+  }
+})
+
+// Проверяем, есть ли изменения
+const hasChanges = computed(() => {
+  return JSON.stringify(localProfile.value) !== JSON.stringify(originalProfile.value)
+})
+
+const dialog = ref(false)
+const newSquad = ref({
+  title: '',
+  icon: '',
+  description: ''
+})
+const iconOptions = [
+  { icon: 'mdi-alpha-a-circle', title: 'A' },
+  { icon: 'mdi-alpha-b-circle', title: 'B' },
+  { icon: 'mdi-alpha-c-circle', title: 'C' },
+  { icon: 'mdi-alpha-d-circle', title: 'D' },
+  { icon: 'mdi-alpha-e-circle', title: 'E' },
+  { icon: 'mdi-alpha-f-circle', title: 'F' },
+  { icon: 'mdi-account-group', title: 'Группа' },
+  { icon: 'mdi-shield', title: 'Щит' },
+  { icon: 'mdi-star', title: 'Звезда' },
+  { icon: 'mdi-car', title: 'Машина' },
+  { icon: 'mdi-truck', title: 'Грузовик' },
+  { icon: 'mdi-tank', title: 'Танк' },
+  { icon: 'mdi-airplane', title: 'Самолёт' },
+  { icon: 'mdi-helicopter', title: 'Вертолёт' },
+  { icon: 'mdi-drone', title: 'Дрон' },
+  { icon: 'mdi-robot', title: 'Робот' },
+  { icon: 'mdi-radar', title: 'Радар' },
+  { icon: 'mdi-crosshairs-gps', title: 'Наведение' },
+  { icon: 'mdi-bomb', title: 'Бомба' },
+  { icon: 'mdi-circle', title: 'Круг' },
+  { icon: 'mdi-checkbox-blank-circle-outline', title: 'Пустой круг' },
+  { icon: 'mdi-checkbox-blank-circle', title: 'Заполненный круг' },
+  { icon: 'mdi-star-outline', title: 'Пустая звезда' },
+  { icon: 'mdi-star', title: 'Заполненная звезда' },
+  { icon: 'mdi-flag', title: 'Флаг' },
+  { icon: 'mdi-sword-cross', title: 'Мечи' },
+  { icon: 'mdi-target', title: 'Мишень' },
+  { icon: 'mdi-compass', title: 'Компас' },
+  { icon: 'mdi-map-marker', title: 'Метка' },
+  { icon: 'mdi-rocket', title: 'Ракета' },
+  { icon: 'mdi-ship-wheel', title: 'Штурвал' },
+  { icon: 'mdi-anchor', title: 'Якорь' },
+]
+
+// Типовые действия для ролей
+const actionsByRole = {
+  medic: [
+    { key: 'heal', title: 'Оказать помощь', icon: 'mdi-medical-bag' },
+    { key: 'evac', title: 'Эвакуировать', icon: 'mdi-helicopter' },
+  ],
+  sniper: [
+    { key: 'cover', title: 'Прикрыть', icon: 'mdi-crosshairs' },
+    { key: 'eliminate', title: 'Устранить цель', icon: 'mdi-target' },
+  ],
+  assault: [
+    { key: 'breach', title: 'Взломать', icon: 'mdi-door' },
+    { key: 'storm', title: 'Штурмовать', icon: 'mdi-shield' },
+    { key: 'suppress', title: 'Подавить', icon: 'mdi-robot-industrial' },
+  ],
+  tech: [
+    { key: 'repair', title: 'Починить', icon: 'mdi-tools' },
+    { key: 'deploy', title: 'Развернуть оборудование', icon: 'mdi-radar' },
+  ],
+  squad_leader: [
+    { key: 'command', title: 'Отдать приказ', icon: 'mdi-account-group' },
+    { key: 'mark', title: 'Отметить цель', icon: 'mdi-map-marker' },
+  ],
+  machine_gunner: [
+    { key: 'suppress', title: 'Подавить', icon: 'mdi-robot-industrial' },
+    { key: 'cover', title: 'Прикрыть', icon: 'mdi-shield' },
+  ],
+  scout: [
+    { key: 'recon', title: 'Разведать', icon: 'mdi-binoculars' },
+    { key: 'mark', title: 'Отметить цель', icon: 'mdi-map-marker' },
+  ],
+  grenadier: [
+    { key: 'blast', title: 'Взорвать', icon: 'mdi-bomb' },
+    { key: 'smoke', title: 'Дымовая завеса', icon: 'mdi-smoke' },
+  ],
+}
+
+const roleActions = computed(() => {
+  const role = localProfile.value?.role?.key
+  return actionsByRole[role] || []
+})
+
+// Пример структуры задач (taskCounts): ключ — тип действия, значение — количество задач
+const taskCounts = ref({
+  heal: 0,
+  evac: 0,
+  cover: 0,
+  eliminate: 0,
+  breach: 0,
+  storm: 0,
+  suppress: 0,
+  repair: 0,
+  deploy: 0,
+  command: 0,
+  mark: 0,
+  recon: 0,
+  blast: 0,
+  smoke: 0,
+})
+
+function createSquad() {
+  if (!newSquad.value.title || !newSquad.value.icon) return
+  const key = newSquad.value.title.toLowerCase().replace(/\s+/g, '-')
+  const squad = createSquadFn({
+    key,
+    title: newSquad.value.title,
+    icon: newSquad.value.icon,
+    description: newSquad.value.description
+  })
+  squads.value.push(squad)
+  localProfile.value.squad = squad
+  dialog.value = false
+  newSquad.value = { title: '', icon: '', description: '' }
+}
+
+const avatarFile = ref(null)
+
+watch(avatarFile, async (file) => {
+  if (!file) {
+    localProfile.value.avatar = ''
+    return
+  }
+  if (file instanceof File) {
+    const reader = new FileReader()
+    reader.onload = e => {
+      localProfile.value.avatar = e.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+})
+
+function resetProfile() {
+  localProfile.value = deepClone(originalProfile.value)
+  avatarFile.value = null
+  showNotification.value = true
+  notificationMessage.value = 'Изменения отменены'
+  notificationColor.value = 'info'
+}
+
+async function saveProfile() {
+  if (!form.value.validate()) return
+  
+  isSaving.value = true
+  
+  try {
+    // Имитируем задержку сохранения
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    profileStore.updateProfile(localProfile.value)
+    originalProfile.value = deepClone(localProfile.value)
+    
+    showNotification.value = true
+    notificationMessage.value = 'Профиль успешно сохранён!'
+    notificationColor.value = 'success'
+  } catch (error) {
+    showNotification.value = true
+    notificationMessage.value = 'Ошибка при сохранении профиля'
+    notificationColor.value = 'error'
+  } finally {
+    isSaving.value = false
+  }
+}
 </script>
 
 <style scoped>
 .profile-page {
   padding: 32px;
+}
+.profile-card {
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15), 0 1.5px 6px 0 rgba(0,0,0,0.10);
+  padding: 32px 24px 24px 24px;
+  border-radius: 18px;
+}
+.role-actions {
+  margin-top: 32px;
+}
+.action-btn-wrapper {
+  position: relative;
 }
 </style> 

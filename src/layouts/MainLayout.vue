@@ -10,54 +10,50 @@
         color="surface-variant"
         size="32"
         variant="flat"
-      ></v-avatar>
+        aria-label="Сквад"
+        :title="profileStore.user.squad.title"
+      >
+        <v-tooltip activator="parent" location="bottom">Сквад: {{ profileStore.user.squad.title }}</v-tooltip>
+        <v-icon>{{ profileStore.user.squad.icon }}</v-icon>
+      </v-avatar>
       <v-avatar
         class="mx-2"
         color="surface-variant"
         size="32"
         variant="flat"
-      ></v-avatar>
-
-      <v-btn
+        aria-label="Звание"
+        :title="profileStore.user.rank.title"
+      >
+        <v-tooltip activator="parent" location="bottom">Звание: {{ profileStore.user.rank.title }}</v-tooltip>
+        <v-icon>{{ profileStore.user.rank.icon }}</v-icon>
+      </v-avatar>
+      <v-avatar
         class="me-2"
-        color="grey"
-        height="40"
+        color="surface-variant"
+        size="32"
         variant="flat"
-        width="80"
-      ></v-btn>
-
-      <v-btn
-        class="me-2"
-        color="grey"
-        height="40"
-        variant="flat"
-        width="100"
-      ></v-btn>
-
-      <v-btn
-        class="me-2"
-        color="grey"
-        height="40"
-        variant="flat"
-        width="120"
-      ></v-btn>
-
-      <v-btn
-        class="me-2"
-        color="grey"
-        height="40"
-        variant="flat"
-        width="120"
-      ></v-btn>
+        aria-label="Должность"
+        :title="profileStore.user.role.title"
+      >
+        <v-tooltip activator="parent" location="bottom">Должность: {{ profileStore.user.role.title }}</v-tooltip>
+        <v-icon>{{ profileStore.user.role.icon }}</v-icon>
+      </v-avatar>
+      <RoleActions />
 
       <v-spacer></v-spacer>
       <v-menu location="bottom end">
         <template #activator="{ props }">
           <v-avatar size="32" v-bind="props" class="me-4" style="cursor:pointer;">
-            <v-img src="https://cdn.vuetifyjs.com/images/john.jpg" />
+            <v-img :src="profileStore.user.avatar" />
           </v-avatar>
         </template>
         <v-list>
+          <v-list-item @click="navigate('/profile')">
+            <template #prepend>
+              <v-icon>mdi-account-edit</v-icon>
+            </template>
+            <v-list-item-title>Профиль</v-list-item-title>
+          </v-list-item>
           <v-list-item @click="navigate('/settings')">
             <template #prepend>
               <v-icon>mdi-cog</v-icon>
@@ -95,11 +91,13 @@
         <v-list-item class="mt-4 mb-2">
           <template #prepend>
             <v-avatar size="32">
-              <v-img src="https://cdn.vuetifyjs.com/images/john.jpg" />
+              <v-img :src="profileStore.user.avatar" />
             </v-avatar>
           </template>
-          <v-list-item-title class="font-weight-bold">Muerte Nortena</v-list-item-title>
-          <!-- <v-list-item-subtitle>john.leider@gmail.com</v-list-item-subtitle> -->
+          <v-list-item-title class="font-weight-bold">
+            {{ profileStore.user.firstName }} {{ profileStore.user.lastName }}
+          </v-list-item-title>
+          <v-list-item-subtitle>{{ profileStore.user.callsign }}</v-list-item-subtitle>
           <template #append>
             <v-btn
               icon="mdi-chevron-left"
@@ -122,10 +120,10 @@
           class="custom-list-item"
         >
           <template #prepend>
-            <v-icon :class="route.path === item.to ? 'active-link' : ''">{{ item.icon }}</v-icon>
+            <v-icon :style="route.path === item.to ? { color: theme.current.value.colors.accent } : {}">{{ item.icon }}</v-icon>
           </template>
           <template #title>
-            <span :class="route.path === item.to ? 'active-link' : ''">{{ item.title }}</span>
+            <span :style="route.path === item.to ? { color: theme.current.value.colors.accent } : {}">{{ item.title }}</span>
           </template>
         </v-list-item>
       </v-list>
@@ -138,34 +136,63 @@
   </v-app>
 </template>
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from 'vuetify'
+import { useProfileStore } from '../store/profile.js'
+import RoleActions from '../components/RoleActions.vue'
 
 const drawer = ref(true)
 const rail = ref(true)
 const route = useRoute()
 const router = useRouter()
 const theme = useTheme()
-const isDark = ref(theme.global.name.value === 'tacticalDark')
+const isDark = ref(false)
+const profileStore = useProfileStore()
+
+// Загружаем сохраненную тему из localStorage
+function loadThemeFromLS() {
+    const savedTheme = localStorage.getItem('selectedTheme')
+    if (savedTheme) {
+        isDark.value = savedTheme === 'tacticalDark'
+        theme.global.name.value = savedTheme
+    } else {
+        // По умолчанию светлая тема
+        isDark.value = false
+        theme.global.name.value = 'tacticalLight'
+    }
+}
+
+// Сохраняем тему в localStorage
+function saveThemeToLS(themeName) {
+    localStorage.setItem('selectedTheme', themeName)
+}
 
 function setBodyThemeAttr() {
-  document.documentElement.style.setProperty('--v-theme-accent', isDark.value ? '#90CAF9' : '#1976D2')
+    document.documentElement.style.setProperty('--v-theme-accent', isDark.value ? '#90CAF9' : '#1976D2')
 }
-setBodyThemeAttr()
+
+// Инициализируем тему при загрузке компонента
+onMounted(() => {
+    loadThemeFromLS()
+    setBodyThemeAttr()
+})
 
 watch(isDark, () => {
-  setBodyThemeAttr()
+    setBodyThemeAttr()
 })
 
 function toggleTheme() {
-  isDark.value = !isDark.value
-  theme.global.name.value = isDark.value ? 'tacticalDark' : 'tacticalLight'
+    isDark.value = !isDark.value
+    const themeName = isDark.value ? 'tacticalDark' : 'tacticalLight'
+    theme.global.name.value = themeName
+    saveThemeToLS(themeName)
 }
 
 const items = [
   { to: '/', title: 'Главная', icon: 'mdi-home-city', exact: true },
   { to: '/map', title: 'Карта', icon: 'mdi-map' },
+  { to: '/tasks', title: 'Задачи', icon: 'mdi-clipboard-list' },
   { to: '/profile', title: 'Профиль', icon: 'mdi-account' },
   { to: '/messages', title: 'Сообщения', icon: 'mdi-message' }
 ]

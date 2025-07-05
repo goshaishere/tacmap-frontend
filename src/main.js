@@ -28,7 +28,7 @@ const vuetify = createVuetify({
                     surface: '#232B2F',
                     primary: '#3BA55D', // тактический зелёный
                     secondary: '#2C3E50', // глубокий серо-синий
-                    accent: '#1976D2', // синий акцент
+                    accent: '#6B8E23', // олива
                     info: '#2196F3',
                     success: '#43A047',
                     warning: '#FFC107',
@@ -44,7 +44,7 @@ const vuetify = createVuetify({
                     surface: '#181F22',
                     primary: '#3BA55D',
                     secondary: '#22313A',
-                    accent: '#90CAF9', // светло-синий акцент
+                    accent: '#ddb77b', // койот
                     info: '#64B5F6',
                     success: '#66BB6A',
                     warning: '#FFD54F',
