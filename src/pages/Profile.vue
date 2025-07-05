@@ -25,20 +25,22 @@
                     <v-text-field 
                       v-model="localProfile.firstName" 
                       label="Имя" 
-                      :rules="[rules.required, rules.minLength]"
+                      :rules="[rules.required, rules.minLength, rules.maxLength]"
                       prepend-icon="mdi-account"
                       variant="outlined"
                       required
+                      counter="50"
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6">
                     <v-text-field 
                       v-model="localProfile.lastName" 
                       label="Фамилия" 
-                      :rules="[rules.required, rules.minLength]"
+                      :rules="[rules.required, rules.minLength, rules.maxLength]"
                       prepend-icon="mdi-account"
                       variant="outlined"
                       required
+                      counter="50"
                     ></v-text-field>
                   </v-col>
                   
@@ -47,10 +49,11 @@
                     <v-text-field 
                       v-model="localProfile.callsign" 
                       label="Позывной" 
-                      :rules="[rules.required, rules.minLength]"
+                      :rules="[rules.required, rules.minLength, rules.maxLength, rules.callsign]"
                       prepend-icon="mdi-radio"
                       variant="outlined"
                       required
+                      counter="50"
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6">
@@ -61,7 +64,7 @@
                       prepend-icon="mdi-camera"
                       variant="outlined"
                       :show-size="true"
-                      :rules="[rules.imageSize]"
+                      :rules="[rules.imageType, rules.imageSize]"
                     ></v-file-input>
                   </v-col>
                   
@@ -76,6 +79,8 @@
                       :item-props="item => ({ prependIcon: item.icon })"
                       variant="outlined"
                       prepend-icon="mdi-star"
+                      :rules="[rules.required]"
+                      required
                     >
                       <template #selection="{ item }">
                         <v-icon v-if="item && item.raw && item.raw.icon" class="me-2">{{ item.raw.icon }}</v-icon>{{ item.raw?.title || '' }}
@@ -92,6 +97,8 @@
                       :item-props="item => ({ prependIcon: item.icon })"
                       variant="outlined"
                       prepend-icon="mdi-badge-account"
+                      :rules="[rules.required]"
+                      required
                     >
                       <template #selection="{ item }">
                         <v-icon v-if="item && item.raw && item.raw.icon" class="me-2">{{ item.raw.icon }}</v-icon>{{ item.raw?.title || '' }}
@@ -108,6 +115,8 @@
                       :item-props="item => ({ prependIcon: item.icon })"
                       variant="outlined"
                       prepend-icon="mdi-account-group"
+                      :rules="[rules.required]"
+                      required
                     >
                       <template #selection="{ item }">
                         <v-icon v-if="item && item.raw && item.raw.icon" class="me-2">{{ item.raw.icon }}</v-icon>{{ item.raw?.title || '' }}
@@ -152,16 +161,14 @@
             </v-card-text>
             
             <!-- Кнопки действий -->
-            <v-card-actions class="flex-column flex-sm-row">
-              <v-spacer class="d-none d-sm-block"></v-spacer>
-              <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-sm-auto">
+            <v-card-actions class="pa-4">
+              <div class="d-flex flex-column flex-sm-row gap-4 w-100">
                 <v-btn 
                   color="error" 
                   variant="outlined" 
                   @click="resetProfile"
                   :disabled="!hasChanges"
-                  block
-                  class="flex-sm-grow-0"
+                  class="flex-1"
                 >
                   Отменить
                 </v-btn>
@@ -171,8 +178,7 @@
                   @click="saveProfile"
                   :disabled="!isFormValid || !hasChanges"
                   :loading="isSaving"
-                  block
-                  class="flex-sm-grow-0"
+                  class="flex-1"
                 >
                   <v-icon class="me-2">mdi-content-save</v-icon>
                   Сохранить
@@ -182,8 +188,7 @@
                   variant="flat" 
                   prepend-icon="mdi-plus" 
                   @click="dialog = true"
-                  block
-                  class="flex-sm-grow-0"
+                  class="flex-1"
                 >
                   Создать сквад
                 </v-btn>
@@ -251,8 +256,11 @@ const notificationColor = ref('success')
 // Правила валидации
 const rules = {
   required: v => !!v || 'Это поле обязательно',
-  minLength: v => v.length >= 2 || 'Минимум 2 символа',
-  imageSize: v => !v || v.size < 5000000 || 'Размер файла должен быть меньше 5MB'
+  minLength: v => v && v.length >= 2 || 'Минимум 2 символа',
+  maxLength: v => v && v.length <= 50 || 'Максимум 50 символов',
+  callsign: v => v && /^[a-zA-Zа-яА-Я0-9_-]+$/.test(v) || 'Только буквы, цифры, дефис и подчеркивание',
+  imageSize: v => !v || v.size < 5000000 || 'Размер файла должен быть меньше 5MB',
+  imageType: v => !v || /^image\//.test(v.type) || 'Выберите изображение'
 }
 
 function deepClone(obj) {
@@ -417,7 +425,14 @@ function resetProfile() {
 }
 
 async function saveProfile() {
-  if (!form.value.validate()) return
+  // Проверяем валидацию формы
+  const { valid } = await form.value.validate()
+  if (!valid) {
+    showNotification.value = true
+    notificationMessage.value = 'Пожалуйста, исправьте ошибки в форме'
+    notificationColor.value = 'error'
+    return
+  }
   
   isSaving.value = true
   
@@ -461,6 +476,11 @@ async function saveProfile() {
 
 .gap-2 {
   gap: 8px;
+}
+
+.flex-1 {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 /* Мобильные стили */
