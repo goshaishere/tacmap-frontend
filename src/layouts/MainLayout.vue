@@ -18,7 +18,7 @@
           <div class="toolbar-actions-flex" style="flex:1 1 0%; min-width:0; overflow-x:auto; display:flex; align-items:center; gap:4px;">
             <RoleActions class="role-actions-appbar align-self-center" />
           </div>
-          <div class="toolbar-right d-flex align-center" style="flex-shrink:0; min-width:0;">
+          <div class="toolbar-right d-flex align-center ms-2 ms-sm-2 ms-md-0" style="flex-shrink:0; min-width:0;">
             <v-menu location="bottom end">
               <template #activator="{ props }">
                 <v-avatar size="32" v-bind="props" class="me-4" style="cursor:pointer;">
@@ -99,6 +99,41 @@
             </template>
           </v-list-item>
         </v-list>
+      <!-- Кружки только в макси-режиме -->
+      <div v-if="!rail" class="d-flex justify-center align-center mb-2 px-4">
+        <v-tooltip location="top">
+          <template #activator="{ props }">
+            <v-avatar size="24" :color="profileStore.user?.faction?.color || 'surface-variant'" class="me-2" v-bind="props">
+              <v-icon size="16">{{ profileStore.user?.faction?.icon }}</v-icon>
+            </v-avatar>
+          </template>
+          <span>{{ profileStore.user?.faction?.title || 'Фракция' }}</span>
+        </v-tooltip>
+        <v-tooltip location="top">
+          <template #activator="{ props }">
+            <v-avatar size="24" color="surface-variant" class="me-2" v-bind="props">
+              <v-icon size="16">{{ profileStore.user?.squad?.icon }}</v-icon>
+            </v-avatar>
+          </template>
+          <span>{{ profileStore.user?.squad?.title || 'Сквад' }}</span>
+        </v-tooltip>
+        <v-tooltip location="top">
+          <template #activator="{ props }">
+            <v-avatar size="24" color="surface-variant" class="me-2" v-bind="props">
+              <v-icon size="16">{{ profileStore.user?.rank?.icon }}</v-icon>
+            </v-avatar>
+          </template>
+          <span>{{ profileStore.user?.rank?.title || 'Звание' }}</span>
+        </v-tooltip>
+        <v-tooltip location="top">
+          <template #activator="{ props }">
+            <v-avatar size="24" color="surface-variant" v-bind="props">
+              <v-icon size="16">{{ profileStore.user?.role?.icon }}</v-icon>
+            </v-avatar>
+          </template>
+          <span>{{ profileStore.user?.role?.title || 'Должность' }}</span>
+        </v-tooltip>
+      </div>
       <v-divider class="mx-2 mb-2"></v-divider>
       <v-list density="compact" nav>
         <v-list-item

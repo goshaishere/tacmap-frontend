@@ -4,7 +4,7 @@
       <!-- Заголовок и статистика -->
       <v-row>
         <v-col cols="12">
-          <div class="d-flex align-center justify-space-between mb-6">
+          <div class="d-flex align-center justify-space-between mb-6 flex-wrap">
             <h1 class="text-h4 text-on-surface mb-4">
               <v-icon class="me-3">mdi-clipboard-list</v-icon>
               Управление задачами
@@ -12,9 +12,10 @@
             <v-btn 
               color="accent" 
               variant="flat" 
-              prepend-icon="mdi-plus"
               @click="showCreateDialog = true"
+              class="d-flex justify-center align-center gap-2 d-block d-md-inline-flex w-100 w-md-auto mb-2 mb-md-0"
             >
+              <v-icon class="me-2">mdi-plus</v-icon>
               Создать задачу
             </v-btn>
           </div>

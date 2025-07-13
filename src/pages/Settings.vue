@@ -1,348 +1,209 @@
 <template>
   <div class="page-container">
     <v-container fluid class="pa-0 pa-md-4">
-      <v-row justify="center">
-        <v-col cols="12" md="8" lg="6">
-          <v-card>
-            <v-card-title class="d-flex align-center text-on-surface">
-              <v-icon class="me-2">mdi-cog</v-icon>
-              Настройки приложения
+      <v-row>
+        <v-col cols="12">
+          <h1 class="text-h4 text-on-surface mb-4 d-flex align-center">
+            <v-icon class="me-2">mdi-cog</v-icon>
+            Настройки приложения
+          </h1>
+        </v-col>
+      </v-row>
+      <v-row class="g-4">
+        <!-- Внешний вид -->
+        <v-col cols="12" md="6">
+          <v-card class="pa-4 mb-4">
+            <v-card-title class="text-h6 text-on-surface mb-2">
+              <v-icon class="me-2">mdi-palette</v-icon> Внешний вид
             </v-card-title>
-            
             <v-card-text>
-              <!-- Внешний вид -->
-              <div class="mb-6">
-                <h3 class="text-h6 mb-4 text-on-surface">
-                  <v-icon class="me-2">mdi-palette</v-icon>
-                  Внешний вид
-                </h3>
-                
-                <v-card variant="outlined" class="mb-4">
-                  <v-card-text>
-                    <div class="d-flex align-center justify-space-between">
-                      <div>
-                        <div class="text-subtitle-1 font-weight-medium">Тема оформления</div>
-                        <div class="text-caption text-medium-emphasis">
-                          Выберите светлую или темную тему
-                        </div>
-                      </div>
-                      <div>
-                        <v-btn-toggle
-                          v-model="selectedTheme"
-                          mandatory
-                          color="accent"
-                          @update:model-value="onThemeChange"
-                        >
-                          <v-btn value="tacticalLight" size="small">
-                            <v-icon class="me-1">mdi-white-balance-sunny</v-icon>
-                            Светлая
-                          </v-btn>
-                          <v-btn value="tacticalDark" size="small">
-                            <v-icon class="me-1">mdi-weather-night</v-icon>
-                            Темная
-                          </v-btn>
-                        </v-btn-toggle>
-                      </div>
-                    </div>
-                  </v-card-text>
-                </v-card>
-                
-                <v-card variant="outlined" class="mb-4">
-                  <v-card-text>
-                    <div class="d-flex align-center justify-space-between">
-                      <div>
-                        <div class="text-subtitle-1 font-weight-medium">Включить уведомления</div>
-                        <div class="text-caption text-medium-emphasis">
-                          Получать уведомления о новых задачах
-                        </div>
-                      </div>
-                      <div class="settings-actions">
-                        <v-switch
-                          v-model="notificationsEnabled"
-                          color="accent"
-                          @update:model-value="toggleNotifications"
-                        ></v-switch>
-                        <v-btn color="accent" variant="outlined" size="small" @click="showTestNotification" class="ms-2">Тест</v-btn>
-                      </div>
-                    </div>
-                  </v-card-text>
-                </v-card>
-                
-                <v-card variant="outlined">
-                  <v-card-text>
-                    <div class="d-flex align-center justify-space-between">
-                      <div>
-                        <div class="text-subtitle-1 font-weight-medium">Звуковые уведомления</div>
-                        <div class="text-caption text-medium-emphasis">
-                          Воспроизводить звук при получении уведомлений
-                        </div>
-                      </div>
-                      <v-switch
-                        v-model="soundEnabled"
-                        color="accent"
-                        :disabled="!notificationsEnabled"
-                        @update:model-value="toggleSound"
-                      ></v-switch>
-                    </div>
-                  </v-card-text>
-                </v-card>
+              <div class="d-flex align-center justify-space-between flex-wrap gap-4">
+                <div>
+                  <div class="text-subtitle-1 font-weight-medium">Тема оформления</div>
+                  <div class="text-caption text-medium-emphasis">Выберите светлую или тёмную тему</div>
+                </div>
+                <v-btn-toggle
+                  v-model="selectedTheme"
+                  mandatory
+                  color="accent"
+                  @update:model-value="onThemeChange"
+                >
+                  <v-btn value="tacticalLight" size="small">
+                    <v-icon class="me-1">mdi-white-balance-sunny</v-icon>
+                    Светлая
+                  </v-btn>
+                  <v-btn value="tacticalDark" size="small">
+                    <v-icon class="me-1">mdi-weather-night</v-icon>
+                    Тёмная
+                  </v-btn>
+                </v-btn-toggle>
               </div>
-              
-              <v-divider class="my-6"></v-divider>
-              
-              <!-- Безопасность -->
-              <div class="mb-6">
-                <h3 class="text-h6 mb-4 text-on-surface">
-                  <v-icon class="me-2">mdi-shield</v-icon>
-                  Безопасность
-                </h3>
-                
-                <v-card variant="outlined" class="mb-4">
-                  <v-card-text>
-                    <div class="d-flex align-center justify-space-between">
-                      <div>
-                        <div class="text-subtitle-1 font-weight-medium">Автоматический выход</div>
-                        <div class="text-caption text-medium-emphasis">
-                          Выход из системы после периода неактивности
-                        </div>
-                      </div>
-                      <v-switch
-                        v-model="autoLogout"
-                        color="accent"
-                        @update:model-value="toggleAutoLogout"
-                      ></v-switch>
-                    </div>
-                  </v-card-text>
-                </v-card>
-                
-                <v-card variant="outlined">
-                  <v-card-text>
-                    <div class="d-flex align-center justify-space-between">
-                      <div>
-                        <div class="text-subtitle-1 font-weight-medium">Время неактивности</div>
-                        <div class="text-caption text-medium-emphasis">
-                          Минуты до автоматического выхода
-                        </div>
-                      </div>
-                      <v-select
-                        v-model="inactivityTimeout"
-                        :items="timeoutOptions"
-                        variant="outlined"
-                        density="compact"
-                        style="width: 120px"
-                        :disabled="!autoLogout"
-                      ></v-select>
-                    </div>
-                  </v-card-text>
-                </v-card>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <!-- Уведомления -->
+        <v-col cols="12" md="6">
+          <v-card class="pa-4 mb-4">
+            <v-card-title class="text-h6 text-on-surface mb-2">
+              <v-icon class="me-2">mdi-bell</v-icon> Уведомления
+            </v-card-title>
+            <v-card-text>
+              <div class="d-flex align-center justify-space-between mb-4">
+                <div>
+                  <div class="text-subtitle-1 font-weight-medium">Включить уведомления</div>
+                  <div class="text-caption text-medium-emphasis">Получать уведомления о новых задачах</div>
+                </div>
+                <div>
+                  <v-switch
+                    v-model="notificationsEnabled"
+                    color="accent"
+                  ></v-switch>
+                  <v-btn color="accent" variant="outlined" size="small" @click="showTestNotification" class="ms-2">Тест</v-btn>
+                </div>
               </div>
-              
-              <v-divider class="my-6"></v-divider>
-              
-              <!-- Данные -->
-              <div class="mb-6">
-                <h3 class="text-h6 mb-4 text-on-surface">
-                  <v-icon class="me-2">mdi-database</v-icon>
-                  Данные
-                </h3>
-                
-                <v-card variant="outlined" class="mb-4">
-                  <v-card-text>
-                    <div class="d-flex align-center justify-space-between">
-                      <div>
-                        <div class="text-subtitle-1 font-weight-medium">Профиль</div>
-                        <div class="text-caption text-medium-emphasis">Сохранить профиль пользователя в user_data/profile.json</div>
-                      </div>
-                      <div class="settings-actions">
-                        <v-btn color="accent" variant="outlined" size="small" @click="exportProfile">Экспорт</v-btn>
-                        <v-btn color="accent" variant="text" size="small" @click="importProfile">Импорт</v-btn>
-                        <input :ref="el => refs.profileInput.value = el" type="file" accept="application/json" style="display:none" @change="importProfileFile" />
-                      </div>
-                    </div>
-                  </v-card-text>
-                </v-card>
-                
-                <v-card variant="outlined" class="mb-4">
-                  <v-card-text>
-                    <div class="d-flex align-center justify-space-between">
-                      <div>
-                        <div class="text-subtitle-1 font-weight-medium">Задачи</div>
-                        <div class="text-caption text-medium-emphasis">Сохранить задачи в user_data/tasks.json</div>
-                      </div>
-                      <div class="settings-actions">
-                        <v-btn color="accent" variant="outlined" size="small" @click="exportTasks">Экспорт</v-btn>
-                        <v-btn color="accent" variant="text" size="small" @click="importTasks">Импорт</v-btn>
-                        <input :ref="el => refs.tasksInput.value = el" type="file" accept="application/json" style="display:none" @change="importTasksFile" />
-                      </div>
-                    </div>
-                  </v-card-text>
-                </v-card>
-                
-                <v-card variant="outlined" class="mb-4">
-                  <v-card-text>
-                    <div class="d-flex align-center justify-space-between">
-                      <div>
-                        <div class="text-subtitle-1 font-weight-medium">Сквады</div>
-                        <div class="text-caption text-medium-emphasis">Сохранить кастомные сквады в user_data/custom_squads.json</div>
-                      </div>
-                      <div class="settings-actions">
-                        <v-btn color="accent" variant="outlined" size="small" @click="exportSquads">Экспорт</v-btn>
-                        <v-btn color="accent" variant="text" size="small" @click="importSquads">Импорт</v-btn>
-                        <input :ref="el => refs.squadsInput.value = el" type="file" accept="application/json" style="display:none" @change="importSquadsFile" />
-                      </div>
-                    </div>
-                  </v-card-text>
-                </v-card>
-                
-                <v-card variant="outlined" class="mb-4">
-                  <v-card-text>
-                    <div class="d-flex align-center justify-space-between">
-                      <div>
-                        <div class="text-subtitle-1 font-weight-medium">Фракции</div>
-                        <div class="text-caption text-medium-emphasis">Сохранить кастомные фракции в user_data/custom_factions.json</div>
-                      </div>
-                      <div class="settings-actions">
-                        <v-btn color="accent" variant="outlined" size="small" @click="exportFactions">Экспорт</v-btn>
-                        <v-btn color="accent" variant="text" size="small" @click="importFactions">Импорт</v-btn>
-                        <input :ref="el => refs.factionsInput.value = el" type="file" accept="application/json" style="display:none" @change="importFactionsFile" />
-                      </div>
-                    </div>
-                  </v-card-text>
-                </v-card>
-                
-                <v-card variant="outlined" class="mb-4">
-                  <v-card-text>
-                    <div class="d-flex align-center justify-space-between">
-                      <div>
-                        <div class="text-subtitle-1 font-weight-medium">Настройки</div>
-                        <div class="text-caption text-medium-emphasis">Сохранить настройки в user_data/settings.json</div>
-                      </div>
-                      <div class="settings-actions">
-                        <v-btn color="accent" variant="outlined" size="small" @click="exportSettings">Экспорт</v-btn>
-                        <v-btn color="accent" variant="text" size="small" @click="importSettings">Импорт</v-btn>
-                        <input :ref="el => refs.settingsInput.value = el" type="file" accept="application/json" style="display:none" @change="importSettingsFile" />
-                      </div>
-                    </div>
-                  </v-card-text>
-                </v-card>
-                
-                <v-card variant="outlined" class="mb-4">
-                  <v-card-text>
-                    <div class="d-flex align-center justify-space-between">
-                      <div>
-                        <div class="text-subtitle-1 font-weight-medium">Карта</div>
-                        <div class="text-caption text-medium-emphasis">Сохранить данные карты в user_data/map.json</div>
-                      </div>
-                      <div class="settings-actions">
-                        <v-btn color="accent" variant="outlined" size="small" @click="exportMap">Экспорт</v-btn>
-                        <v-btn color="accent" variant="text" size="small" @click="importMap">Импорт</v-btn>
-                        <input :ref="el => refs.mapInput.value = el" type="file" accept="application/json" style="display:none" @change="importMapFile" />
-                      </div>
-                    </div>
-                  </v-card-text>
-                </v-card>
-                
-                <v-card variant="outlined" class="mb-4">
-                  <v-card-text>
-                    <div class="d-flex align-center justify-space-between">
-                      <div>
-                        <div class="text-subtitle-1 font-weight-medium">Авторизация</div>
-                        <div class="text-caption text-medium-emphasis">Сохранить данные авторизации в user_data/auth.json</div>
-                        </div>
-                      <div class="settings-actions">
-                        <v-btn color="accent" variant="outlined" size="small" @click="exportAuth">Экспорт</v-btn>
-                        <v-btn color="accent" variant="text" size="small" @click="importAuth">Импорт</v-btn>
-                        <input :ref="el => refs.authInput.value = el" type="file" accept="application/json" style="display:none" @change="importAuthFile" />
-                      </div>
-                    </div>
-                  </v-card-text>
-                </v-card>
-                
-                <v-card variant="outlined" class="mb-4">
-                  <v-card-text>
-                    <div class="d-flex align-center justify-space-between">
-                      <div>
-                        <div class="text-subtitle-1 font-weight-medium">Очистить данные</div>
-                        <div class="text-caption text-medium-emphasis">
-                          Удалить все сохраненные данные
-                        </div>
-                      </div>
-                      <v-btn 
-                        color="error" 
-                        variant="outlined" 
-                        size="small"
-                        @click="showClearDialog = true"
-                      >
-                        Очистить
-                      </v-btn>
-                    </div>
-                  </v-card-text>
-                </v-card>
-                
-                <v-card variant="outlined">
-                  <v-card-text>
-                    <div class="d-flex align-center justify-space-between">
-                      <div>
-                        <div class="text-subtitle-1 font-weight-medium">Сброс настроек</div>
-                        <div class="text-caption text-medium-emphasis">
-                          Вернуть все настройки к значениям по умолчанию
-                        </div>
-                      </div>
-                      <v-btn 
-                        color="warning" 
-                        variant="outlined" 
-                        size="small"
-                        @click="resetSettings"
-                      >
-                        Сброс
-                      </v-btn>
-                    </div>
-                  </v-card-text>
-                </v-card>
+              <div class="d-flex align-center justify-space-between mb-4">
+                <div>
+                  <div class="text-subtitle-1 font-weight-medium">Звуковые уведомления</div>
+                  <div class="text-caption text-medium-emphasis">Воспроизводить звук при получении уведомлений</div>
+                </div>
+                <v-switch
+                  v-model="soundEnabled"
+                  color="accent"
+                  :disabled="!notificationsEnabled"
+                ></v-switch>
               </div>
-              
-              <v-divider class="my-6"></v-divider>
-              
-              <!-- О приложении -->
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <!-- Безопасность -->
+        <v-col cols="12" md="6">
+          <v-card class="pa-4 mb-4">
+            <v-card-title class="text-h6 text-on-surface mb-2">
+              <v-icon class="me-2">mdi-shield</v-icon> Безопасность
+            </v-card-title>
+            <v-card-text>
+              <div class="d-flex align-center justify-space-between mb-4">
+                <div>
+                  <div class="text-subtitle-1 font-weight-medium">Автоматический выход</div>
+                  <div class="text-caption text-medium-emphasis">Выход из системы после периода неактивности</div>
+                </div>
+                <v-switch
+                  v-model="autoLogout"
+                  color="accent"
+                ></v-switch>
+              </div>
+              <div class="d-flex align-center justify-space-between">
+                <div>
+                  <div class="text-subtitle-1 font-weight-medium">Время неактивности</div>
+                  <div class="text-caption text-medium-emphasis">Минуты до автоматического выхода</div>
+                </div>
+                <v-select
+                  v-model="inactivityTimeout"
+                  :items="timeoutOptions"
+                  variant="outlined"
+                  density="compact"
+                  style="width: 120px"
+                  :disabled="!autoLogout"
+                ></v-select>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <!-- Данные (экспорт/импорт) -->
+        <v-col cols="12" md="6">
+          <v-card class="pa-4 mb-4">
+            <v-card-title class="text-h6 text-on-surface mb-2">
+              <v-icon class="me-2">mdi-database-export</v-icon> Данные
+            </v-card-title>
+            <v-card-text>
+              <div class="mb-3">
+                <div class="text-subtitle-1 font-weight-medium mb-1">Профиль</div>
+                <v-btn color="accent" variant="outlined" size="small" @click="exportProfile" class="me-2">Экспорт</v-btn>
+                <v-btn color="accent" variant="text" size="small" @click="importProfile">Импорт</v-btn>
+                <input :ref="el => refs.profileInput.value = el" type="file" accept="application/json" style="display:none" @change="importProfileFile" />
+              </div>
+              <div class="mb-3">
+                <div class="text-subtitle-1 font-weight-medium mb-1">Задачи</div>
+                <v-btn color="accent" variant="outlined" size="small" @click="exportTasks" class="me-2">Экспорт</v-btn>
+                <v-btn color="accent" variant="text" size="small" @click="importTasks">Импорт</v-btn>
+                <input :ref="el => refs.tasksInput.value = el" type="file" accept="application/json" style="display:none" @change="importTasksFile" />
+              </div>
+              <div class="mb-3">
+                <div class="text-subtitle-1 font-weight-medium mb-1">Сквады</div>
+                <v-btn color="accent" variant="outlined" size="small" @click="exportSquads" class="me-2">Экспорт</v-btn>
+                <v-btn color="accent" variant="text" size="small" @click="importSquads">Импорт</v-btn>
+                <input :ref="el => refs.squadsInput.value = el" type="file" accept="application/json" style="display:none" @change="importSquadsFile" />
+              </div>
+              <div class="mb-3">
+                <div class="text-subtitle-1 font-weight-medium mb-1">Фракции</div>
+                <v-btn color="accent" variant="outlined" size="small" @click="exportFactions" class="me-2">Экспорт</v-btn>
+                <v-btn color="accent" variant="text" size="small" @click="importFactions">Импорт</v-btn>
+                <input :ref="el => refs.factionsInput.value = el" type="file" accept="application/json" style="display:none" @change="importFactionsFile" />
+              </div>
+              <div class="mb-3">
+                <div class="text-subtitle-1 font-weight-medium mb-1">Настройки</div>
+                <v-btn color="accent" variant="outlined" size="small" @click="exportSettings" class="me-2">Экспорт</v-btn>
+                <v-btn color="accent" variant="text" size="small" @click="importSettings">Импорт</v-btn>
+                <input :ref="el => refs.settingsInput.value = el" type="file" accept="application/json" style="display:none" @change="importSettingsFile" />
+              </div>
+              <div class="mb-3">
+                <div class="text-subtitle-1 font-weight-medium mb-1">Карта</div>
+                <v-btn color="accent" variant="outlined" size="small" @click="exportMap" class="me-2">Экспорт</v-btn>
+                <v-btn color="accent" variant="text" size="small" @click="importMap">Импорт</v-btn>
+                <input :ref="el => refs.mapInput.value = el" type="file" accept="application/json" style="display:none" @change="importMapFile" />
+              </div>
+              <div class="mb-3">
+                <div class="text-subtitle-1 font-weight-medium mb-1">Авторизация</div>
+                <v-btn color="accent" variant="outlined" size="small" @click="exportAuth" class="me-2">Экспорт</v-btn>
+                <v-btn color="accent" variant="text" size="small" @click="importAuth">Импорт</v-btn>
+                <input :ref="el => refs.authInput.value = el" type="file" accept="application/json" style="display:none" @change="importAuthFile" />
+              </div>
+              <div class="mb-3">
+                <div class="text-subtitle-1 font-weight-medium mb-1">Очистить данные</div>
+                <v-btn color="error" variant="outlined" size="small" @click="showClearDialog = true">Очистить</v-btn>
+              </div>
               <div>
-                <h3 class="text-h6 mb-4 text-on-surface">
-                  <v-icon class="me-2">mdi-information</v-icon>
-                  О приложении
-                </h3>
-                
-                <v-card variant="outlined">
-                  <v-card-text>
-                    <div class="text-center">
-                      <v-avatar size="64" color="primary" class="mb-3">
-                        <v-icon size="32">mdi-map</v-icon>
-                      </v-avatar>
-                      <div class="text-h6 font-weight-bold mb-1">TacMap</div>
-                      <div class="text-caption text-medium-emphasis mb-3">Версия 1.0.0</div>
-                      <div class="text-body-2 text-medium-emphasis mb-4">
-                        Система тактического управления для координации действий
-                      </div>
-                      <div class="d-flex flex-column flex-sm-row justify-center gap-2">
-                        <v-btn 
-                          color="accent" 
-                          variant="outlined" 
-                          size="small"
-                          href="https://github.com/tacmap"
-                          target="_blank"
-                        >
-                          GitHub
-                        </v-btn>
-                        <v-btn 
-                          color="accent" 
-                          variant="outlined" 
-                          size="small"
-                          href="mailto:support@tacmap.com"
-                        >
-                          Поддержка
-                        </v-btn>
-                      </div>
-                    </div>
-                  </v-card-text>
-                </v-card>
+                <div class="text-subtitle-1 font-weight-medium mb-1">Сброс настроек</div>
+                <v-btn color="warning" variant="outlined" size="small" @click="resetSettings">Сброс</v-btn>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <!-- О приложении -->
+        <v-col cols="12" md="6">
+          <v-card class="pa-4 mb-4">
+            <v-card-title class="text-h6 text-on-surface mb-2">
+              <v-icon class="me-2">mdi-information</v-icon> О приложении
+            </v-card-title>
+            <v-card-text>
+              <div class="text-center">
+                <v-avatar size="64" color="primary" class="mb-3">
+                  <v-icon size="32">mdi-map</v-icon>
+                </v-avatar>
+                <div class="text-h6 font-weight-bold mb-1">TacMap</div>
+                <div class="text-caption text-medium-emphasis mb-3">Версия 1.0.0</div>
+                <div class="text-body-2 text-medium-emphasis mb-4">
+                  Система тактического управления для координации действий
+                </div>
+                <div class="d-flex flex-column flex-sm-row justify-center gap-2">
+                  <v-btn 
+                    color="accent" 
+                    variant="outlined" 
+                    size="small"
+                    href="https://github.com/tacmap"
+                    target="_blank"
+                  >
+                    GitHub
+                  </v-btn>
+                  <v-btn 
+                    color="accent" 
+                    variant="outlined" 
+                    size="small"
+                    href="mailto:support@tacmap.com"
+                  >
+                    Поддержка
+                  </v-btn>
+                </div>
               </div>
             </v-card-text>
           </v-card>
