@@ -5,7 +5,7 @@
       <v-row class="mb-4">
         <v-col cols="12">
           <div class="d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between gap-4">
-            <h1 class="text-h4 text-sm-h3 text-on-surface">
+            <h1 class="text-h4 text-on-surface mb-4">
               <v-icon class="me-3">mdi-map</v-icon>
               Тактическая карта
             </h1>

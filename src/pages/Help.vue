@@ -3,7 +3,7 @@
     <v-container>
       <v-row>
         <v-col cols="12">
-          <h1 class="text-h3 text-on-surface mb-6">
+          <h1 class="text-h4 text-on-surface mb-4">
             <v-icon class="me-3">mdi-help-circle</v-icon>
             Справочная информация
           </h1>
