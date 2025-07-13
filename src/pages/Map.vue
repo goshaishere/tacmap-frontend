@@ -5,7 +5,7 @@
       <v-row class="mb-4">
         <v-col cols="12">
           <div class="d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between gap-4">
-            <h1 class="text-h4 text-sm-h3">
+            <h1 class="text-h4 text-sm-h3 text-on-surface">
               <v-icon class="me-3">mdi-map</v-icon>
               Тактическая карта
             </h1>
@@ -171,66 +171,30 @@
         <v-col cols="12">
           <v-card class="map-container">
             <v-card-text class="pa-0">
-              <!-- Заглушка карты -->
-              <div class="map-placeholder">
-                <div class="map-content">
-                  <v-icon size="120" color="grey-lighten-1" class="mb-4">mdi-map</v-icon>
-                  <h2 class="text-h5 mb-2">Интерактивная карта</h2>
-                  <p class="text-body-1 text-medium-emphasis mb-4">
-                    Здесь будет отображаться тактическая карта с возможностью навигации и управления объектами
-                  </p>
-                  
-                  <!-- Моковые элементы карты -->
-                  <div class="map-elements">
-                    <div class="map-element" style="top: 20%; left: 30%;">
-                      <v-avatar size="32" color="primary">
-                        <v-icon>mdi-account-group</v-icon>
-                      </v-avatar>
-                      <div class="element-label">Сквад Alpha</div>
-                    </div>
-                    
-                    <div class="map-element" style="top: 40%; left: 60%;">
-                      <v-avatar size="32" color="warning">
-                        <v-icon>mdi-target</v-icon>
-                      </v-avatar>
-                      <div class="element-label">Цель</div>
-                    </div>
-                    
-                    <div class="map-element" style="top: 60%; left: 20%;">
-                      <v-avatar size="32" color="success">
-                        <v-icon>mdi-medical-bag</v-icon>
-                      </v-avatar>
-                      <div class="element-label">Медпункт</div>
-                    </div>
-                    
-                    <div class="map-element" style="top: 80%; left: 70%;">
-                      <v-avatar size="32" color="info">
-                        <v-icon>mdi-car</v-icon>
-                      </v-avatar>
-                      <div class="element-label">Транспорт</div>
-                    </div>
-                  </div>
-                  
-                  <!-- Контролы карты -->
-                  <div class="map-controls">
-                    <v-btn-group variant="outlined" class="mb-4">
-                      <v-btn size="small" @click="zoomIn">
-                        <v-icon>mdi-plus</v-icon>
-                      </v-btn>
-                      <v-btn size="small" @click="zoomOut">
-                        <v-icon>mdi-minus</v-icon>
-                      </v-btn>
-                      <v-btn size="small" @click="resetView">
-                        <v-icon>mdi-home</v-icon>
-                      </v-btn>
-                    </v-btn-group>
-                    
-                    <div class="text-caption text-medium-emphasis">
-                      Масштаб: {{ currentZoom }}x | Координаты: {{ currentCoordinates }}
-                    </div>
-                  </div>
+              <!-- Яндекс.Карта -->
+              <yandex-map
+                :settings="ymapSettings"
+                :coords="center"
+                :zoom="zoom"
+                style="width: 100%; height: 600px;"
+                @contextmenu="onMapRightClick"
+              >
+                <!-- Здесь будут маркеры -->
+                <yandex-map-marker
+                  v-for="marker in markers"
+                  :key="marker.id"
+                  :coords="marker.coords"
+                  :icon="marker.icon"
+                  :properties="{ hintContent: marker.label }"
+                  @click="onMarkerClick(marker)"
+                />
+                <!-- Радиальное меню -->
+                <div v-if="showRadialMenu" :style="radialMenuStyle" class="radial-menu">
+                  <button v-for="type in markerTypes" :key="type.key" @click="addMarker(type)">
+                    <v-icon :color="type.color">{{ type.icon }}</v-icon>
+                  </button>
                 </div>
-              </div>
+              </yandex-map>
             </v-card-text>
           </v-card>
         </v-col>
@@ -240,7 +204,7 @@
       <v-row class="mt-4">
         <v-col cols="12" md="8">
           <v-card>
-            <v-card-title class="d-flex align-center">
+            <v-card-title class="d-flex align-center text-on-surface">
               <v-icon class="me-2">mdi-information</v-icon>
               Информация о карте
             </v-card-title>
@@ -302,7 +266,66 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { YandexMap } from 'vue-yandex-maps'
+import { ref, reactive, computed } from 'vue'
+import { useMapStore } from '../store/map.js'
+
+const ymapSettings = {
+  apiKey: '', // Можно указать ключ, если нужен
+  lang: 'ru_RU',
+  coordorder: 'latlong',
+  version: '2.1'
+}
+const center = ref([55.751574, 37.573856])
+const zoom = ref(10)
+const mapStore = useMapStore()
+
+const markers = computed({
+  get: () => mapStore.markers,
+  set: (val) => mapStore.setMarkers(val)
+})
+const showRadialMenu = ref(false)
+const radialMenuStyle = ref({})
+const radialMenuCoords = ref([])
+const markerTypes = [
+  { key: 'helmet', icon: 'mdi-hard-hat', color: 'red', label: 'Красная каска' },
+  { key: 'sniper', icon: 'mdi-target', color: 'blue', label: 'Прицел снайпера' },
+  { key: 'mine', icon: 'mdi-mine', color: 'grey', label: 'Мина' },
+  { key: 'mg', icon: 'mdi-robot-mower', color: 'brown', label: 'Пулемёт' },
+  { key: 'move', icon: 'mdi-arrow-up-bold', color: 'green', label: 'Движение' },
+  { key: 'attack', icon: 'mdi-sword-cross', color: 'orange', label: 'Атака' },
+  { key: 'defend', icon: 'mdi-shield', color: 'blue', label: 'Защита' },
+  { key: 'fortify', icon: 'mdi-fort', color: 'purple', label: 'Укрепление' },
+]
+
+function onMapRightClick(e) {
+  const coords = e.get('coords')
+  showRadialMenu.value = true
+  radialMenuCoords.value = coords
+  // Позиционируем меню по курсору
+  const [x, y] = e.get('position')
+  radialMenuStyle.value = {
+    position: 'absolute',
+    left: `${x}px`,
+    top: `${y}px`,
+    zIndex: 1000
+  }
+}
+function addMarker(type) {
+  mapStore.addMarker({
+    id: Date.now(),
+    coords: radialMenuCoords.value,
+    icon: type.icon,
+    label: type.label,
+    color: type.color
+  })
+  showRadialMenu.value = false
+}
+function onMarkerClick(marker) {
+  if (confirm('Удалить метку?')) {
+    mapStore.removeMarker(marker.id)
+  }
+}
 
 // Состояние панелей
 const showLayers = ref(false)
@@ -586,5 +609,16 @@ function resetView() {
   .v-card {
     margin: 0;
   }
+}
+
+.radial-menu {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  background: rgba(255,255,255,0.95);
+  border-radius: 50px;
+  padding: 8px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  position: absolute;
 }
 </style> 

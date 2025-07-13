@@ -3,7 +3,7 @@
     <v-container>
       <v-row>
         <v-col cols="12">
-          <h1 class="text-h3 mb-6">
+          <h1 class="text-h3 text-on-surface mb-6">
             <v-icon class="me-3">mdi-help-circle</v-icon>
             Справочная информация
           </h1>
@@ -14,7 +14,7 @@
       <v-row>
         <v-col cols="12">
           <v-card class="mb-6">
-            <v-card-title class="d-flex align-center">
+            <v-card-title class="d-flex align-center text-on-surface">
               <v-icon class="me-2">mdi-star</v-icon>
               Звания
             </v-card-title>
@@ -41,7 +41,7 @@
       <v-row>
         <v-col cols="12">
           <v-card class="mb-6">
-            <v-card-title class="d-flex align-center">
+            <v-card-title class="d-flex align-center text-on-surface">
               <v-icon class="me-2">mdi-badge-account</v-icon>
               Должности
             </v-card-title>
@@ -87,7 +87,7 @@
       <v-row>
         <v-col cols="12">
           <v-card class="mb-6">
-            <v-card-title class="d-flex align-center">
+            <v-card-title class="d-flex align-center text-on-surface">
               <v-icon class="me-2">mdi-account-group</v-icon>
               Сквады
             </v-card-title>
@@ -114,7 +114,7 @@
       <v-row>
         <v-col cols="12">
           <v-card>
-            <v-card-title class="d-flex align-center">
+            <v-card-title class="d-flex align-center text-on-surface">
               <v-icon class="me-2">mdi-frequently-asked-questions</v-icon>
               Часто задаваемые вопросы
             </v-card-title>

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ranks } from '../data/ranks.js'
 import { roles } from '../data/roles.js'
 import { defaultSquads } from '../data/squads.js'
+import { factions } from '../data/factions.js'
 
 const LS_KEY = 'profileData'
 
@@ -14,6 +15,7 @@ function getDefaultUser() {
         rank: ranks[0],
         role: roles[0],
         squad: defaultSquads[0],
+        faction: factions[0],
     }
 }
 
@@ -24,7 +26,29 @@ function loadUserFromLS() {
         const data = JSON.parse(raw)
         data.rank = ranks.find(r => r.key === data.rank.key) || ranks[0]
         data.role = roles.find(r => r.key === data.role.key) || roles[0]
-        data.squad = defaultSquads.find(s => s.key === data.squad.key) || defaultSquads[0]
+            // --- исправление: ищем сквад среди кастомных и дефолтных ---
+        let allSquads = []
+        try {
+            const customRaw = localStorage.getItem('customSquads')
+            allSquads = customRaw ? JSON.parse(customRaw) : []
+        } catch { allSquads = [] }
+        allSquads = [...defaultSquads, ...allSquads.filter(s => !defaultSquads.some(d => d.key === s.key))]
+        data.squad = allSquads.find(s => s.key === data.squad.key) || allSquads[0] || defaultSquads[0]
+            // --- конец исправления ---
+            // --- исправление: ищем фракцию среди кастомных и дефолтных ---
+        let allFactions = []
+        try {
+            const customRaw = localStorage.getItem('customFactions')
+            allFactions = customRaw ? JSON.parse(customRaw) : []
+        } catch { allFactions = [] }
+        allFactions = [...factions, ...allFactions.filter(f => !factions.some(d => d.key === f.key))]
+        data.faction = allFactions.find(f => {
+                if (data.faction && typeof data.faction === 'object' && 'key' in data.faction) {
+                    return f.key === data.faction.key
+                }
+                return f.key === data.faction
+            }) || allFactions[0] || factions[0]
+            // --- конец исправления ---
         if (!data.avatar) data.avatar = ''
         return data
     } catch {
@@ -71,6 +95,10 @@ export const useProfileStore = defineStore('profile', {
         },
         setAvatar(avatar) {
             this.user.avatar = avatar
+            saveUserToLS(this.user)
+        },
+        setFaction(faction) {
+            this.user.faction = faction
             saveUserToLS(this.user)
         },
     },

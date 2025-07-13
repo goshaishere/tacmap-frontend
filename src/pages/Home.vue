@@ -6,11 +6,17 @@
         <v-col cols="12">
           <v-card class="welcome-card">
             <v-card-text class="text-center">
-              <v-avatar size="80" class="mb-4">
-                <v-img :src="profileStore.user.avatar" />
-                <v-icon v-if="!profileStore.user.avatar" size="40">mdi-account</v-icon>
-              </v-avatar>
-              <h1 class="text-h4 text-sm-h3 mb-2">
+              <div class="d-flex justify-center mb-4">
+                <v-avatar size="80">
+                  <template v-if="profileStore.user.avatar">
+                    <v-img :src="profileStore.user.avatar" />
+                  </template>
+                  <template v-else>
+                    <v-icon size="40">mdi-account</v-icon>
+                  </template>
+                </v-avatar>
+              </div>
+              <h1 class="text-h4 text-sm-h3 text-on-surface mb-2">
                 Добро пожаловать, {{ profileStore.user.firstName }}!
               </h1>
               <p class="text-body-1 text-medium-emphasis">
@@ -25,7 +31,7 @@
       <!-- Быстрые действия -->
       <v-row class="mb-6">
         <v-col cols="12">
-          <h2 class="text-h5 text-sm-h4 mb-4">
+          <h2 class="text-h5 text-sm-h4 text-on-surface mb-4">
             <v-icon class="me-2">mdi-lightning-bolt</v-icon>
             Быстрые действия
           </h2>
@@ -52,7 +58,7 @@
         <!-- Активные задачи -->
         <v-col cols="12" lg="8">
           <v-card class="mb-6">
-            <v-card-title class="d-flex align-center">
+            <v-card-title class="d-flex align-center text-on-surface">
               <v-icon class="me-2">mdi-clipboard-list</v-icon>
               Активные задачи
               <v-spacer></v-spacer>
@@ -69,8 +75,8 @@
             <v-card-text>
               <div v-if="activeTasks.length === 0" class="text-center py-8">
                 <v-icon size="64" color="grey-lighten-1">mdi-clipboard-check</v-icon>
-                <div class="text-h6 text-grey mt-4">Нет активных задач</div>
-                <div class="text-body-2 text-grey">Все задачи выполнены!</div>
+                <div class="text-h6 text-on-surface mt-4">Нет активных задач</div>
+                <div class="text-body-2 text-medium-emphasis">Все задачи выполнены!</div>
               </div>
               <v-list v-else>
                 <v-list-item
@@ -108,11 +114,17 @@
               Информация о профиле
             </v-card-title>
             <v-card-text>
-              <div class="d-flex align-center mb-3">
-                <v-avatar size="48" class="me-3">
-                  <v-img :src="profileStore.user.avatar" />
-                  <v-icon v-if="!profileStore.user.avatar">mdi-account</v-icon>
-                </v-avatar>
+              <div class="d-flex align-center mb-3" style="min-height:56px;">
+                <div class="d-flex align-center justify-center" style="min-width:56px;">
+                  <v-avatar size="48">
+                    <template v-if="profileStore.user.avatar">
+                      <v-img :src="profileStore.user.avatar" />
+                    </template>
+                    <template v-else>
+                      <v-icon size="32">mdi-account</v-icon>
+                    </template>
+                  </v-avatar>
+                </div>
                 <div>
                   <div class="text-h6">{{ profileStore.user.firstName }} {{ profileStore.user.lastName }}</div>
                   <div class="text-subtitle-2 text-medium-emphasis">{{ profileStore.user.callsign }}</div>
@@ -141,13 +153,24 @@
                 </div>
               </div>
               
-              <div class="d-flex align-center">
+              <div class="d-flex align-center mb-2">
                 <v-avatar size="32" color="surface-variant" class="me-2">
                   <v-icon>{{ profileStore.user.squad.icon }}</v-icon>
                 </v-avatar>
                 <div>
                   <div class="text-subtitle-2 font-weight-medium">Сквад</div>
                   <div class="text-caption text-medium-emphasis">{{ profileStore.user.squad.title }}</div>
+                </div>
+              </div>
+              <div class="d-flex align-center mb-2">
+                <v-avatar size="32" :color="isDark ? profileStore.user.faction?.colorDark : profileStore.user.faction?.colorLight" class="me-2">
+                  <v-icon :color="isDark ? profileStore.user.faction?.iconColorDark : profileStore.user.faction?.iconColorLight">
+                    {{ profileStore.user.faction?.icon }}
+                  </v-icon>
+                </v-avatar>
+                <div>
+                  <div class="text-subtitle-2 font-weight-medium">Фракция</div>
+                  <div class="text-caption text-medium-emphasis">{{ profileStore.user.faction?.title }}</div>
                 </div>
               </div>
             </v-card-text>
@@ -176,8 +199,8 @@
             <v-card-text>
               <div v-if="recentActions.length === 0" class="text-center py-8">
                 <v-icon size="64" color="grey-lighten-1">mdi-clock-outline</v-icon>
-                <div class="text-h6 text-grey mt-4">Нет последних действий</div>
-                <div class="text-body-2 text-grey">Начните работу с системой</div>
+                <div class="text-h6 text-on-surface mt-4">Нет последних действий</div>
+                <div class="text-body-2 text-medium-emphasis">Начните работу с системой</div>
               </div>
               <v-timeline v-else density="compact" align="start">
                 <v-timeline-item
@@ -216,9 +239,12 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProfileStore } from '../store/profile.js'
+import { useTheme } from 'vuetify'
 
 const router = useRouter()
 const profileStore = useProfileStore()
+const theme = useTheme()
+const isDark = computed(() => theme.global.current.value?.dark ?? false)
 
 // Быстрые действия
 const quickActions = [
@@ -355,70 +381,4 @@ function formatTime(timestamp) {
     return `${days} дн назад`
   }
 }
-</script>
-
-<style scoped>
-.home-page {
-  min-height: 100vh;
-}
-
-.welcome-card {
-  background: linear-gradient(135deg, var(--v-theme-primary) 0%, var(--v-theme-accent) 100%);
-  color: white;
-  border-radius: 16px;
-}
-
-.action-card {
-  border-radius: 12px;
-  transition: transform 0.2s ease-in-out;
-  cursor: pointer;
-  height: 100%;
-}
-
-.action-card:hover {
-  transform: translateY(-2px);
-}
-
-/* Мобильные стили */
-@media (max-width: 599px) {
-  .welcome-card {
-    border-radius: 12px;
-    margin: 8px;
-  }
-  
-  .v-card {
-    margin: 8px;
-    border-radius: 12px;
-  }
-  
-  .v-card-title {
-    padding: 16px;
-  }
-  
-  .v-card-text {
-    padding: 16px;
-  }
-}
-
-/* Планшетные стили */
-@media (min-width: 600px) and (max-width: 959px) {
-  .welcome-card {
-    margin: 16px;
-  }
-  
-  .v-card {
-    margin: 16px;
-  }
-}
-
-/* Десктопные стили */
-@media (min-width: 960px) {
-  .welcome-card {
-    margin: 0;
-  }
-  
-  .v-card {
-    margin: 0;
-  }
-}
-</style> 
+</script> 

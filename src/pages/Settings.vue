@@ -4,7 +4,7 @@
       <v-row justify="center">
         <v-col cols="12" md="8" lg="6">
           <v-card class="settings-card">
-            <v-card-title class="d-flex align-center">
+            <v-card-title class="d-flex align-center text-on-surface">
               <v-icon class="me-2">mdi-cog</v-icon>
               Настройки приложения
             </v-card-title>
@@ -12,7 +12,7 @@
             <v-card-text>
               <!-- Внешний вид -->
               <div class="mb-6">
-                <h3 class="text-h6 mb-4">
+                <h3 class="text-h6 mb-4 text-on-surface">
                   <v-icon class="me-2">mdi-palette</v-icon>
                   Внешний вид
                 </h3>
@@ -26,52 +26,26 @@
                           Выберите светлую или темную тему
                         </div>
                       </div>
-                      <v-btn-toggle
-                        v-model="selectedTheme"
-                        mandatory
-                        color="accent"
-                        @update:model-value="changeTheme"
-                      >
-                        <v-btn value="tacticalLight" size="small">
-                          <v-icon class="me-1">mdi-white-balance-sunny</v-icon>
-                          Светлая
-                        </v-btn>
-                        <v-btn value="tacticalDark" size="small">
-                          <v-icon class="me-1">mdi-weather-night</v-icon>
-                          Темная
-                        </v-btn>
-                      </v-btn-toggle>
-                    </div>
-                  </v-card-text>
-                </v-card>
-                
-                <v-card variant="outlined">
-                  <v-card-text>
-                    <div class="d-flex align-center justify-space-between">
-                      <div>
-                        <div class="text-subtitle-1 font-weight-medium">Компактный режим</div>
-                        <div class="text-caption text-medium-emphasis">
-                          Уменьшить размеры элементов интерфейса
-                        </div>
+                      <div class="settings-actions">
+                        <v-btn-toggle
+                          v-model="selectedTheme"
+                          mandatory
+                          color="accent"
+                          @update:model-value="onThemeChange"
+                        >
+                          <v-btn value="tacticalLight" size="small">
+                            <v-icon class="me-1">mdi-white-balance-sunny</v-icon>
+                            Светлая
+                          </v-btn>
+                          <v-btn value="tacticalDark" size="small">
+                            <v-icon class="me-1">mdi-weather-night</v-icon>
+                            Темная
+                          </v-btn>
+                        </v-btn-toggle>
                       </div>
-                      <v-switch
-                        v-model="compactMode"
-                        color="accent"
-                        @update:model-value="toggleCompactMode"
-                      ></v-switch>
                     </div>
                   </v-card-text>
                 </v-card>
-              </div>
-              
-              <v-divider class="my-6"></v-divider>
-              
-              <!-- Уведомления -->
-              <div class="mb-6">
-                <h3 class="text-h6 mb-4">
-                  <v-icon class="me-2">mdi-bell</v-icon>
-                  Уведомления
-                </h3>
                 
                 <v-card variant="outlined" class="mb-4">
                   <v-card-text>
@@ -82,11 +56,14 @@
                           Получать уведомления о новых задачах
                         </div>
                       </div>
-                      <v-switch
-                        v-model="notificationsEnabled"
-                        color="accent"
-                        @update:model-value="toggleNotifications"
-                      ></v-switch>
+                      <div class="settings-actions">
+                        <v-switch
+                          v-model="notificationsEnabled"
+                          color="accent"
+                          @update:model-value="toggleNotifications"
+                        ></v-switch>
+                        <v-btn color="accent" variant="outlined" size="small" @click="showTestNotification" class="ms-2">Тест</v-btn>
+                      </div>
                     </div>
                   </v-card-text>
                 </v-card>
@@ -115,7 +92,7 @@
               
               <!-- Безопасность -->
               <div class="mb-6">
-                <h3 class="text-h6 mb-4">
+                <h3 class="text-h6 mb-4 text-on-surface">
                   <v-icon class="me-2">mdi-shield</v-icon>
                   Безопасность
                 </h3>
@@ -164,7 +141,7 @@
               
               <!-- Данные -->
               <div class="mb-6">
-                <h3 class="text-h6 mb-4">
+                <h3 class="text-h6 mb-4 text-on-surface">
                   <v-icon class="me-2">mdi-database</v-icon>
                   Данные
                 </h3>
@@ -173,19 +150,110 @@
                   <v-card-text>
                     <div class="d-flex align-center justify-space-between">
                       <div>
-                        <div class="text-subtitle-1 font-weight-medium">Экспорт данных</div>
-                        <div class="text-caption text-medium-emphasis">
-                          Скачать все данные профиля и задач
-                        </div>
+                        <div class="text-subtitle-1 font-weight-medium">Профиль</div>
+                        <div class="text-caption text-medium-emphasis">Сохранить профиль пользователя в user_data/profile.json</div>
                       </div>
-                      <v-btn 
-                        color="accent" 
-                        variant="outlined" 
-                        size="small"
-                        @click="exportData"
-                      >
-                        Экспорт
-                      </v-btn>
+                      <div class="settings-actions">
+                        <v-btn color="accent" variant="outlined" size="small" @click="exportProfile">Экспорт</v-btn>
+                        <v-btn color="accent" variant="text" size="small" @click="importProfile">Импорт</v-btn>
+                        <input :ref="el => refs.profileInput.value = el" type="file" accept="application/json" style="display:none" @change="importProfileFile" />
+                      </div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+                
+                <v-card variant="outlined" class="mb-4">
+                  <v-card-text>
+                    <div class="d-flex align-center justify-space-between">
+                      <div>
+                        <div class="text-subtitle-1 font-weight-medium">Задачи</div>
+                        <div class="text-caption text-medium-emphasis">Сохранить задачи в user_data/tasks.json</div>
+                      </div>
+                      <div class="settings-actions">
+                        <v-btn color="accent" variant="outlined" size="small" @click="exportTasks">Экспорт</v-btn>
+                        <v-btn color="accent" variant="text" size="small" @click="importTasks">Импорт</v-btn>
+                        <input :ref="el => refs.tasksInput.value = el" type="file" accept="application/json" style="display:none" @change="importTasksFile" />
+                      </div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+                
+                <v-card variant="outlined" class="mb-4">
+                  <v-card-text>
+                    <div class="d-flex align-center justify-space-between">
+                      <div>
+                        <div class="text-subtitle-1 font-weight-medium">Сквады</div>
+                        <div class="text-caption text-medium-emphasis">Сохранить кастомные сквады в user_data/custom_squads.json</div>
+                      </div>
+                      <div class="settings-actions">
+                        <v-btn color="accent" variant="outlined" size="small" @click="exportSquads">Экспорт</v-btn>
+                        <v-btn color="accent" variant="text" size="small" @click="importSquads">Импорт</v-btn>
+                        <input :ref="el => refs.squadsInput.value = el" type="file" accept="application/json" style="display:none" @change="importSquadsFile" />
+                      </div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+                
+                <v-card variant="outlined" class="mb-4">
+                  <v-card-text>
+                    <div class="d-flex align-center justify-space-between">
+                      <div>
+                        <div class="text-subtitle-1 font-weight-medium">Фракции</div>
+                        <div class="text-caption text-medium-emphasis">Сохранить кастомные фракции в user_data/custom_factions.json</div>
+                      </div>
+                      <div class="settings-actions">
+                        <v-btn color="accent" variant="outlined" size="small" @click="exportFactions">Экспорт</v-btn>
+                        <v-btn color="accent" variant="text" size="small" @click="importFactions">Импорт</v-btn>
+                        <input :ref="el => refs.factionsInput.value = el" type="file" accept="application/json" style="display:none" @change="importFactionsFile" />
+                      </div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+                
+                <v-card variant="outlined" class="mb-4">
+                  <v-card-text>
+                    <div class="d-flex align-center justify-space-between">
+                      <div>
+                        <div class="text-subtitle-1 font-weight-medium">Настройки</div>
+                        <div class="text-caption text-medium-emphasis">Сохранить настройки в user_data/settings.json</div>
+                      </div>
+                      <div class="settings-actions">
+                        <v-btn color="accent" variant="outlined" size="small" @click="exportSettings">Экспорт</v-btn>
+                        <v-btn color="accent" variant="text" size="small" @click="importSettings">Импорт</v-btn>
+                        <input :ref="el => refs.settingsInput.value = el" type="file" accept="application/json" style="display:none" @change="importSettingsFile" />
+                      </div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+                
+                <v-card variant="outlined" class="mb-4">
+                  <v-card-text>
+                    <div class="d-flex align-center justify-space-between">
+                      <div>
+                        <div class="text-subtitle-1 font-weight-medium">Карта</div>
+                        <div class="text-caption text-medium-emphasis">Сохранить данные карты в user_data/map.json</div>
+                      </div>
+                      <div class="settings-actions">
+                        <v-btn color="accent" variant="outlined" size="small" @click="exportMap">Экспорт</v-btn>
+                        <v-btn color="accent" variant="text" size="small" @click="importMap">Импорт</v-btn>
+                        <input :ref="el => refs.mapInput.value = el" type="file" accept="application/json" style="display:none" @change="importMapFile" />
+                      </div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+                
+                <v-card variant="outlined" class="mb-4">
+                  <v-card-text>
+                    <div class="d-flex align-center justify-space-between">
+                      <div>
+                        <div class="text-subtitle-1 font-weight-medium">Авторизация</div>
+                        <div class="text-caption text-medium-emphasis">Сохранить данные авторизации в user_data/auth.json</div>
+                        </div>
+                      <div class="settings-actions">
+                        <v-btn color="accent" variant="outlined" size="small" @click="exportAuth">Экспорт</v-btn>
+                        <v-btn color="accent" variant="text" size="small" @click="importAuth">Импорт</v-btn>
+                        <input :ref="el => refs.authInput.value = el" type="file" accept="application/json" style="display:none" @change="importAuthFile" />
+                      </div>
                     </div>
                   </v-card-text>
                 </v-card>
@@ -237,7 +305,7 @@
               
               <!-- О приложении -->
               <div>
-                <h3 class="text-h6 mb-4">
+                <h3 class="text-h6 mb-4 text-on-surface">
                   <v-icon class="me-2">mdi-information</v-icon>
                   О приложении
                 </h3>
@@ -316,20 +384,79 @@
         <v-btn variant="text" @click="showNotification = false">Закрыть</v-btn>
       </template>
     </v-snackbar>
+
+    <v-dialog v-model="showImportDialog" max-width="400px" persistent>
+      <v-card>
+        <v-card-title>Импорт данных</v-card-title>
+        <v-card-text>
+          <input type="file" accept="application/json" @change="importDataFromFile" />
+          <div class="text-caption mt-2">Выберите файл экспорта TacMap (.json)</div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn variant="text" @click="showImportDialog = false">Отмена</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useTheme } from 'vuetify'
 import { useProfileStore } from '../store/profile.js'
 
+const selectedTheme = ref('tacticalLight')
 const theme = useTheme()
 const profileStore = useProfileStore()
 
+// refs для input файлов импорта
+const refs = {
+  profileInput: ref(null),
+  tasksInput: ref(null),
+  squadsInput: ref(null),
+  factionsInput: ref(null),
+  settingsInput: ref(null),
+  mapInput: ref(null),
+  authInput: ref(null)
+}
+
+function applyTheme(newTheme) {
+  theme.global.name.value = newTheme
+  localStorage.setItem('selectedTheme', newTheme)
+}
+
+function onThemeChange(val) {
+  if (val === 'tacticalDark' || val === 'tacticalLight') {
+    applyTheme(val)
+    showNotification.value = true
+    notificationMessage.value = 'Тема изменена'
+    notificationColor.value = 'success'
+  }
+}
+
+const isThemeInitialized = ref(false)
+
+onMounted(() => {
+  const savedTheme = localStorage.getItem('selectedTheme')
+  if (savedTheme === 'tacticalDark' || savedTheme === 'tacticalLight') {
+    selectedTheme.value = savedTheme
+    theme.global.name.value = savedTheme
+  } else {
+    selectedTheme.value = 'tacticalLight'
+    theme.global.name.value = 'tacticalLight'
+  }
+  isThemeInitialized.value = true
+})
+
+// Синхронизация selectedTheme с глобальной темой Vuetify
+watch(() => theme.global.name.value, (newTheme) => {
+  if (newTheme === 'tacticalDark' || newTheme === 'tacticalLight') {
+    selectedTheme.value = newTheme
+  }
+})
+
 // Состояние
-const selectedTheme = ref('tacticalLight')
-const compactMode = ref(false)
 const notificationsEnabled = ref(true)
 const soundEnabled = ref(true)
 const autoLogout = ref(false)
@@ -353,12 +480,6 @@ function loadSettings() {
   const savedTheme = localStorage.getItem('selectedTheme')
   if (savedTheme) {
     selectedTheme.value = savedTheme
-    theme.global.name.value = savedTheme
-  }
-  
-  const savedCompactMode = localStorage.getItem('compactMode')
-  if (savedCompactMode !== null) {
-    compactMode.value = JSON.parse(savedCompactMode)
   }
   
   const savedNotifications = localStorage.getItem('notificationsEnabled')
@@ -388,21 +509,6 @@ function saveSetting(key, value) {
 }
 
 // Методы
-function changeTheme(newTheme) {
-  theme.global.name.value = newTheme
-  saveSetting('selectedTheme', newTheme)
-  showNotification.value = true
-  notificationMessage.value = 'Тема изменена'
-  notificationColor.value = 'success'
-}
-
-function toggleCompactMode(enabled) {
-  saveSetting('compactMode', enabled)
-  showNotification.value = true
-  notificationMessage.value = enabled ? 'Компактный режим включен' : 'Компактный режим отключен'
-  notificationColor.value = 'info'
-}
-
 function toggleNotifications(enabled) {
   saveSetting('notificationsEnabled', enabled)
   if (!enabled) {
@@ -433,7 +539,6 @@ function exportData() {
     profile: profileStore.user,
     settings: {
       theme: selectedTheme.value,
-      compactMode: compactMode.value,
       notificationsEnabled: notificationsEnabled.value,
       soundEnabled: soundEnabled.value,
       autoLogout: autoLogout.value,
@@ -460,7 +565,6 @@ function exportData() {
 
 function resetSettings() {
   selectedTheme.value = 'tacticalLight'
-  compactMode.value = false
   notificationsEnabled.value = true
   soundEnabled.value = true
   autoLogout.value = false
@@ -468,14 +572,10 @@ function resetSettings() {
   
   // Сохраняем сброшенные настройки
   saveSetting('selectedTheme', selectedTheme.value)
-  saveSetting('compactMode', compactMode.value)
   saveSetting('notificationsEnabled', notificationsEnabled.value)
   saveSetting('soundEnabled', soundEnabled.value)
   saveSetting('autoLogout', autoLogout.value)
   saveSetting('inactivityTimeout', inactivityTimeout.value)
-  
-  // Применяем тему
-  theme.global.name.value = selectedTheme.value
   
   showClearDialog.value = false
   showNotification.value = true
@@ -483,68 +583,251 @@ function resetSettings() {
   notificationColor.value = 'warning'
 }
 
-function clearAllData() {
-  // Очищаем все данные
+// 1. Notification API — тестовое уведомление
+function requestNotificationPermission() {
+  if ('Notification' in window && Notification.permission !== 'granted') {
+    Notification.requestPermission()
+  }
+}
+function showTestNotification() {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification('TacMap', { body: 'Тестовое уведомление', icon: '/favicon.ico' })
+    playNotificationSound()
+  } else {
+    requestNotificationPermission()
+    showNotification.value = true
+    notificationMessage.value = 'Разрешите уведомления в браузере'
+    notificationColor.value = 'info'
+  }
+}
+
+// 3. Звуковые уведомления
+let audio = null
+function playNotificationSound() {
+  if (!soundEnabled.value) return
+  if (!audio) {
+    audio = new Audio('/notification.mp3')
+  }
+  audio.currentTime = 0
+  audio.play()
+}
+
+// 4. Автовыход по неактивности
+let inactivityTimer = null
+function resetInactivityTimer() {
+  if (inactivityTimer) clearTimeout(inactivityTimer)
+  if (autoLogout.value) {
+    inactivityTimer = setTimeout(() => {
+      clearAllData(true)
+    }, inactivityTimeout.value * 60 * 1000)
+  }
+}
+function setupInactivityListeners() {
+  ['mousemove','keydown','mousedown','touchstart'].forEach(evt => {
+    window.addEventListener(evt, resetInactivityTimer)
+  })
+}
+watch([autoLogout, inactivityTimeout], () => {
+  resetInactivityTimer()
+})
+onMounted(() => {
+  setupInactivityListeners()
+  resetInactivityTimer()
+})
+
+// 5. Импорт данных
+const showImportDialog = ref(false)
+function importDataFromFile(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result)
+      // Профиль
+      if (data.profile) localStorage.setItem('profileData', JSON.stringify(data.profile))
+      // Настройки
+      if (data.settings) {
+        Object.entries(data.settings).forEach(([k,v]) => saveSetting(k, v))
+      }
+      // Задачи
+      if (data.tasks) localStorage.setItem('tasks', JSON.stringify(data.tasks))
+      // Кастомные сквады/фракции
+      if (data.customSquads) localStorage.setItem('customSquads', JSON.stringify(data.customSquads))
+      if (data.customFactions) localStorage.setItem('customFactions', JSON.stringify(data.customFactions))
+      showNotification.value = true
+      notificationMessage.value = 'Данные импортированы. Перезагрузите страницу.'
+      notificationColor.value = 'success'
+    } catch {
+      showNotification.value = true
+      notificationMessage.value = 'Ошибка импорта файла'
+      notificationColor.value = 'error'
+    }
+  }
+  reader.readAsText(file)
+}
+
+// 6. Сброс/очистка — удаляют всё
+function clearAllData(isAutoLogout = false) {
   localStorage.clear()
-  
-  // Сбрасываем профиль
-  profileStore.resetProfile()
-  
+  profileStore.resetProfile && profileStore.resetProfile()
   showClearDialog.value = false
   showNotification.value = true
-  notificationMessage.value = 'Все данные удалены'
+  notificationMessage.value = isAutoLogout ? 'Вы вышли из системы по неактивности' : 'Все данные удалены'
   notificationColor.value = 'error'
-  
-  // Перезагружаем страницу
   setTimeout(() => {
     window.location.reload()
   }, 2000)
 }
 
-// Инициализация
-onMounted(() => {
-  loadSettings()
-})
-
-// Следим за изменением таймаута
-watch(inactivityTimeout, (newValue) => {
-  saveSetting('inactivityTimeout', newValue)
-})
-</script>
-
-<style scoped>
-.settings-page {
-  min-height: 100vh;
+// 7. Улучшение UX уведомлений — тестовые кнопки
+function downloadUserData(filename, data) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
 }
-
-.settings-card {
-  border-radius: 16px;
+function exportProfile() {
+  const data = JSON.parse(localStorage.getItem('profileData') || '{}')
+  downloadUserData('user_data/profile.json', data)
 }
-
-.gap-2 {
-  gap: 8px;
+function exportTasks() {
+  const data = JSON.parse(localStorage.getItem('tasks') || '[]')
+  downloadUserData('user_data/tasks.json', data)
 }
-
-/* Мобильные стили */
-@media (max-width: 599px) {
-  .settings-card {
-    border-radius: 12px;
-    margin: 8px;
+function exportSquads() {
+  const data = JSON.parse(localStorage.getItem('customSquads') || '[]')
+  downloadUserData('user_data/custom_squads.json', data)
+}
+function exportFactions() {
+  const data = JSON.parse(localStorage.getItem('customFactions') || '[]')
+  downloadUserData('user_data/custom_factions.json', data)
+}
+function exportSettings() {
+  const keys = ['selectedTheme','notificationsEnabled','soundEnabled','autoLogout','inactivityTimeout']
+  const data = {}
+  keys.forEach(k => { data[k] = JSON.parse(localStorage.getItem(k)) })
+  downloadUserData('user_data/settings.json', data)
+}
+function exportMap() {
+  const data = JSON.parse(localStorage.getItem('mapData') || '{}')
+  downloadUserData('user_data/map.json', data)
+}
+function exportAuth() {
+  const data = localStorage.getItem('auth')
+  downloadUserData('user_data/auth.json', { auth: data })
+}
+// Импорт
+function importProfile() { refs.profileInput.value && refs.profileInput.value.click() }
+function importProfileFile(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = ev => {
+    try {
+      localStorage.setItem('profileData', ev.target.result)
+      showNotification.value = true
+      notificationMessage.value = 'Профиль импортирован. Перезагрузите страницу.'
+      notificationColor.value = 'success'
+    } catch { showNotification.value = true; notificationMessage.value = 'Ошибка импорта профиля'; notificationColor.value = 'error' }
   }
-  
-  .v-card-title {
-    padding: 16px;
-  }
-  
-  .v-card-text {
-    padding: 16px;
-  }
+  reader.readAsText(file)
 }
-
-/* Планшетные стили */
-@media (min-width: 600px) and (max-width: 959px) {
-  .settings-card {
-    margin: 16px;
+function importTasks() { refs.tasksInput.value && refs.tasksInput.value.click() }
+function importTasksFile(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = ev => {
+    try {
+      localStorage.setItem('tasks', ev.target.result)
+      showNotification.value = true
+      notificationMessage.value = 'Задачи импортированы. Перезагрузите страницу.'
+      notificationColor.value = 'success'
+    } catch { showNotification.value = true; notificationMessage.value = 'Ошибка импорта задач'; notificationColor.value = 'error' }
   }
+  reader.readAsText(file)
 }
-</style> 
+function importSquads() { refs.squadsInput.value && refs.squadsInput.value.click() }
+function importSquadsFile(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = ev => {
+    try {
+      localStorage.setItem('customSquads', ev.target.result)
+      showNotification.value = true
+      notificationMessage.value = 'Сквады импортированы. Перезагрузите страницу.'
+      notificationColor.value = 'success'
+    } catch { showNotification.value = true; notificationMessage.value = 'Ошибка импорта сквадов'; notificationColor.value = 'error' }
+  }
+  reader.readAsText(file)
+}
+function importFactions() { refs.factionsInput.value && refs.factionsInput.value.click() }
+function importFactionsFile(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = ev => {
+    try {
+      localStorage.setItem('customFactions', ev.target.result)
+      showNotification.value = true
+      notificationMessage.value = 'Фракции импортированы. Перезагрузите страницу.'
+      notificationColor.value = 'success'
+    } catch { showNotification.value = true; notificationMessage.value = 'Ошибка импорта фракций'; notificationColor.value = 'error' }
+  }
+  reader.readAsText(file)
+}
+function importSettings() { refs.settingsInput.value && refs.settingsInput.value.click() }
+function importSettingsFile(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result)
+      Object.entries(data).forEach(([k,v]) => localStorage.setItem(k, JSON.stringify(v)))
+      showNotification.value = true
+      notificationMessage.value = 'Настройки импортированы. Перезагрузите страницу.'
+      notificationColor.value = 'success'
+    } catch { showNotification.value = true; notificationMessage.value = 'Ошибка импорта настроек'; notificationColor.value = 'error' }
+  }
+  reader.readAsText(file)
+}
+function importMap() { refs.mapInput.value && refs.mapInput.value.click() }
+function importMapFile(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = ev => {
+    try {
+      localStorage.setItem('mapData', ev.target.result)
+      showNotification.value = true
+      notificationMessage.value = 'Данные карты импортированы. Перезагрузите страницу.'
+      notificationColor.value = 'success'
+    } catch { showNotification.value = true; notificationMessage.value = 'Ошибка импорта карты'; notificationColor.value = 'error' }
+  }
+  reader.readAsText(file)
+}
+function importAuth() { refs.authInput.value && refs.authInput.value.click() }
+function importAuthFile(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result)
+      localStorage.setItem('auth', data.auth)
+      showNotification.value = true
+      notificationMessage.value = 'Данные авторизации импортированы. Перезагрузите страницу.'
+      notificationColor.value = 'success'
+    } catch { showNotification.value = true; notificationMessage.value = 'Ошибка импорта авторизации'; notificationColor.value = 'error' }
+  }
+  reader.readAsText(file)
+}
+</script> 

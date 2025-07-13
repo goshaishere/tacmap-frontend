@@ -5,7 +5,7 @@
       <v-row>
         <v-col cols="12">
           <div class="d-flex align-center justify-space-between mb-6">
-            <h1 class="text-h3">
+            <h1 class="text-h3 text-on-surface">
               <v-icon class="me-3">mdi-clipboard-list</v-icon>
               Управление задачами
             </h1>
@@ -109,7 +109,7 @@
       <v-row>
         <v-col cols="12">
           <v-card>
-            <v-card-title class="d-flex align-center justify-space-between">
+            <v-card-title class="d-flex align-center justify-space-between text-on-surface">
               <span>Список задач</span>
               <v-chip-group>
                 <v-chip 

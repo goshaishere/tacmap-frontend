@@ -123,6 +123,25 @@
                       </template>
                     </v-select>
                   </v-col>
+
+                  <v-col cols="12" sm="4">
+                    <v-select
+                      v-model="localProfile.faction"
+                      :items="factionsList"
+                      item-title="title"
+                      label="Фракция"
+                      return-object
+                      :item-props="item => ({ prependIcon: item.icon })"
+                      variant="outlined"
+                      prepend-icon="mdi-flag"
+                      :rules="[rules.required]"
+                      required
+                    >
+                      <template #selection="{ item }">
+                        <v-icon v-if="item && item.raw && item.raw.icon" class="me-2">{{ item.raw.icon }}</v-icon>{{ item.raw?.title || '' }}
+                      </template>
+                    </v-select>
+                  </v-col>
                   
                   <!-- Предварительный просмотр -->
                   <v-col cols="12">
@@ -143,6 +162,9 @@
                           <div class="text-subtitle-2 text-medium-emphasis text-truncate">{{ localProfile.callsign }}</div>
                         </div>
                         <div class="d-flex align-center">
+                          <v-avatar size="24" :color="localProfile.faction?.color || 'surface-variant'" class="me-1">
+                            <v-icon size="16">{{ localProfile.faction?.icon }}</v-icon>
+                          </v-avatar>
                           <v-avatar size="24" color="surface-variant" class="me-1">
                             <v-icon size="16">{{ localProfile.squad?.icon }}</v-icon>
                           </v-avatar>
@@ -162,37 +184,29 @@
             
             <!-- Кнопки действий -->
             <v-card-actions class="pa-4">
-              <div class="d-flex flex-column flex-sm-row gap-4 w-100">
-                <v-btn 
-                  color="error" 
-                  variant="outlined" 
-                  @click="resetProfile"
-                  :disabled="!hasChanges"
-                  class="flex-1"
-                >
-                  Отменить
-                </v-btn>
-                <v-btn 
-                  color="accent" 
-                  variant="flat" 
-                  @click="saveProfile"
-                  :disabled="!isFormValid || !hasChanges"
-                  :loading="isSaving"
-                  class="flex-1"
-                >
-                  <v-icon class="me-2">mdi-content-save</v-icon>
-                  Сохранить
-                </v-btn>
-                <v-btn 
-                  color="accent" 
-                  variant="flat" 
-                  prepend-icon="mdi-plus" 
-                  @click="dialog = true"
-                  class="flex-1"
-                >
-                  Создать сквад
-                </v-btn>
-              </div>
+              <v-row class="w-100" dense>
+                <v-col cols="12" sm="6" class="d-flex gap-2">
+                  <v-btn block color="accent" variant="flat" prepend-icon="mdi-plus" @click="dialog = true">
+                    Создать сквад
+                  </v-btn>
+                </v-col>
+                <v-col cols="12" sm="6" class="d-flex gap-2">
+                  <v-btn block color="accent" variant="flat" prepend-icon="mdi-plus" @click="dialogFaction = true">
+                    Добавить фракцию
+                  </v-btn>
+                </v-col>
+                <v-col cols="12" sm="6" class="d-flex gap-2">
+                  <v-btn block color="error" variant="outlined" @click="resetProfile" :disabled="!hasChanges">
+                    Отменить
+                  </v-btn>
+                </v-col>
+                <v-col cols="12" sm="6" class="d-flex gap-2">
+                  <v-btn block color="accent" variant="flat" @click="saveProfile" :disabled="!isFormValid || !hasChanges" :loading="isSaving">
+                    <v-icon class="me-2">mdi-content-save</v-icon>
+                    Сохранить
+                  </v-btn>
+                </v-col>
+              </v-row>
             </v-card-actions>
           </v-card>
         </v-col>
@@ -227,6 +241,52 @@
       </v-card>
     </v-dialog>
     
+    <!-- Диалог создания фракции -->
+    <v-dialog v-model="dialogFaction" max-width="400" persistent>
+      <v-card>
+        <v-card-title>Создать фракцию</v-card-title>
+        <v-card-text>
+          <v-text-field v-model="newFaction.title" label="Название фракции" required></v-text-field>
+          <v-select
+            v-model="newFaction.icon"
+            :items="iconOptions"
+            item-title="title"
+            item-value="icon"
+            label="Иконка"
+            :item-props="item => ({ prependIcon: item.icon })"
+          >
+            <template #selection="{ item }">
+              <v-icon class="me-2">{{ item.raw.icon }}</v-icon>{{ item.raw.title }}
+            </template>
+          </v-select>
+          <v-checkbox v-model="useDefaultFactionColors" label="Использовать стандартные цвета темы" class="mt-2 mb-2" />
+          <div v-if="!useDefaultFactionColors" class="d-flex flex-wrap gap-4 mt-2">
+            <div>
+              <div class="mb-1 text-caption">Кружок (светлая тема)</div>
+              <v-color-picker v-model="newFaction.colorLight" hide-canvas flat></v-color-picker>
+            </div>
+            <div>
+              <div class="mb-1 text-caption">Кружок (тёмная тема)</div>
+              <v-color-picker v-model="newFaction.colorDark" hide-canvas flat></v-color-picker>
+            </div>
+            <div>
+              <div class="mb-1 text-caption">Иконка (светлая тема)</div>
+              <v-color-picker v-model="newFaction.iconColorLight" hide-canvas flat></v-color-picker>
+            </div>
+            <div>
+              <div class="mb-1 text-caption">Иконка (тёмная тема)</div>
+              <v-color-picker v-model="newFaction.iconColorDark" hide-canvas flat></v-color-picker>
+            </div>
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn color="accent" variant="outlined" @click="createFaction">Создать</v-btn>
+          <v-btn color="accent" variant="text" @click="dialogFaction = false">Отмена</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    
     <!-- Уведомление о сохранении -->
     <v-snackbar v-model="showNotification" :color="notificationColor" timeout="3000">
       {{ notificationMessage }}
@@ -243,8 +303,43 @@ import { ranks } from '../data/ranks.js'
 import { roles } from '../data/roles.js'
 import { defaultSquads, createSquad as createSquadFn } from '../data/squads.js'
 import { useProfileStore } from '../store/profile.js'
+import { factions } from '../data/factions.js'
+import { useTheme } from 'vuetify'
 
-const squads = ref([...defaultSquads])
+const FACTIONS_LS_KEY = 'customFactions'
+const SQUADS_LS_KEY = 'customSquads'
+
+function loadFactionsFromLS() {
+  let custom = []
+  try {
+    const raw = localStorage.getItem(FACTIONS_LS_KEY)
+    custom = raw ? JSON.parse(raw) : []
+  } catch { custom = [] }
+  // Объединяем дефолтные и кастомные, избегая дубликатов по key
+  return [
+    ...factions,
+    ...custom.filter(f => !factions.some(df => df.key === f.key))
+  ]
+}
+function saveFactionsToLS(list) {
+  localStorage.setItem(FACTIONS_LS_KEY, JSON.stringify(list))
+}
+
+function loadSquadsFromLS() {
+  try {
+    const raw = localStorage.getItem(SQUADS_LS_KEY)
+    if (!raw) return [...defaultSquads]
+    return JSON.parse(raw)
+  } catch {
+    return [...defaultSquads]
+  }
+}
+function saveSquadsToLS(list) {
+  localStorage.setItem(SQUADS_LS_KEY, JSON.stringify(list))
+}
+
+const factionsList = ref(loadFactionsFromLS())
+const squads = ref(loadSquadsFromLS())
 const profileStore = useProfileStore()
 const form = ref(null)
 const isFormValid = ref(true)
@@ -339,6 +434,54 @@ const iconOptions = [
   { icon: 'mdi-rocket', title: 'Ракета' },
   { icon: 'mdi-ship-wheel', title: 'Штурвал' },
   { icon: 'mdi-anchor', title: 'Якорь' },
+  { icon: 'mdi-skull', title: 'Череп' },
+  { icon: 'mdi-shield-account', title: 'Щит с человеком' },
+  { icon: 'mdi-emoticon-cool', title: 'Крутой' },
+  { icon: 'mdi-emoticon-angry', title: 'Злой' },
+  { icon: 'mdi-emoticon-happy', title: 'Счастливый' },
+  { icon: 'mdi-emoticon-sad', title: 'Грустный' },
+  { icon: 'mdi-fire', title: 'Огонь' },
+  { icon: 'mdi-water', title: 'Вода' },
+  { icon: 'mdi-earth', title: 'Земля' },
+  { icon: 'mdi-leaf', title: 'Лист' },
+  { icon: 'mdi-paw', title: 'Лапа' },
+  { icon: 'mdi-crown', title: 'Корона' },
+  { icon: 'mdi-diamond', title: 'Бриллиант' },
+  { icon: 'mdi-heart', title: 'Сердце' },
+  { icon: 'mdi-lightning-bolt', title: 'Молния' },
+  { icon: 'mdi-moon-waning-crescent', title: 'Луна' },
+  { icon: 'mdi-sun-wireless', title: 'Солнце' },
+  { icon: 'mdi-tree', title: 'Дерево' },
+  { icon: 'mdi-mushroom', title: 'Гриб' },
+  { icon: 'mdi-castle', title: 'Замок' },
+  { icon: 'mdi-cannon', title: 'Пушка' },
+  { icon: 'mdi-bug', title: 'Жук' },
+  { icon: 'mdi-bat', title: 'Летучая мышь' },
+  { icon: 'mdi-spider', title: 'Паук' },
+  { icon: 'mdi-snowflake', title: 'Снежинка' },
+  { icon: 'mdi-flash', title: 'Вспышка' },
+  { icon: 'mdi-eye', title: 'Глаз' },
+  { icon: 'mdi-hand', title: 'Рука' },
+  { icon: 'mdi-foot-print', title: 'След' },
+  { icon: 'mdi-bullhorn', title: 'Мегафон' },
+  { icon: 'mdi-radioactive', title: 'Радиация' },
+  { icon: 'mdi-biohazard', title: 'Биологическая опасность' },
+  { icon: 'mdi-crosshairs', title: 'Прицел' },
+  { icon: 'mdi-medical-bag', title: 'Медпункт' },
+  { icon: 'mdi-account-multiple', title: 'Группа людей' },
+  { icon: 'mdi-account-tie', title: 'Офицер' },
+  { icon: 'mdi-account-cowboy-hat', title: 'Ковбой' },
+  { icon: 'mdi-account-ninja', title: 'Ниндзя' },
+  { icon: 'mdi-account-voice', title: 'Оратор' },
+  { icon: 'mdi-account-star', title: 'Звёздный' },
+  { icon: 'mdi-account-heart', title: 'Сердечный' },
+  { icon: 'mdi-account-cash', title: 'Богатый' },
+  { icon: 'mdi-account-music', title: 'Музыкант' },
+  { icon: 'mdi-account-school', title: 'Ученик' },
+  { icon: 'mdi-account-search', title: 'Разведчик' },
+  { icon: 'mdi-account-settings', title: 'Настроечный' },
+  { icon: 'mdi-account-supervisor', title: 'Супервайзер' },
+  { icon: 'mdi-account-tie-woman', title: 'Офицер-женщина' },
 ]
 
 // Типовые действия для ролей
@@ -411,7 +554,7 @@ function createSquad() {
     description: newSquad.value.description
   })
   squads.value.push(squad)
-  localProfile.value.squad = squad
+  saveSquadsToLS(squads.value)
   dialog.value = false
   newSquad.value = { title: '', icon: '', description: '' }
 }
@@ -441,6 +584,7 @@ async function saveProfile() {
     await new Promise(resolve => setTimeout(resolve, 1000))
     
     profileStore.updateProfile(localProfile.value)
+    profileStore.setFaction(localProfile.value.faction)
     originalProfile.value = deepClone(localProfile.value)
     
     showNotification.value = true
@@ -454,51 +598,44 @@ async function saveProfile() {
     isSaving.value = false
   }
 }
-</script>
 
-<style scoped>
-.profile-page {
-  min-height: 100vh;
-}
+const dialogFaction = ref(false)
+const newFaction = ref({
+  title: '',
+  icon: '',
+  colorLight: '#1976D2',
+  colorDark: '#90CAF9',
+  iconColorLight: '#fff',
+  iconColorDark: '#222',
+})
+const useDefaultFactionColors = ref(true)
+const theme = useTheme()
+const isDark = computed(() => theme.global.name.value === 'tacticalDark' || theme.global.current.value?.dark)
 
-.profile-card {
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15), 0 1.5px 6px 0 rgba(0,0,0,0.10);
-  border-radius: 18px;
-}
-
-.role-actions {
-  margin-top: 32px;
-}
-
-.action-btn-wrapper {
-  position: relative;
-}
-
-.gap-2 {
-  gap: 8px;
-}
-
-.flex-1 {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-/* Мобильные стили */
-@media (max-width: 599px) {
-  .profile-card {
-    border-radius: 12px;
-    margin: 8px;
+function createFaction() {
+  if (!newFaction.value.title || !newFaction.value.icon) return
+  let colorLight = newFaction.value.colorLight
+  let colorDark = newFaction.value.colorDark
+  let iconColorLight = newFaction.value.iconColorLight
+  let iconColorDark = newFaction.value.iconColorDark
+  if (useDefaultFactionColors.value) {
+    colorLight = theme.current.value.colors.surface
+    colorDark = theme.current.value.colors.surfaceVariant
+    iconColorLight = theme.current.value.colors['on-surface']
+    iconColorDark = theme.current.value.colors['on-surface-variant']
   }
-  
-  .v-card-actions {
-    padding: 16px;
-  }
+  factionsList.value.push({
+    key: newFaction.value.title.toLowerCase().replace(/\s+/g, '_'),
+    title: newFaction.value.title,
+    icon: newFaction.value.icon,
+    colorLight,
+    colorDark,
+    iconColorLight,
+    iconColorDark,
+  })
+  saveFactionsToLS(factionsList.value)
+  dialogFaction.value = false
+  newFaction.value = { title: '', icon: '', colorLight: '#1976D2', colorDark: '#90CAF9', iconColorLight: '#fff', iconColorDark: '#222' }
+  useDefaultFactionColors.value = true
 }
-
-/* Планшетные стили */
-@media (min-width: 600px) and (max-width: 959px) {
-  .profile-card {
-    margin: 16px;
-  }
-}
-</style> 
+</script> 
