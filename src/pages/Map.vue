@@ -1,6 +1,6 @@
 <template>
-  <div class="page-container map-page">
-    <v-container fluid class="pa-0 pa-md-4" style="min-width:0;">
+  <div class="page-container">
+    <v-container fluid class="pa-0 pa-md-4">
       <!-- Заголовок и инструменты -->
       <v-row class="mb-4">
         <v-col cols="12">
@@ -9,7 +9,7 @@
               <v-icon class="me-3">mdi-map</v-icon>
               Тактическая карта
             </h1>
-            <div class="d-flex flex-wrap gap-2">
+            <div class="d-flex flex-nowrap align-center gap-2 overflow-x-auto" style="min-width:0;">
               <v-btn 
                 color="accent" 
                 variant="outlined" 
@@ -169,14 +169,15 @@
       <!-- Основная карта -->
       <v-row>
         <v-col cols="12">
-          <v-card class="map-container">
+          <v-card class="rounded-lg">
             <v-card-text class="pa-0">
               <!-- Яндекс.Карта -->
               <yandex-map
                 :settings="ymapSettings"
                 :coords="center"
                 :zoom="zoom"
-                style="width: 100%; height: 600px;"
+                class="w-100"
+                style="height: 600px;"
                 @contextmenu="onMapRightClick"
               >
                 <!-- Здесь будут маркеры -->
@@ -189,7 +190,7 @@
                   @click="onMarkerClick(marker)"
                 />
                 <!-- Радиальное меню -->
-                <div v-if="showRadialMenu" :style="radialMenuStyle" class="radial-menu">
+                <div v-if="showRadialMenu" :style="radialMenuStyle" class="d-flex flex-row gap-2 rounded-pill pa-2 elevation-2 bg-white position-absolute">
                   <button v-for="type in markerTypes" :key="type.key" @click="addMarker(type)">
                     <v-icon :color="type.color">{{ type.icon }}</v-icon>
                   </button>
@@ -471,154 +472,4 @@ function resetView() {
   currentZoom.value = 1
   currentCoordinates.value = '55.7558°N, 37.6176°E'
 }
-</script>
-
-<style scoped>
-.map-page {
-  min-height: 100vh;
-}
-
-.map-container {
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.map-placeholder {
-  position: relative;
-  width: 100%;
-  height: 60vh;
-  min-height: 400px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.map-content {
-  text-align: center;
-  z-index: 2;
-  position: relative;
-}
-
-.map-elements {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-}
-
-.map-element {
-  position: absolute;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.map-element:hover {
-  transform: scale(1.1);
-}
-
-.element-label {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.map-element:hover .element-label {
-  opacity: 1;
-}
-
-.map-controls {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  z-index: 3;
-}
-
-.layer-card {
-  border-radius: 8px;
-  transition: transform 0.2s ease;
-}
-
-.layer-card:hover {
-  transform: translateY(-1px);
-}
-
-.gap-2 {
-  gap: 8px;
-}
-
-.gap-4 {
-  gap: 16px;
-}
-
-/* Мобильные стили */
-@media (max-width: 599px) {
-  .map-placeholder {
-    height: 50vh;
-    min-height: 300px;
-  }
-  
-  .map-controls {
-    bottom: 10px;
-    right: 10px;
-  }
-  
-  .v-card {
-    margin: 8px;
-    border-radius: 12px;
-  }
-  
-  .v-card-title {
-    padding: 16px;
-  }
-  
-  .v-card-text {
-    padding: 16px;
-  }
-}
-
-/* Планшетные стили */
-@media (min-width: 600px) and (max-width: 959px) {
-  .map-placeholder {
-    height: 55vh;
-  }
-  
-  .v-card {
-    margin: 16px;
-  }
-}
-
-/* Десктопные стили */
-@media (min-width: 960px) {
-  .map-placeholder {
-    height: 60vh;
-  }
-  
-  .v-card {
-    margin: 0;
-  }
-}
-
-.radial-menu {
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-  background: rgba(255,255,255,0.95);
-  border-radius: 50px;
-  padding: 8px 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  position: absolute;
-}
-</style> 
+</script> 

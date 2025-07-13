@@ -1,9 +1,9 @@
 <template>
-  <div class="page-container settings-page">
-    <v-container fluid class="pa-0 pa-md-4" style="min-width:0;">
+  <div class="page-container">
+    <v-container fluid class="pa-0 pa-md-4">
       <v-row justify="center">
         <v-col cols="12" md="8" lg="6">
-          <v-card class="settings-card">
+          <v-card>
             <v-card-title class="d-flex align-center text-on-surface">
               <v-icon class="me-2">mdi-cog</v-icon>
               Настройки приложения
@@ -26,7 +26,7 @@
                           Выберите светлую или темную тему
                         </div>
                       </div>
-                      <div class="settings-actions">
+                      <div>
                         <v-btn-toggle
                           v-model="selectedTheme"
                           mandatory

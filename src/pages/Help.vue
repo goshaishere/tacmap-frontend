@@ -1,5 +1,5 @@
 <template>
-  <div class="help-page">
+  <div class="page-container">
     <v-container>
       <v-row>
         <v-col cols="12">
@@ -216,26 +216,4 @@ const actionsByRole = {
     { key: 'smoke', title: 'Дымовая завеса', icon: 'mdi-smoke' },
   ],
 }
-</script>
-
-<style scoped>
-.help-page {
-  padding: 32px 0;
-}
-
-.v-card {
-  transition: transform 0.2s ease-in-out;
-}
-
-.v-card:hover {
-  transform: translateY(-2px);
-}
-
-.gap-2 {
-  gap: 8px;
-}
-
-.h-100 {
-  height: 100%;
-}
-</style> 
+</script> 

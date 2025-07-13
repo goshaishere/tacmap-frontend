@@ -1,6 +1,6 @@
 <template>
-  <div class="page-container tasks-page">
-    <v-container style="min-width:0;">
+  <div class="page-container">
+    <v-container>
       <!-- Заголовок и статистика -->
       <v-row>
         <v-col cols="12">
@@ -584,18 +584,4 @@ onMounted(() => {
 watch(tasks, (newTasks) => {
   localStorage.setItem('tasks', JSON.stringify(newTasks))
 }, { deep: true })
-</script>
-
-<style scoped>
-.tasks-page {
-  padding: 32px 0;
-}
-
-.v-card {
-  transition: transform 0.2s ease-in-out;
-}
-
-.v-card:hover {
-  transform: translateY(-1px);
-}
-</style> 
+</script> 

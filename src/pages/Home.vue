@@ -1,10 +1,10 @@
 <template>
-  <div class="page-container home-page">
-    <v-container fluid class="pa-0 pa-md-4" style="min-width:0;">
+  <div class="page-container">
+    <v-container fluid class="pa-0 pa-md-4">
       <!-- Приветствие -->
       <v-row class="mb-6">
         <v-col cols="12">
-          <v-card class="welcome-card">
+          <v-card>
             <v-card-text class="text-center">
               <div class="d-flex justify-center mb-4">
                 <v-avatar size="80">
@@ -382,7 +382,3 @@ function formatTime(timestamp) {
   }
 }
 </script> 
-
-<style scoped>
-/* .home-page — теперь только для page-container, overflow-x: hidden уже есть в глобальном классе */
-</style> 

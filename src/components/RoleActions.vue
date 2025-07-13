@@ -1,6 +1,6 @@
 <template>
-  <div class="role-actions">
-    <div v-for="action in roleActions" :key="action.key" class="action-btn-wrapper">
+  <div class="d-flex flex-row flex-nowrap align-center gap-2 overflow-x-auto pa-0 ma-0" style="white-space:nowrap;-webkit-overflow-scrolling:touch;">
+    <div v-for="action in roleActions" :key="action.key" class="flex-shrink-0">
       <v-badge
         v-if="taskCounts[action.key] > 0"
         :content="taskCounts[action.key]"
@@ -9,7 +9,7 @@
         offset-x="8"
         offset-y="8"
       >
-        <v-btn color="accent" variant="tonal" :prepend-icon="action.icon" class="v-btn">
+        <v-btn color="accent" variant="tonal" :prepend-icon="action.icon" size="small">
           {{ action.title }}
         </v-btn>
       </v-badge>
@@ -18,7 +18,7 @@
         color="accent"
         variant="tonal"
         :prepend-icon="action.icon"
-        class="v-btn"
+        size="small"
       >
         {{ action.title }}
       </v-btn>
@@ -90,37 +90,3 @@ const taskCounts = ref({
   smoke: 0,
 })
 </script>
-<style scoped>
-.role-actions {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  overflow-x: auto;
-  white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
-}
-.action-btn-wrapper {
-  flex: 0 0 auto;
-  margin: 0;
-}
-@media (max-width: 600px) {
-  .role-actions {
-    gap: 4px;
-    padding: 0 4px;
-  }
-  .v-btn {
-    font-size: 10px !important;
-    min-width: 0 !important;
-    padding: 6px 8px !important;
-    height: 26px !important;
-    white-space: nowrap;
-  }
-  .v-btn .v-icon {
-    font-size: 16px !important;
-  }
-}
-</style>

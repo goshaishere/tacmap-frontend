@@ -1,6 +1,6 @@
 <template>
-  <div class="page-container profile-page">
-    <v-container fluid class="pa-0 pa-md-4" style="min-width:0;">
+  <div class="page-container">
+    <v-container fluid class="pa-0 pa-md-4">
       <v-row justify="center">
         <v-col cols="12" md="8" lg="6">
           <v-card v-if="localProfile" class="profile-card">
