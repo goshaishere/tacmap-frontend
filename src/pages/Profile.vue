@@ -623,7 +623,7 @@ const newFaction = ref({
 })
 const useDefaultFactionColors = ref(true)
 const theme = useTheme()
-const isDark = computed(() => theme.global.name.value === 'tacticalDark' || theme.global.current.value?.dark)
+const isDark = computed(() => theme.current.value?.name === 'tacticalDark' || theme.current.value?.dark)
 
 function createFaction() {
   if (!newFaction.value.title || !newFaction.value.icon) return

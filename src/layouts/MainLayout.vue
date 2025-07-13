@@ -175,12 +175,12 @@ const route = useRoute()
 const router = useRouter()
 const theme = useTheme()
 
-const isDark = computed(() => theme.global.name.value === 'tacticalDark')
+const isDark = computed(() => theme.current.value?.name === 'tacticalDark')
 
 function applyThemeFromStorage() {
   const availableThemes = ['tacticalLight', 'tacticalDark']
   const savedTheme = localStorage.getItem('selectedTheme')
-  theme.global.name.value = availableThemes.includes(savedTheme) ? savedTheme : 'tacticalLight'
+      theme.change(availableThemes.includes(savedTheme) ? savedTheme : 'tacticalLight')
 }
 
 onMounted(() => {
@@ -210,7 +210,7 @@ function updateDrawerState() {
 
 function toggleTheme() {
     const themeName = isDark.value ? 'tacticalLight' : 'tacticalDark'
-    theme.global.name.value = themeName
+    theme.change(themeName)
     localStorage.setItem('selectedTheme', themeName)
 }
 

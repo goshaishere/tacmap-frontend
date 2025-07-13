@@ -1,4 +1,4 @@
-@import 'vuetify/styles';
+@use 'vuetify/styles' as *;
 @import '@mdi/font/css/materialdesignicons.css';
 :root {
     font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;

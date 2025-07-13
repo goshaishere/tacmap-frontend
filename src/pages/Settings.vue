@@ -283,7 +283,7 @@ const refs = {
 }
 
 function applyTheme(newTheme) {
-  theme.global.name.value = newTheme
+          theme.change(newTheme)
   localStorage.setItem('selectedTheme', newTheme)
 }
 
@@ -302,16 +302,16 @@ onMounted(() => {
   const savedTheme = localStorage.getItem('selectedTheme')
   if (savedTheme === 'tacticalDark' || savedTheme === 'tacticalLight') {
     selectedTheme.value = savedTheme
-    theme.global.name.value = savedTheme
+            theme.change(savedTheme)
   } else {
     selectedTheme.value = 'tacticalLight'
-    theme.global.name.value = 'tacticalLight'
+            theme.change('tacticalLight')
   }
   isThemeInitialized.value = true
 })
 
 // Синхронизация selectedTheme с глобальной темой Vuetify
-watch(() => theme.global.name.value, (newTheme) => {
+    watch(() => theme.current.value?.name, (newTheme) => {
   if (newTheme === 'tacticalDark' || newTheme === 'tacticalLight') {
     selectedTheme.value = newTheme
   }

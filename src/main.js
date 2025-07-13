@@ -9,7 +9,8 @@ import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import router from './router'
 import { createPinia } from 'pinia'
-import { createYmaps } from 'vue-yandex-maps'
+import { yandexMap } from 'vue-yandex-maps'
+import ymapSettings from './config/yandex-maps.js'
 
 
 const vuetify = createVuetify({
@@ -61,20 +62,9 @@ const vuetify = createVuetify({
 
 const pinia = createPinia()
 
-const ymapSettings = {
-    apiKey: '', // если нужен ключ
-    lang: 'ru_RU',
-    coordorder: 'latlong',
-    version: '2.1'
-}
-
 const app = createApp(App)
 app.use(vuetify)
 app.use(pinia)
 app.use(router)
-app.use(createYmaps({
-    apikey: import.meta.env.VITE_YANDEX_MAPS_API_KEY,
-    lang: 'ru_RU',
-    version: '2.1'
-}))
+app.use(yandexMap, ymapSettings)
 app.mount('#app')
