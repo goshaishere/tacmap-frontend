@@ -1,6 +1,6 @@
 <template>
-  <div class="settings-page">
-    <v-container fluid class="pa-0 pa-md-4">
+  <div class="page-container settings-page">
+    <v-container fluid class="pa-0 pa-md-4" style="min-width:0;">
       <v-row justify="center">
         <v-col cols="12" md="8" lg="6">
           <v-card class="settings-card">

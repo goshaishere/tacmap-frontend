@@ -1,6 +1,6 @@
 <template>
-  <div class="tasks-page">
-    <v-container>
+  <div class="page-container tasks-page">
+    <v-container style="min-width:0;">
       <!-- Заголовок и статистика -->
       <v-row>
         <v-col cols="12">

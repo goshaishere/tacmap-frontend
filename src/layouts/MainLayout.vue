@@ -7,16 +7,18 @@
         fixed
         app
       >
-        <div class="toolbar-main d-flex align-center w-100" style="flex-wrap:nowrap; justify-content:space-between; min-width:0;">
-          <v-app-bar-nav-icon 
-            @click="toggleDrawer" 
-            class="d-md-none"
-            style="cursor: pointer;"
-          ></v-app-bar-nav-icon>
-          <div class="toolbar-actions-flex" style="display:flex; align-items:center; flex-shrink:1; min-width:0; overflow-x:auto; gap:4px;">
+        <div class="toolbar-main d-flex align-center w-100" style="flex-wrap:nowrap; min-width:0;">
+          <div class="toolbar-left d-flex align-center" style="flex-shrink:0;">
+            <v-app-bar-nav-icon 
+              @click="toggleDrawer" 
+              class="d-md-none"
+              style="cursor: pointer;"
+            ></v-app-bar-nav-icon>
+          </div>
+          <div class="toolbar-actions-flex" style="flex:1 1 0%; min-width:0; overflow-x:auto; display:flex; align-items:center; gap:4px;">
             <RoleActions class="role-actions-appbar align-self-center" />
           </div>
-          <div class="toolbar-right d-flex align-center ms-auto" style="flex-shrink:0; min-width:0;">
+          <div class="toolbar-right d-flex align-center" style="flex-shrink:0; min-width:0;">
             <v-menu location="bottom end">
               <template #activator="{ props }">
                 <v-avatar size="32" v-bind="props" class="me-4" style="cursor:pointer;">
@@ -223,13 +225,19 @@ function logout() {
   width: 100%;
   min-width: 0;
 }
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
 .toolbar-actions-flex {
   display: flex;
   align-items: center;
-  flex-shrink: 1;
+  flex: 1 1 0%;
   min-width: 0;
   overflow-x: auto;
   gap: 4px;
+  margin-left: 24px;
 }
 .toolbar-right {
   display: flex;
@@ -259,6 +267,9 @@ function logout() {
     align-items: center;
     margin-left: auto;
     flex-shrink: 0;
+  }
+  .toolbar-actions-flex {
+    margin-left: 0;
   }
 }
 </style> 

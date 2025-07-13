@@ -1,6 +1,6 @@
 <template>
-  <div class="map-page">
-    <v-container fluid class="pa-0 pa-md-4">
+  <div class="page-container map-page">
+    <v-container fluid class="pa-0 pa-md-4" style="min-width:0;">
       <!-- Заголовок и инструменты -->
       <v-row class="mb-4">
         <v-col cols="12">
