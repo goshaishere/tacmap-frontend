@@ -37,71 +37,55 @@
 
       <div v-else class="messages-wrapper">
         <div
-          v-for="message in messages"
+          v-for="(message, idx) in messages"
           :key="message.id"
           class="message-item"
           :class="{ 'message-item--own': message.senderId === currentUserId }"
         >
-          <!-- Временная метка группы -->
-          <div v-if="shouldShowDate(message)" class="message-date-divider">
-            <v-chip size="small" variant="outlined" color="grey">
-              {{ formatMessageDate(message.timestamp) }}
-            </v-chip>
-          </div>
-
-          <!-- Сообщение -->
-          <div class="message-bubble">
-            <!-- Аватар отправителя (только для чужих сообщений) -->
-            <div v-if="message.senderId !== currentUserId" class="message-avatar d-flex align-center justify-center">
-              <v-avatar size="32">
-                <v-img :src="message.senderAvatar" />
-                <v-icon v-if="!message.senderAvatar" size="small">mdi-account</v-icon>
-              </v-avatar>
-            </div>
-
-            <!-- Содержимое сообщения -->
-            <div class="message-content">
-              <!-- Имя отправителя (только для чужих сообщений) -->
-              <div v-if="message.senderId !== currentUserId" class="message-sender">
-                <span class="text-caption font-weight-medium">{{ message.senderName }}</span>
-              </div>
-
-              <!-- Текст сообщения -->
-              <v-card 
-                v-if="message.type === 'text'"
-                :color="message.senderId === currentUserId ? 'primary' : 'surface'"
-                :class="message.senderId === currentUserId ? 'message-card--own' : 'message-card'"
-                flat
+          <div class="message-row" :class="{ 'message-row--own': message.senderId === currentUserId }">
+            <!-- Для чужих сообщений: аватарка и имя только у первого в серии -->
+            <template v-if="message.senderId !== currentUserId">
+              <template v-if="idx === 0 || messages[idx-1].senderId !== message.senderId">
+                <div class="message-avatar-name">
+                  <v-avatar size="28" class="me-2">
+                    <v-img :src="message.senderAvatar" />
+                    <v-icon v-if="!message.senderAvatar">mdi-account</v-icon>
+                  </v-avatar>
+                  <span class="message-sender text-caption font-weight-medium">{{ message.senderName }}</span>
+                </div>
+              </template>
+            </template>
+            <!-- Для своих сообщений: аватарка справа только у первого в серии -->
+            <template v-if="message.senderId === currentUserId">
+              <template v-if="idx === 0 || messages[idx-1].senderId !== message.senderId">
+                <div class="message-avatar-self">
+                  <v-avatar size="28">
+                    <v-img :src="message.senderAvatar" />
+                    <v-icon v-if="!message.senderAvatar">mdi-account</v-icon>
+                  </v-avatar>
+                </div>
+              </template>
+            </template>
+            <div class="message-main">
+              <!-- Пузырь сообщения -->
+              <div
+                class="message-bubble-modern"
+                :class="{ 'message-bubble--own': message.senderId === currentUserId }"
               >
-                <v-card-text class="pa-3">
-                  <span :class="message.senderId === currentUserId ? 'text-on-primary' : 'text-on-surface'">
-                    {{ message.content }}
-                  </span>
-                </v-card-text>
-              </v-card>
-
-              <!-- Изображение -->
-              <v-card 
-                v-else-if="message.type === 'image'"
-                :class="message.senderId === currentUserId ? 'message-card--own' : 'message-card'"
-                flat
-              >
-                <v-img 
-                  :src="message.content" 
-                  :alt="message.senderName"
-                  class="message-img"
-                  @click="openImage(message.content)"
-                  style="max-width: 200px; max-height: 200px; cursor: pointer;"
-                />
-              </v-card>
-
-              <!-- Файл -->
-              <v-card 
-                v-else-if="message.type === 'file'"
-                :class="message.senderId === currentUserId ? 'message-card--own' : 'message-card'"
-                variant="outlined"
-              >
-                <v-card-text class="pa-3">
+                <!-- Содержимое сообщения (оставить все типы как было) -->
+                <template v-if="message.type === 'text'">
+                  <span>{{ message.content }}</span>
+                </template>
+                <template v-else-if="message.type === 'image'">
+                  <v-img 
+                    :src="message.content" 
+                    :alt="message.senderName"
+                    class="message-img"
+                    @click="openImage(message.content)"
+                    style="max-width: 200px; max-height: 200px; cursor: pointer;"
+                  />
+                </template>
+                <template v-else-if="message.type === 'file'">
                   <div class="d-flex align-center justify-center">
                     <v-icon class="me-3">mdi-file</v-icon>
                     <div class="flex-grow-1">
@@ -112,16 +96,8 @@
                       <v-icon>mdi-download</v-icon>
                     </v-btn>
                   </div>
-                </v-card-text>
-              </v-card>
-
-              <!-- Локация -->
-              <v-card 
-                v-else-if="message.type === 'location'"
-                :class="message.senderId === currentUserId ? 'message-card--own' : 'message-card'"
-                variant="outlined"
-              >
-                <v-card-text class="pa-3">
+                </template>
+                <template v-else-if="message.type === 'location'">
                   <div class="d-flex align-center justify-center">
                     <v-icon class="me-3" color="primary">mdi-map-marker</v-icon>
                     <div class="flex-grow-1">
@@ -132,27 +108,24 @@
                       <v-icon>mdi-open-in-new</v-icon>
                     </v-btn>
                   </div>
-                </v-card-text>
-              </v-card>
-
-              <!-- Системное сообщение -->
-              <div class="message-system" v-else-if="message.type === 'system'">
-                <v-chip size="small" variant="tonal" color="grey">
-                  {{ message.content }}
-                </v-chip>
-              </div>
-
-              <!-- Время и статус -->
-              <div class="message-meta">
-                <span class="text-caption text-medium-emphasis">{{ formatMessageTime(message.timestamp) }}</span>
-                <v-icon 
-                  v-if="message.senderId === currentUserId" 
-                  size="small" 
-                  :color="getStatusColor(message.status)"
-                  class="message-status ms-1"
-                >
-                  {{ getStatusIcon(message.status) }}
-                </v-icon>
+                </template>
+                <template v-else-if="message.type === 'system'">
+                  <v-chip size="small" variant="tonal" color="grey">
+                    {{ message.content }}
+                  </v-chip>
+                </template>
+                <!-- Время -->
+                <div class="message-meta-modern">
+                  <span class="text-caption text-medium-emphasis">{{ formatMessageTime(message.timestamp) }}</span>
+                  <v-icon 
+                    v-if="message.senderId === currentUserId" 
+                    size="small" 
+                    :color="getStatusColor(message.status)"
+                    class="message-status ms-1"
+                  >
+                    {{ getStatusIcon(message.status) }}
+                  </v-icon>
+                </div>
               </div>
             </div>
           </div>
@@ -480,5 +453,77 @@ scrollToBottom()
   .chat-header {
     padding: 8px 16px;
   }
+}
+.message-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.message-row--own {
+  flex-direction: row-reverse;
+}
+.message-avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.message-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 70vw;
+}
+.message-bubble-modern {
+  background: rgb(var(--v-theme-surface));
+  color: rgb(var(--v-theme-on-surface));
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 10px 16px 6px 16px;
+  margin-bottom: 2px;
+  max-width: 420px;
+  min-width: 60px;
+  position: relative;
+  word-break: break-word;
+}
+.message-bubble--own {
+  background: rgb(var(--v-theme-accent));
+  color: rgb(var(--v-theme-on-accent));
+}
+@media (prefers-color-scheme: dark) {
+  .message-bubble-modern {
+    box-shadow: 0 2px 8px rgba(255,255,255,0.08);
+  }
+}
+.message-meta-modern {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+.message-sender {
+  margin-left: 4px;
+  margin-bottom: 2px;
+}
+.message-avatar-name {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2px;
+}
+.message-avatar-self {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2px;
+  margin-left: 8px;
+}
+@media (max-width: 768px) {
+  .message-main { max-width: 90vw; }
+  .message-bubble-modern { max-width: 90vw; }
 }
 </style> 

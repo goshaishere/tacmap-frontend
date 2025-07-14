@@ -451,15 +451,10 @@ function requestNotificationPermission() {
   }
 }
 function showTestNotification() {
-  if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification('TacMap', { body: 'Тестовое уведомление', icon: '/favicon.ico' })
-    playNotificationSound()
-  } else {
-    requestNotificationPermission()
-    showNotification.value = true
-    notificationMessage.value = 'Разрешите уведомления в браузере'
-    notificationColor.value = 'info'
-  }
+  playNotificationSound()
+  showNotification.value = true
+  notificationMessage.value = 'Тестовое звуковое уведомление'
+  notificationColor.value = 'info'
 }
 
 // 3. Звуковые уведомления
