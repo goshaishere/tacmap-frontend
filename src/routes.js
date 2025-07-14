@@ -37,7 +37,7 @@ export default [
         component: () =>
             import ('./pages/Messages.vue'),
         name: 'Messages',
-        meta: { title: 'Сообщения', requiresAuth: true }
+        meta: { title: 'Сообщения', requiresAuth: true, layout: 'messages' }
     },
     { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound, meta: { title: '404' } },
 ]

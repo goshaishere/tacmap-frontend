@@ -4,8 +4,8 @@
       <v-row>
         <v-col cols="12">
           <h1 class="text-h4 text-on-surface mb-4 d-flex align-center">
-            <v-icon class="me-2">mdi-account-edit</v-icon>
-            Редактирование профиля
+              <v-icon class="me-2">mdi-account-edit</v-icon>
+              Редактирование профиля
           </h1>
         </v-col>
       </v-row>
@@ -157,42 +157,42 @@
             </v-card-text>
           </v-card>
         </v-col>
-        <!-- Предварительный просмотр -->
+                  <!-- Предварительный просмотр -->
         <v-col cols="12" md="6">
           <v-card class="pa-4 mb-4">
             <v-card-title class="text-h6 text-on-surface mb-2">Предварительный просмотр</v-card-title>
             <v-card-text>
-              <v-card variant="outlined" class="pa-3">
+                    <v-card variant="outlined" class="pa-3">
                 <div class="d-flex flex-column flex-md-row align-md-center align-start flex-wrap">
                   <v-avatar size="40" class="me-3 mb-2 mb-md-0">
-                    <v-img v-if="localProfile.avatar && localProfile.avatar.startsWith('data:')" :src="localProfile.avatar" />
-                    <v-img v-else-if="localProfile.avatar && localProfile.avatar.startsWith('http')" :src="localProfile.avatar" />
-                    <v-icon v-else>mdi-account</v-icon>
-                  </v-avatar>
+                          <v-img v-if="localProfile.avatar && localProfile.avatar.startsWith('data:')" :src="localProfile.avatar" />
+                          <v-img v-else-if="localProfile.avatar && localProfile.avatar.startsWith('http')" :src="localProfile.avatar" />
+                          <v-icon v-else>mdi-account</v-icon>
+                        </v-avatar>
                   <div class="flex-grow-1 mb-2 mb-md-0">
-                    <div class="text-h6 text-truncate">{{ localProfile.firstName }} {{ localProfile.lastName }}</div>
-                    <div class="text-subtitle-2 text-medium-emphasis text-truncate">{{ localProfile.callsign }}</div>
-                  </div>
+                          <div class="text-h6 text-truncate">{{ localProfile.firstName }} {{ localProfile.lastName }}</div>
+                          <div class="text-subtitle-2 text-medium-emphasis text-truncate">{{ localProfile.callsign }}</div>
+                        </div>
                   <div class="d-flex mt-2 mt-md-0 w-100 w-md-auto justify-end justify-md-start">
                     <v-avatar size="24" :color="localProfile.faction?.color || 'surface-variant'" class="me-2">
-                      <v-icon size="16">{{ localProfile.faction?.icon }}</v-icon>
-                    </v-avatar>
+                            <v-icon size="16">{{ localProfile.faction?.icon }}</v-icon>
+                          </v-avatar>
                     <v-avatar size="24" color="surface-variant" class="me-2">
-                      <v-icon size="16">{{ localProfile.squad?.icon }}</v-icon>
-                    </v-avatar>
+                            <v-icon size="16">{{ localProfile.squad?.icon }}</v-icon>
+                          </v-avatar>
                     <v-avatar size="24" color="surface-variant" class="me-2">
-                      <v-icon size="16">{{ localProfile.rank?.icon }}</v-icon>
-                    </v-avatar>
-                    <v-avatar size="24" color="surface-variant">
-                      <v-icon size="16">{{ localProfile.role?.icon }}</v-icon>
-                    </v-avatar>
-                  </div>
-                </div>
-              </v-card>
+                            <v-icon size="16">{{ localProfile.rank?.icon }}</v-icon>
+                          </v-avatar>
+                          <v-avatar size="24" color="surface-variant">
+                            <v-icon size="16">{{ localProfile.role?.icon }}</v-icon>
+                          </v-avatar>
+                        </div>
+                      </div>
+                    </v-card>
             </v-card-text>
           </v-card>
         </v-col>
-        <!-- Кнопки действий -->
+            <!-- Кнопки действий -->
         <v-col cols="12" md="6">
           <v-card class="pa-4 mb-4">
             <v-card-title class="text-h6 text-on-surface mb-2">Действия</v-card-title>

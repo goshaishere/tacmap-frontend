@@ -9,59 +9,60 @@
       >
         <div class="toolbar-main d-flex align-center w-100" style="flex-wrap:nowrap; min-width:0;">
           <div class="toolbar-left d-flex align-center" style="flex-shrink:0;">
-            <v-app-bar-nav-icon 
-              @click="toggleDrawer" 
-              class="d-md-none"
-              style="cursor: pointer;"
-            ></v-app-bar-nav-icon>
-          </div>
+        <v-app-bar-nav-icon 
+          @click="toggleDrawer" 
+          class="d-md-none"
+          style="cursor: pointer;"
+        ></v-app-bar-nav-icon>
+        </div>
           <div class="toolbar-actions-flex" style="flex:1 1 0%; min-width:0; overflow-x:auto; display:flex; align-items:center; gap:4px;">
-            <RoleActions class="role-actions-appbar align-self-center" />
+      <RoleActions class="role-actions-appbar align-self-center" />
           </div>
           <div class="toolbar-right d-flex align-center ms-2 ms-sm-2 ms-md-0" style="flex-shrink:0; min-width:0;">
-            <v-menu location="bottom end">
-              <template #activator="{ props }">
-                <v-avatar size="32" v-bind="props" class="me-4" style="cursor:pointer;">
-                  <template v-if="profileStore.user?.avatar">
-                    <v-img :src="profileStore.user?.avatar" />
-                  </template>
-                  <template v-else>
-                    <v-icon size="24">mdi-account</v-icon>
-                  </template>
-                </v-avatar>
-              </template>
-              <v-list>
-                <v-list-item @click="navigate('/profile')">
-                  <template #prepend>
-                    <v-icon>mdi-account-edit</v-icon>
-                  </template>
-                  <v-list-item-title>Профиль</v-list-item-title>
-                </v-list-item>
-                <v-list-item @click="navigate('/settings')">
-                  <template #prepend>
-                    <v-icon>mdi-cog</v-icon>
-                  </template>
-                  <v-list-item-title>Настройки</v-list-item-title>
-                </v-list-item>
-                <v-list-item @click="navigate('/help')">
-                  <template #prepend>
-                    <v-icon>mdi-help-circle</v-icon>
-                  </template>
-                  <v-list-item-title>Помощь</v-list-item-title>
-                </v-list-item>
-                <v-list-item @click="logout">
-                  <template #prepend>
-                    <v-icon>mdi-logout</v-icon>
-                  </template>
-                  <v-list-item-title>Выйти</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-            <v-btn icon variant="text" @click="toggleTheme" :title="isDark ? 'Светлая тема' : 'Тёмная тема'">
-              <v-icon>{{ isDark ? 'mdi-white-balance-sunny' : 'mdi-weather-night' }}</v-icon>
-            </v-btn>
+      <v-menu location="bottom end">
+        <template #activator="{ props }">
+          <v-avatar size="32" v-bind="props" class="me-4" style="cursor:pointer;">
+            <template v-if="profileStore.user?.avatar">
+              <v-img :src="profileStore.user?.avatar" />
+            </template>
+            <template v-else>
+              <v-icon size="24">mdi-account</v-icon>
+            </template>
+          </v-avatar>
+        </template>
+        <v-list>
+          <v-list-item @click="navigate('/profile')">
+            <template #prepend>
+              <v-icon>mdi-account-edit</v-icon>
+            </template>
+            <v-list-item-title>Профиль</v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="navigate('/settings')">
+            <template #prepend>
+              <v-icon>mdi-cog</v-icon>
+            </template>
+            <v-list-item-title>Настройки</v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="navigate('/help')">
+            <template #prepend>
+              <v-icon>mdi-help-circle</v-icon>
+            </template>
+            <v-list-item-title>Помощь</v-list-item-title>
+          </v-list-item>
+                
+          <v-list-item @click="logout">
+            <template #prepend>
+              <v-icon>mdi-logout</v-icon>
+            </template>
+            <v-list-item-title>Выйти</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+      <v-btn icon variant="text" @click="toggleTheme" :title="isDark ? 'Светлая тема' : 'Тёмная тема'">
+        <v-icon>{{ isDark ? 'mdi-white-balance-sunny' : 'mdi-weather-night' }}</v-icon>
+      </v-btn>
           </div>
-        </div>
+    </div>
     </v-app-bar>
 
     <v-navigation-drawer
@@ -175,12 +176,15 @@ const route = useRoute()
 const router = useRouter()
 const theme = useTheme()
 
-const isDark = computed(() => theme.current.value?.name === 'tacticalDark')
+const isDark = computed(() => {
+  const currentTheme = theme.current.value?.name || localStorage.getItem('selectedTheme') || 'tacticalLight'
+  return currentTheme === 'tacticalDark'
+})
 
 function applyThemeFromStorage() {
   const availableThemes = ['tacticalLight', 'tacticalDark']
   const savedTheme = localStorage.getItem('selectedTheme')
-      theme.change(availableThemes.includes(savedTheme) ? savedTheme : 'tacticalLight')
+  theme.change(availableThemes.includes(savedTheme) ? savedTheme : 'tacticalLight')
 }
 
 onMounted(() => {
@@ -207,9 +211,9 @@ function updateDrawerState() {
     }
 }
 
-
 function toggleTheme() {
     const themeName = isDark.value ? 'tacticalLight' : 'tacticalDark'
+    console.log('Current isDark:', isDark.value, 'Switching to:', themeName)
     theme.change(themeName)
     localStorage.setItem('selectedTheme', themeName)
 }
@@ -280,6 +284,8 @@ function logout() {
   flex-shrink: 0;
   min-width: 0;
 }
+
+
 @media (max-width: 600px) {
   .toolbar-flex {
     display: flex;

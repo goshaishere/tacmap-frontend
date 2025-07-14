@@ -4,12 +4,12 @@
       <!-- Заголовок и инструменты -->
       <v-row class="mb-4">
         <v-col cols="12">
-                      <div class="d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between gap-4">
+          <div class="d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between gap-4">
               <div class="d-flex flex-column">
                 <h1 class="text-h4 text-on-surface mb-2">
-                  <v-icon class="me-3">mdi-map</v-icon>
-                  Тактическая карта
-                </h1>
+              <v-icon class="me-3">mdi-map</v-icon>
+              Тактическая карта
+            </h1>
                 <div class="text-caption text-medium-emphasis">
                   📊 {{ mapStore.markers.length }} маркеров в базе • {{ nativeMarkers.size }} отображено на карте
                 </div>
