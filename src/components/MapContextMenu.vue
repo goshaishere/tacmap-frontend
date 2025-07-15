@@ -18,7 +18,8 @@
           class="category-btn"
           :title="category.label"
         >
-          <v-icon :color="category.color" size="24">{{ category.icon }}</v-icon>
+          <span class="category-emoji" v-if="category.icon && category.icon.match(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u)">{{ category.icon }}</span>
+          <v-icon v-else :color="category.color" size="24">{{ category.icon }}</v-icon>
           <span class="category-label">{{ category.label }}</span>
         </button>
       </div>
@@ -43,7 +44,8 @@
             class="icon-btn"
             :title="item.label"
           >
-            <v-icon :color="item.color" size="20">{{ item.icon }}</v-icon>
+            <span class="emoji" v-if="item.emoji">{{ item.emoji }}</span>
+            <v-icon v-else :color="item.color" size="20">{{ item.icon }}</v-icon>
           </button>
         </div>
       </div>
@@ -318,5 +320,15 @@ onBeforeUnmount(() => {
 .radial-fade-enter-from, .radial-fade-leave-to {
   opacity: 0;
   transform: scale(0.95);
+}
+.category-emoji {
+  font-size: 24px;
+  line-height: 1;
+  display: block;
+}
+.emoji {
+  font-size: 24px;
+  line-height: 1;
+  display: block;
 }
 </style> 

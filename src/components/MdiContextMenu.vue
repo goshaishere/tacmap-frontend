@@ -24,8 +24,8 @@
           <span class="category-title">{{ selectedCategory.label }}</span>
         </div>
         <div class="icons-grid">
-          <button v-for="icon in selectedCategory.icons" :key="icon.name" @click.stop="$emit('select-icon', icon)" class="icon-btn" :title="icon.name">
-            <span v-html="icon.svg" class="mdi-svg"></span>
+          <button v-for="icon in selectedCategory.items" :key="icon.key" @click.stop="$emit('select-icon', icon)" class="icon-btn" :title="icon.label">
+            <img :src="`/node_modules/@mdi/svg/svg/${icon.icon.replace('mdi-','')}.svg`" :alt="icon.label" width="28" height="28" />
           </button>
         </div>
       </div>
