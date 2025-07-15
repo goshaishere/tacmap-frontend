@@ -65,7 +65,7 @@
           </v-switch>
         </v-card-text>
         <v-card-actions class="justify-end">
-          <v-btn variant="text" color="secondary" @click="popup.visible = false">Отмена</v-btn>
+          <v-btn variant="outlined" color="secondary" @click="popup.visible = false">Отмена</v-btn>
           <v-btn color="accent" variant="flat" @click="createMarker">Создать</v-btn>
         </v-card-actions>
       </v-card>
@@ -180,12 +180,16 @@ export default {
       // 1. Получаем путь к SVG-файлу
       const svgPath = `/node_modules/@mdi/svg/svg/${mdiIconName.replace('mdi-','')}.svg`;
       // 2. Загружаем SVG как текст
-      const svgText = await fetch(svgPath).then(r => r.text());
-      // 3. Меняем цвет (если нужно)
-      const coloredSvg = svgText.replace(/fill="[^"]*"/g, `fill=\"${color}\"`);
-      // 4. Создаём dataURL для <img>
-      const svgDataUrl = 'data:image/svg+xml;base64,' + btoa(coloredSvg);
-      // 5. Рисуем на canvas
+      let svgText = await fetch(svgPath).then(r => r.text());
+      // 3. Заменяем все fill и stroke на нужный цвет
+      svgText = svgText
+        .replace(/fill="[^"]*"/gi, `fill=\"${color}\"`)
+        .replace(/stroke="[^"]*"/gi, `stroke=\"${color}\"`);
+      // 4. Если в <path ...> нет fill, добавляем его
+      svgText = svgText.replace(/<path /gi, `<path fill=\"${color}\" `);
+      // 5. Создаём dataURL для <img>
+      const svgDataUrl = 'data:image/svg+xml;base64,' + btoa(svgText);
+      // 6. Рисуем на canvas
       return new Promise((resolve) => {
         const img = new window.Image();
         img.onload = function() {
@@ -218,10 +222,10 @@ export default {
       if (!popup.icon || !popup.coords) return
       const size = 43
       const color = popup.isOwn ? '#3BA55D' : '#E53935' // fill передаём явно
-      console.log('color', color);
       const pngDataUrl = await mdiIconToPngDataUrl(popup.icon.icon, color, size)
-      markers.value.push({
-        id: Date.now() + Math.random(),
+      const markerId = Date.now() + Math.random()
+      const marker = {
+        id: markerId,
         coords: popup.coords,
         icon: {
           layout: 'default#imageWithContent',
@@ -229,17 +233,52 @@ export default {
           imageSize: [size, size],
           imageOffset: [-size/2, -size/2],
           contentLayout: popup.label
-            ? `<div style='font-size:12px;line-height:1;text-align:center;color:#222;'>${popup.label}</div>`
+            ? `<div style="
+                position: absolute;
+                left: 21px;
+                top: 40px;
+                transform: translateX(-50%);
+                font-size: 13px;
+                line-height: 1.2;
+                text-align: center;
+                color: #222;
+                white-space: nowrap;
+                pointer-events: none;
+              ">${popup.label}</div>`
             : ''
         },
         properties: {
           ...(popup.label ? { iconContent: popup.label } : {}),
           ...(popup.hint ? { hintContent: popup.hint } : {})
         }
-      })
+      }
+      markers.value.push(marker)
       popup.visible = false
       popup.icon = null
       popup.coords = null
+
+      // --- Вручную управляем хинтом ---
+      setTimeout(() => {
+        const map = ymapRef.value && ymapRef.value.getMap && ymapRef.value.getMap()
+        if (!map) return
+        const geoObjects = map.geoObjects || (map.getGeoObjects && map.getGeoObjects())
+        if (!geoObjects) return
+        let geoObject = null
+        if (typeof geoObjects.each === 'function') {
+          geoObjects.each(obj => {
+            if (obj && obj.properties && (obj.properties.get('marker-id') == markerId || obj.properties.get('id') == markerId)) {
+              geoObject = obj
+            }
+          })
+        }
+        if (!geoObject) return
+        geoObject.events.add('mouseenter', function () {
+          geoObject.hint.open(map, marker.coords)
+        })
+        geoObject.events.add('mouseleave', function () {
+          geoObject.hint.close()
+        })
+      }, 500)
     }
 
     return { center, markers, menu, mdiCategories, onMapContextMenu, onMenuIconSelect, createMarker, containerRef, ymapRef, selectedCategory, onSelectCategory, onBack, popup }
