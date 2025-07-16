@@ -1,0 +1,12 @@
+.role-actions-bar {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 0;
+    margin: 0;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+}

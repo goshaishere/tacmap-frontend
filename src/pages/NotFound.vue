@@ -1,7 +1,11 @@
 <template>
-  <div style="text-align:center; margin-top: 100px;">
-    <h1 class="text-h4 text-on-surface">404</h1>
-    <p>Страница не найдена</p>
-    <router-link to="/">На главную</router-link>
+  <div :class="styles['notfound-container']">
+    <h1 :class="styles['notfound-title']">404</h1>
+    <p :class="styles['notfound-text']">Страница не найдена</p>
+    <router-link :class="styles['notfound-link']" to="/">На главную</router-link>
   </div>
-</template> 
+</template>
+
+<script setup>
+import styles from '../styles/NotFoundPage.module.scss'
+</script> 

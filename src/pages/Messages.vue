@@ -31,6 +31,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useMessagesStore } from '../store/messages.js'
 import MessageList from '../components/messages/MessageList.vue'
+import styles from '../styles/MessagesPage.module.scss'
 
 // Store
 const messagesStore = useMessagesStore()
@@ -165,64 +166,4 @@ onMounted(() => {
     messagesStore.setActiveConversation(messagesStore.conversations[0].id)
   }
 })
-</script>
-
-<style scoped>
-.messages-page {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: rgb(var(--v-theme-surface));
-}
-
-.chat-container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: rgb(var(--v-theme-surface));
-}
-
-.chat-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: rgb(var(--v-theme-surface));
-}
-
-.no-chat-selected {
-  color: rgb(var(--v-theme-on-surface-variant));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-}
-
-.new-chat-dialog {
-  border-radius: 12px;
-}
-
-.image-dialog {
-  border-radius: 12px;
-}
-
-.empty-state {
-  color: rgb(var(--v-theme-on-surface-variant));
-}
-
-/* Мобильные стили */
-@media (max-width: 768px) {
-  .new-chat-dialog {
-    border-radius: 0;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .image-dialog {
-    border-radius: 0;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-}
-</style> 
+</script> 

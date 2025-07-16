@@ -325,6 +325,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useTasksStore } from '../store/tasks.js'
 import TaskCard from '../components/tasks/TaskCard.vue'
 import TaskForm from '../components/tasks/TaskForm.vue'
+import '../styles/TasksPage.module.scss'
 
 // Store
 const tasksStore = useTasksStore()
@@ -522,85 +523,4 @@ onMounted(() => {
     testTasks.forEach(task => tasksStore.addTask(task))
   }
 })
-</script>
-
-<style scoped>
-.tasks-page {
-  min-height: 100vh;
-  background: rgb(var(--v-theme-surface));
-}
-
-.mobile-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.stats-card {
-  border-radius: 12px;
-}
-
-.mobile-filters {
-  background: rgb(var(--v-theme-surface));
-  border-bottom: 1px solid rgb(var(--v-theme-outline));
-}
-
-.desktop-filters {
-  background: rgb(var(--v-theme-surface));
-  border-bottom: 1px solid rgb(var(--v-theme-outline));
-}
-
-.tabs-section {
-  background: rgb(var(--v-theme-surface));
-  border-bottom: 1px solid rgb(var(--v-theme-outline));
-}
-
-.tasks-list {
-  background: rgb(var(--v-theme-surface));
-}
-
-.mobile-tasks {
-  padding-bottom: 80px; /* Место для FAB */
-}
-
-.desktop-tasks {
-  background: rgb(var(--v-theme-surface));
-  border-radius: 12px;
-}
-
-.task-details-card {
-  border-radius: 12px;
-}
-
-.task-details-meta {
-  border-top: 1px solid rgb(var(--v-theme-outline));
-  padding-top: 16px;
-}
-
-.empty-state {
-  color: rgb(var(--v-theme-on-surface-variant));
-}
-
-/* Мобильные стили */
-@media (max-width: 768px) {
-  .stats-card {
-    border-radius: 8px;
-  }
-  
-  .mobile-tasks {
-    padding: 0 16px 80px 16px;
-  }
-  
-  .task-details-card {
-    border-radius: 0;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .task-details-card .v-card-text {
-    flex: 1;
-    overflow-y: auto;
-  }
-}
-</style> 
+</script> 

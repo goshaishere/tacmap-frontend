@@ -177,6 +177,7 @@
 import { ranks } from '../data/ranks.js'
 import { roles } from '../data/roles.js'
 import { defaultSquads } from '../data/squads.js'
+import styles from '../styles/HelpPage.module.scss'
 
 const squads = defaultSquads
 

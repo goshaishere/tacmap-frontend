@@ -3,8 +3,8 @@
     <v-container fluid class="pa-0 pa-md-4">
       <v-row>
         <v-col cols="12">
-          <h1 class="text-h4 text-on-surface mb-4 d-flex align-center">
-              <v-icon class="me-2">mdi-account-edit</v-icon>
+          <h1 :class="[styles['profile-title']]">
+              <v-icon :class="styles['profile-title-icon']">mdi-account-edit</v-icon>
               Редактирование профиля
           </h1>
         </v-col>
@@ -15,10 +15,10 @@
           <v-card class="pa-4 mb-4">
             <v-card-title class="text-h6 text-on-surface mb-2">Основная информация</v-card-title>
             <v-card-text>
-              <v-form ref="form" v-model="isFormValid">
+              <v-form ref="form" :class="styles['profile-form']">
                 <v-row>
                   <v-col cols="12" class="d-flex justify-center">
-                    <v-avatar size="96" class="mb-4">
+                    <v-avatar size="96" :class="styles['profile-avatar']">
                       <v-img v-if="localProfile.avatar && localProfile.avatar.startsWith('data:')" :src="localProfile.avatar" />
                       <v-img v-else-if="localProfile.avatar && localProfile.avatar.startsWith('http')" :src="localProfile.avatar" />
                       <v-icon v-else size="48">mdi-account</v-icon>
@@ -78,7 +78,7 @@
           <v-card class="pa-4 mb-4">
             <v-card-title class="text-h6 text-on-surface mb-2">Военная информация</v-card-title>
             <v-card-text>
-              <v-form ref="form" v-model="isFormValid">
+              <v-form ref="form" :class="styles['profile-form']">
                 <v-row>
                   <v-col cols="12" sm="6">
                     <v-select
@@ -163,7 +163,7 @@
             <v-card-title class="text-h6 text-on-surface mb-2">Предварительный просмотр</v-card-title>
             <v-card-text>
                     <v-card variant="outlined" class="pa-3">
-                <div class="d-flex flex-column flex-md-row align-md-center align-start flex-wrap">
+                <div :class="styles['profile-preview']">
                   <v-avatar size="40" class="me-3 mb-2 mb-md-0">
                           <v-img v-if="localProfile.avatar && localProfile.avatar.startsWith('data:')" :src="localProfile.avatar" />
                           <v-img v-else-if="localProfile.avatar && localProfile.avatar.startsWith('http')" :src="localProfile.avatar" />
@@ -173,7 +173,7 @@
                           <div class="text-h6 text-truncate">{{ localProfile.firstName }} {{ localProfile.lastName }}</div>
                           <div class="text-subtitle-2 text-medium-emphasis text-truncate">{{ localProfile.callsign }}</div>
                         </div>
-                  <div class="d-flex mt-2 mt-md-0 w-100 w-md-auto justify-end justify-md-start">
+                  <div :class="styles['profile-preview-actions']">
                     <v-avatar size="24" :color="localProfile.faction?.color || 'surface-variant'" class="me-2">
                             <v-icon size="16">{{ localProfile.faction?.icon }}</v-icon>
                           </v-avatar>
@@ -198,12 +198,12 @@
             <v-card-title class="text-h6 text-on-surface mb-2">Действия</v-card-title>
             <v-card-text>
               <v-row class="w-100" dense>
-                <v-col cols="12" sm="6" class="d-flex gap-2">
+                <v-col cols="12" sm="6" :class="styles['profile-actions']">
                   <v-btn block color="accent" variant="flat" prepend-icon="mdi-plus" @click="dialog = true">
                     Создать сквад
                   </v-btn>
                 </v-col>
-                <v-col cols="12" sm="6" class="d-flex gap-2">
+                <v-col cols="12" sm="6" :class="styles['profile-actions']">
                   <v-btn block color="accent" variant="flat" prepend-icon="mdi-plus" @click="dialogFaction = true">
                     Добавить фракцию
                   </v-btn>
@@ -228,7 +228,7 @@
     
     <!-- Диалог создания сквада -->
     <v-dialog v-model="dialog" max-width="400" persistent>
-      <v-card>
+      <v-card :class="styles['profile-dialog']">
         <v-card-title>Создать сквад</v-card-title>
         <v-card-text>
           <v-text-field v-model="newSquad.title" label="Название сквада" required></v-text-field>
@@ -256,7 +256,7 @@
     
     <!-- Диалог создания фракции -->
     <v-dialog v-model="dialogFaction" max-width="400" persistent>
-      <v-card>
+      <v-card :class="styles['profile-dialog']">
         <v-card-title>Создать фракцию</v-card-title>
         <v-card-text>
           <v-text-field v-model="newFaction.title" label="Название фракции" required></v-text-field>
@@ -318,6 +318,7 @@ import { defaultSquads, createSquad as createSquadFn } from '../data/squads.js'
 import { useProfileStore } from '../store/profile.js'
 import { factions } from '../data/factions.js'
 import { useTheme } from 'vuetify'
+import styles from '../styles/ProfilePage.module.scss'
 
 const FACTIONS_LS_KEY = 'customFactions'
 const SQUADS_LS_KEY = 'customSquads'

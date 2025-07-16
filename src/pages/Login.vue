@@ -16,5 +16,6 @@
 
 <script setup>
 import AuthLayout from '../layouts/AuthLayout.vue'
+import styles from '../styles/LoginPage.module.scss'
 const emit = defineEmits(['close'])
 </script> 

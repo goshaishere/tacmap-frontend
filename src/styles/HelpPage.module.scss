@@ -1,0 +1,81 @@
+.help-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    color: var(--v-theme-on-surface);
+}
+
+.help-title-icon {
+    margin-right: 1rem;
+}
+
+.help-section {
+    margin-bottom: 2rem;
+}
+
+.help-card {
+    margin-bottom: 2rem;
+}
+
+.help-card-title {
+    display: flex;
+    align-items: center;
+    color: var(--v-theme-on-surface);
+}
+
+.help-card-icon {
+    margin-right: 0.5rem;
+}
+
+.help-card-content {
+    text-align: center;
+}
+
+.help-gap {
+    gap: 1rem;
+}
+
+.help-mb {
+    margin-bottom: 1rem;
+}
+
+.help-center {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.help-bold {
+    font-weight: bold;
+}
+
+.help-chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.help-chip {
+    display: flex;
+    align-items: center;
+}
+
+.help-faq {
+    margin-top: 2rem;
+}
+
+.help-faq-title {
+    display: flex;
+    align-items: center;
+    color: var(--v-theme-on-surface);
+}
+
+.help-faq-icon {
+    margin-right: 0.5rem;
+}
+
+.help-faq-panel {
+    margin-bottom: 1rem;
+}

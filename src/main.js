@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import './style.scss'
+import './styles/_globals.scss'
 import App from './App.vue'
 
 import { createVuetify } from 'vuetify'

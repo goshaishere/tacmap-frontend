@@ -266,6 +266,7 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { useTheme } from 'vuetify'
 import { useProfileStore } from '../store/profile.js'
+import styles from '../styles/SettingsPage.module.scss'
 
 const selectedTheme = ref('tacticalLight')
 const theme = useTheme()

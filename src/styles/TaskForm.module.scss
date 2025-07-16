@@ -1,0 +1,21 @@
+@import './_mixins.scss';
+@import './_variables.scss';
+.task-form-card {
+    @include rounded;
+}
+
+@media (max-width: 768px) {
+    .task-form-card {
+        border-radius: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    .v-card-text {
+        flex: 1;
+        overflow-y: auto;
+    }
+    .v-card-actions {
+        border-top: 1px solid $color-grey-light;
+    }
+}

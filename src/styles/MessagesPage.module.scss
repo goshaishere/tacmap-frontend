@@ -1,0 +1,28 @@
+.messages-page {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: rgb(var(--v-theme-surface));
+}
+
+.chat-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: rgb(var(--v-theme-surface));
+}
+
+.chat-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: rgb(var(--v-theme-surface));
+}
+
+.no-chat-selected {
+    color: rgb(var(--v-theme-on-surface-variant));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}

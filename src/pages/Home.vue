@@ -240,6 +240,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProfileStore } from '../store/profile.js'
 import { useTheme } from 'vuetify'
+import styles from '../styles/HomePage.module.scss'
 
 const router = useRouter()
 const profileStore = useProfileStore()

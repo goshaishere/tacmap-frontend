@@ -121,8 +121,16 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import { useTasksStore } from '../../store/tasks.js'
+import {
+  getPriorityColor,
+  getPriorityLabel,
+  getStatusColor,
+  getStatusIcon,
+  getStatusLabel,
+  formatDate
+} from '../../utils/taskUtils.js'
+import '../../styles/TaskCard.module.scss'
 
 const props = defineProps({
   task: {
@@ -132,172 +140,21 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['click', 'edit', 'delete', 'status-change'])
-
 const tasksStore = useTasksStore()
 
-// Цвета приоритетов
-const getPriorityColor = (priority) => {
-  const colors = {
-    low: 'grey',
-    medium: 'blue',
-    high: 'orange',
-    critical: 'red'
-  }
-  return colors[priority] || 'grey'
-}
-
-// Лейблы приоритетов
-const getPriorityLabel = (priority) => {
-  const labels = {
-    low: 'Низкий',
-    medium: 'Средний',
-    high: 'Высокий',
-    critical: 'Критический'
-  }
-  return labels[priority] || priority
-}
-
-// Цвета статусов
-const getStatusColor = (status) => {
-  const colors = {
-    pending: 'warning',
-    'in-progress': 'info',
-    completed: 'success',
-    cancelled: 'error',
-    'on-hold': 'grey'
-  }
-  return colors[status] || 'grey'
-}
-
-// Иконки статусов
-const getStatusIcon = (status) => {
-  const icons = {
-    pending: 'mdi-clock-outline',
-    'in-progress': 'mdi-play-circle-outline',
-    completed: 'mdi-check-circle-outline',
-    cancelled: 'mdi-close-circle-outline',
-    'on-hold': 'mdi-pause-circle-outline'
-  }
-  return icons[status] || 'mdi-help-circle-outline'
-}
-
-// Лейблы статусов
-const getStatusLabel = (status) => {
-  const labels = {
-    pending: 'Ожидает',
-    'in-progress': 'В работе',
-    completed: 'Завершено',
-    cancelled: 'Отменено',
-    'on-hold': 'Приостановлено'
-  }
-  return labels[status] || status
-}
-
-// Форматирование даты
-const formatDate = (date) => {
-  if (!date) return ''
-  
-  const taskDate = new Date(date)
-  const now = new Date()
-  const diffInDays = Math.floor((taskDate - now) / (1000 * 60 * 60 * 24))
-  
-  if (diffInDays < 0) {
-    return `Просрочено ${Math.abs(diffInDays)} дн.`
-  } else if (diffInDays === 0) {
-    return 'Сегодня'
-  } else if (diffInDays === 1) {
-    return 'Завтра'
-  } else {
-    return taskDate.toLocaleDateString('ru-RU')
-  }
-}
-
-// Обработчики событий
-const handleCardClick = () => {
-  emit('click', props.task)
-}
-
+const handleCardClick = () => emit('click', props.task)
 const startTask = () => {
   tasksStore.changeTaskStatus(props.task.id, 'in-progress')
   emit('status-change', { taskId: props.task.id, status: 'in-progress' })
 }
-
 const completeTask = () => {
   tasksStore.changeTaskStatus(props.task.id, 'completed')
   emit('status-change', { taskId: props.task.id, status: 'completed' })
 }
-
 const deleteTask = () => {
   if (confirm('Вы уверены, что хотите удалить эту задачу?')) {
     tasksStore.deleteTask(props.task.id)
     emit('delete', props.task.id)
   }
 }
-</script>
-
-<style scoped>
-.task-card {
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.task-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(var(--v-theme-shadow), 0.15);
-}
-
-.task-card--mobile {
-  border-radius: 12px;
-  margin-bottom: 8px;
-}
-
-.task-title {
-  line-height: 1.3;
-  word-break: break-word;
-}
-
-.task-description {
-  line-height: 1.5;
-  word-break: break-word;
-}
-
-.task-meta {
-  border-top: 1px solid rgb(var(--v-theme-outline));
-  padding-top: 12px;
-}
-
-.priority-chip {
-  font-weight: 500;
-}
-
-.task-actions {
-  border-top: 1px solid rgb(var(--v-theme-outline));
-  padding-top: 12px;
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-.task-swipe-actions {
-  display: flex;
-  gap: 4px;
-  padding: 8px;
-  background: rgb(var(--v-theme-surface-variant));
-  border-top: 1px solid rgb(var(--v-theme-outline));
-}
-
-/* Мобильные стили */
-@media (max-width: 768px) {
-  .task-card {
-    margin-bottom: 8px;
-  }
-  
-  .task-title {
-    font-size: 1rem;
-  }
-  
-  .task-description {
-    font-size: 0.875rem;
-  }
-}
-</style> 
+</script> 

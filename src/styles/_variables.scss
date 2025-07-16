@@ -1,0 +1,24 @@
+// Цвета
+$color-primary: #3BA55D;
+$color-secondary: #2C3E50;
+$color-accent: #6B8E23;
+$color-info: #2196F3;
+$color-success: #43A047;
+$color-warning: #FFC107;
+$color-error: #E53935;
+$color-background: #F5F6FA;
+$color-surface: #FFFFFF;
+$color-on-primary: #FFFFFF;
+$color-on-surface: #232B2F;
+$color-grey: #9E9E9E;
+$color-grey-light: #F5F5F5;
+// Размеры
+$border-radius: 12px;
+$transition-fast: 0.18s cubic-bezier(.4, 0, .2, 1);
+// Z-index
+$z-modal: 1000;
+$z-dropdown: 1001;
+// Шрифты
+$font-main: 'Inter',
+'Arial',
+sans-serif;

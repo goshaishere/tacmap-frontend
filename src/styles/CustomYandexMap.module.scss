@@ -1,0 +1,13 @@
+.adaptive-yandex-map {
+    width: 100% !important;
+    height: 716px !important;
+    min-height: 300px;
+    max-height: 100vh;
+    display: flex;
+}
+
+@media (max-width: 960px) {
+    .adaptive-yandex-map {
+        height: calc(100vh - 56px - 56px) !important;
+    }
+}

@@ -108,7 +108,9 @@
       </v-row>
       <v-row class="adaptive-map-wrapper-row">
         <v-col cols="12" class="adaptive-map-wrapper-col">
+          <div :class="styles['map-wrapper']">
             <CustomYandexMap />
+          </div>
         </v-col>
       </v-row>
     </v-container>
@@ -119,18 +121,8 @@
 import { ref } from 'vue'
 import { useMapStore } from '../store/map.js'
 import CustomYandexMap from '../components/CustomYandexMap.vue'
+import styles from '../styles/MapPage.module.scss'
 
 const mapStore = useMapStore()
 const nativeMarkers = ref(new Map())
-</script>
-
-<style scoped>
-.adaptive-map-wrapper-row {
-  margin-top: 0px !important;
-}
-
-.adaptive-map-wrapper-col {
-  padding-top: 0px !important;
-  padding-bottom: 0px !important;
-}
-</style> 
+</script> 

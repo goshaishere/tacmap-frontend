@@ -1,0 +1,78 @@
+.settings-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    color: var(--v-theme-on-surface);
+}
+
+.settings-title-icon {
+    margin-right: 0.5rem;
+}
+
+.settings-section {
+    margin-bottom: 2rem;
+}
+
+.settings-card {
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+}
+
+.settings-btn-group {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+}
+
+.settings-avatar {
+    margin-bottom: 1rem;
+}
+
+.settings-center {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.settings-gap {
+    gap: 1rem;
+}
+
+.settings-mb {
+    margin-bottom: 1rem;
+}
+
+.settings-form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.settings-btn {
+    min-width: 100px;
+}
+
+.settings-select {
+    width: 120px;
+}
+
+.settings-info {
+    color: var(--v-theme-info);
+}
+
+.settings-warning {
+    color: var(--v-theme-warning);
+}
+
+.settings-error {
+    color: var(--v-theme-error);
+}
+
+.settings-link {
+    color: var(--v-theme-primary);
+    text-decoration: underline;
+    cursor: pointer;
+}

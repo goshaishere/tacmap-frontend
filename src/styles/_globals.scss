@@ -1,5 +1,21 @@
 @use 'vuetify/styles' as *;
 @import '@mdi/font/css/materialdesignicons.css';
+@import './_variables.scss';
+@import './_mixins.scss';
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    background: #F5F6FA;
+    color: #232B2F;
+    min-height: 100vh;
+}
+
 :root {
     font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
     line-height: 1.5;

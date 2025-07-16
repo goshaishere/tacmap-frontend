@@ -1,0 +1,23 @@
+.notfound-container {
+    text-align: center;
+    margin-top: 100px;
+}
+
+.notfound-title {
+    font-size: 2.5rem;
+    color: var(--v-theme-on-surface);
+    margin-bottom: 1rem;
+}
+
+.notfound-text {
+    font-size: 1.25rem;
+    color: var(--v-theme-on-surface-variant);
+    margin-bottom: 2rem;
+}
+
+.notfound-link {
+    color: var(--v-theme-primary);
+    text-decoration: underline;
+    font-weight: 500;
+    font-size: 1.1rem;
+}

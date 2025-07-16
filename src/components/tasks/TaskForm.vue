@@ -164,6 +164,7 @@
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
 import { useTasksStore } from '../../store/tasks.js'
+import '../../styles/TaskForm.module.scss'
 
 const props = defineProps({
   modelValue: {
@@ -318,29 +319,4 @@ watch(() => props.task, (newTask) => {
     resetForm()
   }
 }, { immediate: true })
-</script>
-
-<style scoped>
-.task-form-card {
-  border-radius: 12px;
-}
-
-/* Мобильные стили */
-@media (max-width: 768px) {
-  .task-form-card {
-    border-radius: 0;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .v-card-text {
-    flex: 1;
-    overflow-y: auto;
-  }
-  
-  .v-card-actions {
-    border-top: 1px solid rgb(var(--v-theme-outline));
-  }
-}
-</style> 
+</script> 

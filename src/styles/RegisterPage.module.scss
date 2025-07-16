@@ -1,0 +1,20 @@
+.register-btn {
+    display: block;
+    width: 100%;
+}
+
+.register-form {
+    margin-bottom: 1.5rem;
+}
+
+.register-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.register-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}

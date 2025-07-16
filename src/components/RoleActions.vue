@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-row flex-nowrap align-center gap-2 overflow-x-auto pa-0 ma-0" style="white-space:nowrap;-webkit-overflow-scrolling:touch;">
+  <div class="role-actions-bar">
     <div v-for="action in roleActions" :key="action.key" class="flex-shrink-0">
       <v-badge
         v-if="taskCounts[action.key] > 0"
@@ -28,6 +28,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useProfileStore } from '../store/profile.js'
+import '../styles/RoleActions.module.scss'
 
 const profileStore = useProfileStore()
 
