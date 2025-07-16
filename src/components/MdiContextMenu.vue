@@ -1,41 +1,52 @@
 <template>
   <transition name="radial-fade">
-    <div v-if="visible" ref="menuRef" :style="menuStyle" class="mdi-context-menu bg-white position-absolute" @mousedown.stop>
+    <div v-if="visible" ref="menuRef" :style="menuStyle" style="position:absolute;z-index:1001;">
       <span class="radial-arrow" :style="arrowStyle"></span>
-      <div class="menu-header">
-        <h3 class="menu-title">Выберите иконку</h3>
-        <button @click.stop="$emit('close')" class="close-btn">
-          <v-icon size="20">mdi-close</v-icon>
-        </button>
-      </div>
-      <!-- Категории -->
-      <div v-if="!selectedCategory" class="categories-grid">
-        <button v-for="cat in categories" :key="cat.key" @click.stop="$emit('select-category', cat)" class="category-btn" :title="cat.label">
-          <img :src="`/node_modules/@mdi/svg/svg/${cat.icon.replace('mdi-','')}.svg`" :alt="cat.label" width="32" height="32" style="display:block;margin:0 auto 4px;" />
-          <span class="category-label">{{ cat.label }}</span>
-        </button>
-      </div>
-      <!-- Иконки выбранной категории -->
-      <div v-else class="icons-container">
-        <div class="back-header">
-          <button @click.stop="$emit('back')" class="back-btn">
-            <v-icon size="20">mdi-arrow-left</v-icon>
-            <span>Назад</span>
-          </button>
-          <span class="category-title">{{ selectedCategory.label }}</span>
-        </div>
-        <div class="icons-grid">
-          <button v-for="icon in selectedCategory.items" :key="icon.key" @click.stop="$emit('select-icon', icon)" class="icon-btn" :title="icon.label">
-            <img :src="`/node_modules/@mdi/svg/svg/${icon.icon.replace('mdi-','')}.svg`" :alt="icon.label" width="28" height="28" />
-          </button>
-        </div>
-      </div>
+      <v-card elevation="8" rounded="xl" :color="'surface'" style="min-width:240px;max-width:380px;width:auto;">
+        <v-card-title class="d-flex align-center justify-space-between py-2 px-4">
+          <span class="text-h6 font-weight-bold">Выберите иконку</span>
+          <v-btn icon variant="text" @click.stop="$emit('close')">
+            <v-icon size="20">mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        <v-divider class="my-0" />
+        <v-card-text class="py-3 px-4">
+          <!-- Категории -->
+          <template v-if="!selectedCategory">
+            <v-row dense>
+              <v-col v-for="cat in categories" :key="cat.key" cols="6" class="d-flex justify-center">
+                <div class="d-flex flex-column align-center justify-center py-4" @click.stop="$emit('select-category', cat)" :title="cat.label">
+                  <v-icon :size="32" color="accent">{{ cat.icon }}</v-icon>
+                  <span class="text-caption text-center w-100 mt-2">{{ cat.label }}</span>
+                </div>
+              </v-col>
+            </v-row>
+          </template>
+          <!-- Иконки выбранной категории -->
+          <template v-else>
+            <div class="d-flex align-center mb-2">
+              <v-btn icon variant="text" @click.stop="$emit('back')">
+                <v-icon size="20" color="accent">mdi-arrow-left</v-icon>
+              </v-btn>
+              <span class="ms-2 text-subtitle-1 font-weight-bold">{{ selectedCategory.label }}</span>
+            </div>
+            <v-row dense>
+              <v-col v-for="icon in selectedCategory.items" :key="icon.key" cols="2" class="d-flex justify-center">
+                <v-btn variant="text" rounded class="icon-btn d-flex align-center justify-center" style="width:40px;height:40px;" @click.stop="$emit('select-icon', icon)" :title="icon.label">
+                  <v-icon :size="28" color="accent">{{ icon.icon }}</v-icon>
+                </v-btn>
+              </v-col>
+            </v-row>
+          </template>
+        </v-card-text>
+      </v-card>
     </div>
   </transition>
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue'
+import { ref, watchEffect, nextTick } from 'vue'
+import { onMounted } from 'vue'
 
 const props = defineProps({
   visible: Boolean,
@@ -45,11 +56,13 @@ const props = defineProps({
   selectedCategory: Object
 })
 const emit = defineEmits(['close', 'select-category', 'select-icon', 'back'])
+
 const menuRef = ref(null)
 const menuStyle = ref({})
 const arrowStyle = ref({})
 
-watch(() => [props.x, props.y, props.visible], () => {
+// Следим за позицией и видимостью меню, корректируем стили
+watchEffect(() => {
   if (!props.visible) return
   let x = props.x || 0
   let y = props.y || 0
@@ -68,117 +81,29 @@ watch(() => [props.x, props.y, props.visible], () => {
       if (x < 0) x = 0
       if (y < 0) y = 0
     }
-    menuStyle.value = { position: 'absolute', left: `${x}px`, top: `${y}px`, zIndex: 1001, opacity: 1, boxShadow: '0 6px 24px 0 rgba(0,0,0,0.18)', borderRadius: '18px', pointerEvents: 'auto', transform: 'scale(1)' }
-    arrowStyle.value = { position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: '-10px', width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderBottom: '10px solid #fff', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.10))' }
+    menuStyle.value = {
+      position: 'absolute',
+      left: `${x}px`,
+      top: `${y}px`,
+      zIndex: 1001,
+      opacity: 1,
+      boxShadow: '0 6px 24px 0 rgba(0,0,0,0.18)',
+      borderRadius: '18px',
+      pointerEvents: 'auto',
+      transform: 'scale(1)'
+    }
+    arrowStyle.value = {
+      position: 'absolute',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      top: '-10px',
+      width: 0,
+      height: 0,
+      borderLeft: '8px solid transparent',
+      borderRight: '8px solid transparent',
+      borderBottom: '10px solid #fff',
+      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.10))'
+    }
   })
 })
 </script>
-
-<style scoped>
-.mdi-context-menu {
-  min-width: 260px;
-  background: #fff;
-  box-shadow: 0 6px 24px 0 rgba(0,0,0,0.18);
-  border-radius: 18px;
-  pointer-events: auto;
-  opacity: 0;
-  transform: scale(0.95);
-  transition: opacity 0.18s cubic-bezier(.4,0,.2,1), transform 0.18s cubic-bezier(.4,0,.2,1);
-  padding: 12px;
-}
-.mdi-context-menu[style*="opacity: 1"] {
-  opacity: 1;
-  transform: scale(1);
-}
-.menu-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-.menu-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0;
-}
-.close-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 2px;
-  border-radius: 50%;
-  transition: background 0.15s;
-}
-.close-btn:hover {
-  background: #f5f5f5;
-}
-.categories-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.category-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 12px 8px;
-  border-radius: 12px;
-  transition: all 0.15s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  min-height: 60px;
-}
-.category-btn:hover {
-  background: #f5f5f5;
-  transform: scale(1.02);
-}
-.category-label {
-  font-size: 13px;
-  font-weight: 500;
-  text-align: center;
-  color: #333;
-}
-.icons-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-.back-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #eee;
-}
-.icons-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.icon-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 8px;
-  transition: background 0.15s;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.icon-btn:hover {
-  background: #e3f2fd;
-}
-.mdi-svg {
-  width: 28px;
-  height: 28px;
-  display: block;
-}
-</style> 
