@@ -2,7 +2,6 @@
 @import './_mixins.scss';
 .mdi-context-menu {
     min-width: 260px;
-    max-width: 400px;
     background: $color-surface;
     @include card-shadow;
     @include rounded;
@@ -11,8 +10,6 @@
     transform: scale(0.95);
     transition: opacity $transition-fast, transform $transition-fast;
     padding: 12px;
-    max-height: 420px;
-    overflow: auto;
 }
 
 .mdi-context-menu[style*="opacity: 1"] {

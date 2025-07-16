@@ -11,6 +11,7 @@
       <!-- Категории -->
       <div v-if="!selectedCategory" class="categories-grid">
         <button v-for="cat in categories" :key="cat.key" @click.stop="$emit('select-category', cat)" class="category-btn" :title="cat.label">
+          <img :src="`/node_modules/@mdi/svg/svg/${cat.icon.replace('mdi-','')}.svg`" :alt="cat.label" width="32" height="32" style="display:block;margin:0 auto 4px;" />
           <span class="category-label">{{ cat.label }}</span>
         </button>
       </div>
@@ -76,7 +77,6 @@ watch(() => [props.x, props.y, props.visible], () => {
 <style scoped>
 .mdi-context-menu {
   min-width: 260px;
-  max-width: 400px;
   background: #fff;
   box-shadow: 0 6px 24px 0 rgba(0,0,0,0.18);
   border-radius: 18px;
@@ -85,8 +85,6 @@ watch(() => [props.x, props.y, props.visible], () => {
   transform: scale(0.95);
   transition: opacity 0.18s cubic-bezier(.4,0,.2,1), transform 0.18s cubic-bezier(.4,0,.2,1);
   padding: 12px;
-  max-height: 420px;
-  overflow: auto;
 }
 .mdi-context-menu[style*="opacity: 1"] {
   opacity: 1;

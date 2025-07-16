@@ -6,9 +6,9 @@ export default [{
         items: [
             { key: 'infantry', label: 'Пехота', icon: 'mdi-account-group', color: 'blue' },
             { key: 'sniper', label: 'Снайпер', icon: 'mdi-crosshairs', color: 'purple' },
-            { key: 'machinegun', label: 'Пулемёт', icon: 'mdi-robot-industrial', color: 'brown' },
+            { key: 'machinegun', label: 'Пулемёт', icon: 'mdi-robot', color: 'brown' },
             { key: 'grenadier', label: 'Гранатомётчик', icon: 'mdi-bomb', color: 'orange' },
-            { key: 'medic', label: 'Медик', icon: 'mdi-medical-bag', color: 'green' },
+            { key: 'medic', label: 'Медик', icon: 'mdi-hospital', color: 'green' },
             { key: 'commander', label: 'Командир', icon: 'mdi-account-star', color: 'red' }
         ]
     },
@@ -18,10 +18,10 @@ export default [{
         icon: 'mdi-car',
         color: 'green',
         items: [
-            { key: 'tank', label: 'Танк', icon: 'mdi-tank', color: 'green' },
-            { key: 'apc', label: 'БТР', icon: 'mdi-car-estate', color: 'blue' },
+            { key: 'tank', label: 'Танк', icon: 'mdi-car', color: 'green' },
+            { key: 'apc', label: 'БТР', icon: 'mdi-truck', color: 'blue' },
             { key: 'truck', label: 'Грузовик', icon: 'mdi-truck', color: 'grey' },
-            { key: 'helicopter', label: 'Вертолёт', icon: 'mdi-helicopter', color: 'darkgreen' },
+            { key: 'helicopter', label: 'Вертолёт', icon: 'mdi-airplane', color: 'darkgreen' },
             { key: 'aircraft', label: 'Самолёт', icon: 'mdi-airplane', color: 'darkblue' },
             { key: 'boat', label: 'Катер', icon: 'mdi-ferry', color: 'blue' }
         ]
@@ -33,22 +33,22 @@ export default [{
         color: 'red',
         items: [
             { key: 'rifle', label: 'Винтовка', icon: 'mdi-pistol', color: 'black' },
-            { key: 'rpg', label: 'РПГ', icon: 'mdi-rocket-launcher', color: 'orange' },
-            { key: 'mortar', label: 'Миномёт', icon: 'mdi-cannon', color: 'brown' },
-            { key: 'mine', label: 'Мина', icon: 'mdi-land-mine', color: 'red' },
-            { key: 'ammo', label: 'Боеприпасы', icon: 'mdi-ammunition', color: 'yellow' },
-            { key: 'explosive', label: 'Взрывчатка', icon: 'mdi-dynamite', color: 'orange' }
+            { key: 'rpg', label: 'РПГ', icon: 'mdi-rocket', color: 'orange' },
+            { key: 'mortar', label: 'Миномёт', icon: 'mdi-bomb', color: 'brown' },
+            { key: 'mine', label: 'Мина', icon: 'mdi-bomb', color: 'red' },
+            { key: 'ammo', label: 'Боеприпасы', icon: 'mdi-bomb', color: 'yellow' },
+            { key: 'explosive', label: 'Взрывчатка', icon: 'mdi-bomb', color: 'orange' }
         ]
     },
     {
         key: 'tactical',
         label: 'Тактика',
-        icon: 'mdi-sword-cross',
+        icon: 'mdi-sword',
         color: 'purple',
         items: [
             { key: 'checkpoint', label: 'КПП', icon: 'mdi-gate', color: 'blue' },
             { key: 'observation', label: 'Наблюдение', icon: 'mdi-eye', color: 'purple' },
-            { key: 'ambush', label: 'Засада', icon: 'mdi-sword-cross', color: 'red' },
+            { key: 'ambush', label: 'Засада', icon: 'mdi-sword', color: 'red' },
             { key: 'defense', label: 'Оборона', icon: 'mdi-shield', color: 'green' },
             { key: 'attack', label: 'Атака', icon: 'mdi-sword', color: 'red' },
             { key: 'retreat', label: 'Отступление', icon: 'mdi-arrow-left-bold', color: 'orange' }
@@ -75,8 +75,8 @@ export default [{
         color: 'cyan',
         items: [
             { key: 'radio', label: 'Рация', icon: 'mdi-radio', color: 'blue' },
-            { key: 'antenna', label: 'Антенна', icon: 'mdi-antenna', color: 'grey' },
-            { key: 'satellite', label: 'Спутник', icon: 'mdi-satellite-variant', color: 'purple' },
+            { key: 'antenna', label: 'Антенна', icon: 'mdi-signal', color: 'grey' },
+            { key: 'satellite', label: 'Спутник', icon: 'mdi-satellite', color: 'purple' },
             { key: 'signal', label: 'Сигнал', icon: 'mdi-signal', color: 'green' },
             { key: 'jammer', label: 'Глушилка', icon: 'mdi-signal-off', color: 'red' }
         ]
@@ -84,15 +84,22 @@ export default [{
     {
         key: 'infrastructure',
         label: 'Инфраструктура',
-        icon: 'mdi-office-building',
+        icon: 'mdi-domain',
         color: 'grey',
         items: [
-            { key: 'building', label: 'Здание', icon: 'mdi-office-building', color: 'grey' },
+            { key: 'office', label: 'Офис', icon: 'mdi-domain', color: 'grey' },
+            { key: 'hospital', label: 'Больница', icon: 'mdi-hospital', color: 'red' },
+            { key: 'factory', label: 'Завод', icon: 'mdi-factory', color: 'blue' },
+            { key: 'warehouse', label: 'Склад', icon: 'mdi-warehouse', color: 'brown' },
+            { key: 'home', label: 'Дом', icon: 'mdi-home', color: 'green' },
+            { key: 'church', label: 'Церковь', icon: 'mdi-church', color: 'purple' },
+            { key: 'school', label: 'Школа', icon: 'mdi-school', color: 'orange' },
+            { key: 'domain', label: 'Здание', icon: 'mdi-domain', color: 'grey' },
+            { key: 'bank', label: 'Банк', icon: 'mdi-bank', color: 'blue' },
             { key: 'bridge', label: 'Мост', icon: 'mdi-bridge', color: 'brown' },
             { key: 'road', label: 'Дорога', icon: 'mdi-road', color: 'grey' },
-            { key: 'power', label: 'Электростанция', icon: 'mdi-lightning-bolt', color: 'yellow' },
-            { key: 'water-tower', label: 'Водонапорная башня', icon: 'mdi-water-tower', color: 'blue' },
-            { key: 'factory', label: 'Завод', icon: 'mdi-factory', color: 'grey' }
+            { key: 'water-tower', label: 'Водонапорная башня', icon: 'mdi-water-pump', color: 'blue' },
+            { key: 'power', label: 'Электростанция', icon: 'mdi-flash', color: 'yellow' }
         ]
     },
     {
@@ -103,24 +110,24 @@ export default [{
         items: [
             { key: 'enemy', label: 'Противник', icon: 'mdi-target', color: 'red' },
             { key: 'sniper-enemy', label: 'Снайпер противника', icon: 'mdi-crosshairs-gps', color: 'red' },
-            { key: 'minefield', label: 'Минное поле', icon: 'mdi-land-mine-on', color: 'red' },
+            { key: 'minefield', label: 'Минное поле', icon: 'mdi-bomb', color: 'red' },
             { key: 'radiation', label: 'Радиация', icon: 'mdi-radiation', color: 'yellow' },
             { key: 'chemical', label: 'Химическая угроза', icon: 'mdi-flask', color: 'green' },
-            { key: 'biological', label: 'Биологическая угроза', icon: 'mdi-virus', color: 'green' }
+            { key: 'biological', label: 'Биологическая угроза', icon: 'mdi-alert', color: 'green' }
         ]
     },
     {
         key: 'navigation',
         label: 'Навигация',
-        icon: 'mdi-map-marker-star',
+        icon: 'mdi-map-marker',
         color: 'yellow',
         items: [
-            { key: 'landmark', label: 'Ориентир', icon: 'mdi-map-marker-star', color: 'yellow' },
-            { key: 'waypoint', label: 'Точка маршрута', icon: 'mdi-map-marker-path', color: 'blue' },
+            { key: 'landmark', label: 'Ориентир', icon: 'mdi-map-marker', color: 'yellow' },
+            { key: 'waypoint', label: 'Точка маршрута', icon: 'mdi-map-marker', color: 'blue' },
             { key: 'start', label: 'Старт', icon: 'mdi-flag-checkered', color: 'green' },
             { key: 'finish', label: 'Финиш', icon: 'mdi-flag', color: 'red' },
             { key: 'meeting', label: 'Место встречи', icon: 'mdi-account-multiple', color: 'blue' },
-            { key: 'evacuation', label: 'Эвакуация', icon: 'mdi-exit-run', color: 'orange' }
+            { key: 'evacuation', label: 'Эвакуация', icon: 'mdi-exit-to-app', color: 'orange' }
         ]
     },
     {
@@ -131,9 +138,9 @@ export default [{
         items: [
             { key: 'stealth', label: 'Скрытность', icon: 'mdi-eye-off', color: 'purple' },
             { key: 'recon', label: 'Разведка', icon: 'mdi-magnify', color: 'blue' },
-            { key: 'sabotage', label: 'Саботаж', icon: 'mdi-bomb-off', color: 'red' },
+            { key: 'sabotage', label: 'Саботаж', icon: 'mdi-bomb', color: 'red' },
             { key: 'rescue', label: 'Спасение', icon: 'mdi-lifebuoy', color: 'green' },
-            { key: 'extraction', label: 'Экстракция', icon: 'mdi-helicopter', color: 'blue' },
+            { key: 'extraction', label: 'Экстракция', icon: 'mdi-airplane', color: 'blue' },
             { key: 'infiltration', label: 'Проникновение', icon: 'mdi-arrow-up-bold', color: 'purple' }
         ]
     }

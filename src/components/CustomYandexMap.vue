@@ -110,61 +110,37 @@ export default {
     }
 
     // Универсальное получение позиции меню относительно контейнера
-    function getMenuPositionFromEvent(e, container) {
-      // 1. Пробуем pagePixels (Яндекс.Карты)
-      let x, y, source;
+    function getMenuPositionFromEvent(e, container, menuRef = null) {
+      let x, y, source, debug = {};
       if (e.get && typeof e.get === 'function' && e.get('pagePixels')) {
         const pagePixels = e.get('pagePixels');
         const rect = container.getBoundingClientRect();
         x = pagePixels[0] - rect.left;
         y = pagePixels[1] - rect.top;
         source = 'e.get("pagePixels")';
-      } else if (e.domEvent && e.domEvent.originalEvent) {
-        // 2. Пробуем clientX/clientY из вложенного MouseEvent
-        const clientX = e.domEvent.originalEvent.clientX;
-        const clientY = e.domEvent.originalEvent.clientY;
-        const rect = container.getBoundingClientRect();
-        x = clientX - rect.left;
-        y = clientY - rect.top;
-        source = 'e.domEvent.originalEvent';
-      } else if (e.originalEvent) {
-        // 3. Пробуем clientX/clientY из originalEvent
-        const clientX = e.originalEvent.clientX;
-        const clientY = e.originalEvent.clientY;
-        const rect = container.getBoundingClientRect();
-        x = clientX - rect.left;
-        y = clientY - rect.top;
-        source = 'e.originalEvent';
-      } else {
-        // 4. Обычный MouseEvent
-        const clientX = e.clientX;
-        const clientY = e.clientY;
-        const rect = container.getBoundingClientRect();
-        x = clientX - rect.left;
-        y = clientY - rect.top;
-        source = 'e (MouseEvent)';
       }
-      // Учёт границ контейнера
-      const menuWidth = 260, menuHeight = 240;
-      if (x + menuWidth > container.clientWidth) x = container.clientWidth - menuWidth - 8;
-      if (y + menuHeight > container.clientHeight) y = container.clientHeight - menuHeight - 8;
+      // Вычисляем реальные размеры меню, если оно уже есть
+      let menuWidth = 260, menuHeight = 518;
+      if (x + menuWidth > container.clientWidth) x = x - menuWidth;
+      if (y + menuHeight > container.clientHeight) y = y - menuHeight;
       if (x < 0) x = 0;
       if (y < 0) y = 0;
+      console.log('[MdiContextMenu] source:', source, 'x:', x, 'y:', y, debug);
       return { x, y };
     }
 
     function onMapContextMenu(e) {
-      // 1. Географические координаты для маркера (широта/долгота)
+      // 1. Географические координаты для маркера (широта/долгота) — вычисляем один раз
       const markerCoords = getMapCoordsFromEvent(e)
       if (!markerCoords) return
-      // 2. Пиксельные координаты для меню (по курсору, строго относительно containerRef)
+      // 2. Пиксельные координаты для меню (по курсору, строго относительно containerRef) — вычисляем один раз
       const container = containerRef.value
       if (!container) return
       const pos = getMenuPositionFromEvent(e, container)
 
       menu.x = pos.x
       menu.y = pos.y
-      menu.coords = markerCoords
+      menu.coords = markerCoords // сохраняем только здесь
       menu.visible = true
       selectedCategory.value = null
     }
@@ -212,7 +188,7 @@ export default {
       popup.label = ''
       popup.hint = ''
       popup.isOwn = true
-      popup.coords = menu.coords
+      popup.coords = menu.coords // используем только сохранённые coords
       popup.visible = true
       menu.visible = false
     }
@@ -226,7 +202,7 @@ export default {
       const markerId = Date.now() + Math.random()
       const marker = {
         id: markerId,
-        coords: popup.coords,
+        coords: popup.coords, // используем только popup.coords
         icon: {
           layout: 'default#imageWithContent',
           imageHref: pngDataUrl,
