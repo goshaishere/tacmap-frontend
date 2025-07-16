@@ -1,6 +1,6 @@
 <template>
   <div ref="containerRef" style="position:relative;width:100%;height:100%;min-width:0;min-height:0;overflow:hidden;">
-    <yandex-map ref="ymapRef" :coords="center" :zoom="10" class="adaptive-yandex-map" @contextmenu.native.prevent="onMapContextMenu">
+    <yandex-map ref="ymapRef" :coords="center" :zoom="10" class="adaptive-yandex-map" :class="mapFilterClass" @contextmenu.native.prevent="onMapContextMenu">
       <ymap-marker
         v-for="marker in markers"
         :key="marker.id"
@@ -75,7 +75,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onUnmounted, nextTick } from 'vue'
+import { ref, reactive, watch, onUnmounted, nextTick, computed, onMounted } from 'vue'
+import { useTheme } from 'vuetify'
 import MdiContextMenu from './MdiContextMenu.vue'
 import mdiCategories from '../data/markerTypes.js'
 
@@ -255,6 +256,27 @@ async function createMarker() {
     })
   }, 500)
 }
+
+const theme = useTheme()
+const isDark = computed(() => {
+  const currentTheme = theme.current.value?.name || localStorage.getItem('selectedTheme') || 'tacticalLight'
+  return currentTheme === 'tacticalDark'
+})
+const mapFilterClass = computed(() => isDark.value ? 'map-dark-filter' : '')
+
+// --- Управление классом на body для глобального фильтра ---
+// const bodyClass = 'body-dark-filter'
+
+// function updateBodyFilterClass() {
+//   if (isDark.value) {
+//     document.body.classList.add(bodyClass)
+//   } else {
+//     document.body.classList.remove(bodyClass)
+//   }
+// }
+
+// onMounted(updateBodyFilterClass)
+// watch(isDark, updateBodyFilterClass)
 </script>
 
 <style scoped>
@@ -263,4 +285,12 @@ async function createMarker() {
   height: 100% !important;
   display: flex;
 }
-</style> 
+.map-dark-filter {
+  filter: grayscale(0.25) brightness(0.55) contrast(1.15) sepia(0.12) hue-rotate(-5deg) saturate(1.1) !important;
+}
+</style>
+<!-- <style>
+.body-dark-filter {
+  filter: grayscale(0.3) brightness(0.6) contrast(1.2) sepia(0.2) hue-rotate(-10deg) !important;
+}
+</style>  -->
