@@ -22,26 +22,46 @@ export function getPriorityLabel(priority) {
 
 // Цвета статусов
 export function getStatusColor(status) {
-    const colors = {
-        pending: 'warning',
-        'in-progress': 'info',
-        completed: 'success',
-        cancelled: 'error',
-        'on-hold': 'grey'
+    switch (status) {
+        case 'created':
+            return 'warning'
+        case 'assigned':
+            return 'info'
+        case 'in-progress':
+            return 'primary'
+        case 'review':
+            return 'purple'
+        case 'completed':
+            return 'success'
+        case 'on-hold':
+            return 'grey'
+        case 'cancelled':
+            return 'error'
+        default:
+            return 'grey'
     }
-    return colors[status] || 'grey'
 }
 
 // Иконки статусов
 export function getStatusIcon(status) {
-    const icons = {
-        pending: 'mdi-clock-outline',
-        'in-progress': 'mdi-play-circle-outline',
-        completed: 'mdi-check-circle-outline',
-        cancelled: 'mdi-close-circle-outline',
-        'on-hold': 'mdi-pause-circle-outline'
+    switch (status) {
+        case 'created':
+            return 'mdi-folder-plus-outline'
+        case 'assigned':
+            return 'mdi-account-arrow-right-outline'
+        case 'in-progress':
+            return 'mdi-progress-clock'
+        case 'review':
+            return 'mdi-eye-check-outline'
+        case 'completed':
+            return 'mdi-check-circle-outline'
+        case 'on-hold':
+            return 'mdi-pause-circle-outline'
+        case 'cancelled':
+            return 'mdi-close-circle-outline'
+        default:
+            return 'mdi-checkbox-blank-circle-outline'
     }
-    return icons[status] || 'mdi-help-circle-outline'
 }
 
 // Лейблы статусов
@@ -70,5 +90,26 @@ export function formatDate(date) {
         return 'Завтра'
     } else {
         return taskDate.toLocaleDateString('ru-RU')
+    }
+}
+
+export function getStatusIconColor(status) {
+    switch (status) {
+        case 'created':
+            return 'warning' // всегда жёлтый, независимо от темы
+        case 'assigned':
+            return 'info'
+        case 'in-progress':
+            return 'primary'
+        case 'review':
+            return 'purple'
+        case 'completed':
+            return 'success'
+        case 'on-hold':
+            return 'grey'
+        case 'cancelled':
+            return 'error'
+        default:
+            return 'grey'
     }
 }

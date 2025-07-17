@@ -1,203 +1,184 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { defineStore } from 'pinia';
+import { onMounted } from 'vue';
 
-export const useTasksStore = defineStore('tasks', () => {
-    // Состояние
-    const tasks = ref([])
-    const loading = ref(false)
-    const error = ref(null)
-    const filters = ref({
-        status: 'all',
-        priority: 'all',
-        assignedTo: 'all',
-        search: ''
-    })
-
-    // Типы задач
-    const taskTypes = {
-        RECONNAISSANCE: 'reconnaissance',
-        COMBAT: 'combat',
-        SUPPORT: 'support',
-        MEDICAL: 'medical',
-        TRANSPORT: 'transport',
-        COMMUNICATION: 'communication'
-    }
-
-    // Статусы задач
-    const taskStatuses = {
-        PENDING: 'pending',
-        IN_PROGRESS: 'in-progress',
-        COMPLETED: 'completed',
-        CANCELLED: 'cancelled',
-        ON_HOLD: 'on-hold'
-    }
-
-    // Приоритеты
-    const priorities = {
-        LOW: 'low',
-        MEDIUM: 'medium',
-        HIGH: 'high',
-        CRITICAL: 'critical'
-    }
-
-    // Геттеры
-    const totalTasks = computed(() => tasks.value.length)
-
-    const pendingTasks = computed(() =>
-        tasks.value.filter(task => task.status === taskStatuses.PENDING)
-    )
-
-    const inProgressTasks = computed(() =>
-        tasks.value.filter(task => task.status === taskStatuses.IN_PROGRESS)
-    )
-
-    const completedTasks = computed(() =>
-        tasks.value.filter(task => task.status === taskStatuses.COMPLETED)
-    )
-
-    const filteredTasks = computed(() => {
-        let filtered = tasks.value
-
-        // Фильтр по статусу
-        if (filters.value.status !== 'all') {
-            filtered = filtered.filter(task => task.status === filters.value.status)
-        }
-
-        // Фильтр по приоритету
-        if (filters.value.priority !== 'all') {
-            filtered = filtered.filter(task => task.priority === filters.value.priority)
-        }
-
-        // Фильтр по назначенному
-        if (filters.value.assignedTo !== 'all') {
-            filtered = filtered.filter(task => task.assignedTo === filters.value.assignedTo)
-        }
-
-        // Поиск
-        if (filters.value.search) {
-            const searchLower = filters.value.search.toLowerCase()
-            filtered = filtered.filter(task =>
-                task.title.toLowerCase().includes(searchLower) ||
-                task.description.toLowerCase().includes(searchLower)
-            )
-        }
-
-        return filtered
-    })
-
-    // Действия
-    const addTask = (task) => {
-        const newTask = {
-            id: Date.now() + Math.random(),
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            status: taskStatuses.PENDING,
-            ...task
-        }
-        tasks.value.unshift(newTask)
-        return newTask
-    }
-
-    const updateTask = (taskId, updates) => {
-        const index = tasks.value.findIndex(task => task.id === taskId)
-        if (index !== -1) {
-            tasks.value[index] = {
-                ...tasks.value[index],
-                ...updates,
-                updatedAt: new Date().toISOString()
-            }
-        }
-    }
-
-    const deleteTask = (taskId) => {
-        const index = tasks.value.findIndex(task => task.id === taskId)
-        if (index !== -1) {
-            tasks.value.splice(index, 1)
-        }
-    }
-
-    const changeTaskStatus = (taskId, newStatus) => {
-        updateTask(taskId, { status: newStatus })
-    }
-
-    const assignTask = (taskId, userId) => {
-        updateTask(taskId, { assignedTo: userId })
-    }
-
-    const setFilters = (newFilters) => {
-        filters.value = {...filters.value, ...newFilters }
-    }
-
-    const clearFilters = () => {
-        filters.value = {
+export const useTasksStore = defineStore('tasks', {
+    state: () => ({
+        tasks: [],
+        loading: false,
+        error: null,
+        filters: {
+            search: '',
             status: 'all',
             priority: 'all',
-            assignedTo: 'all',
-            search: ''
-        }
-    }
-
-    const getTaskById = (taskId) => {
-        return tasks.value.find(task => task.id === taskId)
-    }
-
-    const getTasksByStatus = (status) => {
-        return tasks.value.filter(task => task.status === status)
-    }
-
-    const getTasksByPriority = (priority) => {
-        return tasks.value.filter(task => task.priority === priority)
-    }
-
-    // Мобильные утилиты
-    const getTasksForMobile = () => {
-        return filteredTasks.value.map(task => ({
-            id: task.id,
-            title: task.title,
-            status: task.status,
-            priority: task.priority,
-            assignedTo: task.assignedTo,
-            dueDate: task.dueDate,
-            location: task.location,
-            // Сокращенное описание для мобильных
-            shortDescription: task.description && task.description.length > 100 ?
-                task.description.substring(0, 100) + '...' :
-                task.description
-        }))
-    }
-
-    return {
-        // Состояние
-        tasks,
-        loading,
-        error,
-        filters,
-
-        // Константы
-        taskTypes,
-        taskStatuses,
-        priorities,
-
-        // Геттеры
-        totalTasks,
-        pendingTasks,
-        inProgressTasks,
-        completedTasks,
-        filteredTasks,
-
-        // Действия
-        addTask,
-        updateTask,
-        deleteTask,
-        changeTaskStatus,
-        assignTask,
-        setFilters,
-        clearFilters,
-        getTaskById,
-        getTasksByStatus,
-        getTasksByPriority,
-
-        // Мобильные утилиты
-        getTasksForMobile
-    }
-})
+        },
+        activeTab: 'all',
+        comments: {}, // { [taskId]: [{id, author, text, date}] }
+    }),
+    getters: {
+        totalTasks: (state) => state.tasks.length,
+        pendingTasks: (state) => state.tasks.filter(t => t.status === 'pending'),
+        inProgressTasks: (state) => state.tasks.filter(t => t.status === 'in-progress'),
+        completedTasks: (state) => state.tasks.filter(t => t.status === 'completed'),
+        filteredTasks: (state) => {
+            let filtered = state.tasks;
+            if (state.filters.status !== 'all') {
+                filtered = filtered.filter(task => task.status === state.filters.status);
+            }
+            if (state.filters.priority !== 'all') {
+                filtered = filtered.filter(task => task.priority === state.filters.priority);
+            }
+            if (state.filters.search) {
+                const searchLower = state.filters.search.toLowerCase();
+                filtered = filtered.filter(task =>
+                    task.title.toLowerCase().includes(searchLower) ||
+                    task.description.toLowerCase().includes(searchLower)
+                );
+            }
+            if (state.activeTab !== 'all') {
+                filtered = filtered.filter(task => task.status === state.activeTab);
+            }
+            return filtered;
+        },
+        getCommentsByTaskId: (state) => (taskId) => state.comments[taskId] || [],
+    },
+    actions: {
+        async fetchTasks() {
+            this.loading = true;
+            try {
+                // TODO: заменить на реальный API-запрос
+                // const res = await fetch('/api/tasks');
+                // this.tasks = await res.json();
+                this.tasks = [];
+                this.error = null;
+            } catch (e) {
+                this.error = e;
+            } finally {
+                this.loading = false;
+            }
+        },
+        async addTask(task) {
+            // TODO: заменить на реальный API-запрос
+            this.tasks.push(task);
+        },
+        async deleteTask(id) {
+            this.tasks = this.tasks.filter(t => t.id !== id);
+        },
+        setFilter(key, value) {
+            this.filters[key] = value;
+        },
+        clearFilters() {
+            this.filters = { search: '', status: 'all', priority: 'all' };
+        },
+        setActiveTab(tab) {
+            this.activeTab = tab;
+        },
+        addDemoTasks() {
+            this.tasks = [{
+                    id: 1,
+                    title: 'Разведка местности',
+                    description: 'Провести разведку в секторе А-1',
+                    status: 'created',
+                    priority: 'medium',
+                    type: 'reconnaissance',
+                    assignedTo: null,
+                    dueDate: null,
+                    location: 'Сектор А-1',
+                },
+                {
+                    id: 2,
+                    title: 'Назначить медика',
+                    description: 'Назначить медика для группы Браво',
+                    status: 'assigned',
+                    priority: 'high',
+                    type: 'medical',
+                    assignedTo: { name: 'Иван Петров', avatar: '' },
+                    dueDate: null,
+                    location: 'База',
+                },
+                {
+                    id: 3,
+                    title: 'Штурм здания',
+                    description: 'Начать штурм здания 12',
+                    status: 'in-progress',
+                    priority: 'critical',
+                    type: 'combat',
+                    assignedTo: { name: 'Мария Сидорова', avatar: '' },
+                    dueDate: null,
+                    location: 'Здание 12',
+                },
+                {
+                    id: 4,
+                    title: 'Проверка связи',
+                    description: 'Провести тест радиосвязи',
+                    status: 'review',
+                    priority: 'low',
+                    type: 'communication',
+                    assignedTo: { name: 'Алексей Козлов', avatar: '' },
+                    dueDate: null,
+                    location: 'Пункт связи',
+                },
+                {
+                    id: 5,
+                    title: 'Доставка боеприпасов',
+                    description: 'Доставить боеприпасы на передовую',
+                    status: 'completed',
+                    priority: 'medium',
+                    type: 'transport',
+                    assignedTo: { name: 'Елена Воробьева', avatar: '' },
+                    dueDate: null,
+                    location: 'Передовая',
+                },
+                {
+                    id: 6,
+                    title: 'Ожидание приказа',
+                    description: 'Ожидать дальнейших указаний',
+                    status: 'on-hold',
+                    priority: 'low',
+                    type: 'support',
+                    assignedTo: null,
+                    dueDate: null,
+                    location: 'Штаб',
+                },
+                {
+                    id: 7,
+                    title: 'Отмена операции',
+                    description: 'Операция отменена по приказу штаба',
+                    status: 'cancelled',
+                    priority: 'critical',
+                    type: 'combat',
+                    assignedTo: null,
+                    dueDate: null,
+                    location: 'Сектор D',
+                },
+            ];
+        },
+        updateTaskStatus(id, newStatus) {
+            const idx = this.tasks.findIndex(t => t.id === id);
+            if (idx !== -1) {
+                this.tasks[idx].status = newStatus;
+            }
+        },
+        updateTask(updatedTask) {
+            const idx = this.tasks.findIndex(t => t.id === updatedTask.id);
+            if (idx !== -1) {
+                this.tasks[idx] = {...this.tasks[idx], ...updatedTask };
+            }
+        },
+        addComment(taskId, comment) {
+            if (!this.comments[taskId]) {
+                this.comments[taskId] = [];
+            }
+            this.comments[taskId].push({
+                id: Date.now() + Math.random(),
+                author: comment.author,
+                text: comment.text,
+                date: new Date().toISOString(),
+            });
+        },
+        fetchComments(taskId) {
+            // Здесь может быть запрос к API, сейчас просто возвращаем из state
+            return this.comments[taskId] || [];
+        },
+        // Можно добавить updateTask и другие actions
+    },
+});

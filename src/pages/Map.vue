@@ -8,9 +8,9 @@
 import CustomYandexMap from '../components/CustomYandexMap.vue'
 </script>
 
-<style>
+<!-- <style>
 body, html, .v-main {
   overflow: hidden !important;
   overscroll-behavior: none !important;
 }
-</style> 
+</style>  -->

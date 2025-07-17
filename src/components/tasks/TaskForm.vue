@@ -269,24 +269,25 @@ const closeDialog = () => {
   emit('cancelled')
 }
 
-const saveTask = async () => {
+const saveTask = () => {
   if (!form.value.validate()) return
 
   loading.value = true
 
   try {
+    const isAssigned = !!formData.assignedTo
     const taskData = {
       ...formData,
-      // Форматируем дату
-      dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : null
+      status: isEditing.value ? (props.task.status || 'created') : (isAssigned ? 'assigned' : 'created'),
+      dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : null,
+      id: isEditing.value ? props.task.id : Date.now() + Math.random(),
     }
 
     if (isEditing.value) {
-      // Обновляем существующую задачу
-      tasksStore.updateTask(props.task.id, taskData)
+      tasksStore.updateTask(taskData)
     } else {
-      // Создаем новую задачу
-      const newTask = tasksStore.addTask(taskData)
+      tasksStore.addTask(taskData)
+      resetForm() // очищаем форму после создания
     }
 
     emit('saved', taskData)
