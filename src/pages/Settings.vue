@@ -3,10 +3,10 @@
     <v-container fluid class="pa-0 pa-md-4">
       <v-row>
         <v-col cols="12">
-          <h1 class="text-h4 text-on-surface mb-4 d-flex align-center">
-              <v-icon class="me-2">mdi-cog</v-icon>
-              Настройки приложения
-          </h1>
+          <div class="text-h4 text-on-surface d-flex align-center mb-0">
+            <v-icon class="me-3" color="accent">mdi-cog</v-icon>
+            Настройки
+          </div>
         </v-col>
       </v-row>
       <v-row class="g-4">

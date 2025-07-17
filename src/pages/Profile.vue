@@ -3,10 +3,10 @@
     <v-container fluid class="pa-0 pa-md-4">
       <v-row>
         <v-col cols="12">
-          <h1 :class="[styles['profile-title']]">
-              <v-icon :class="styles['profile-title-icon']">mdi-account-edit</v-icon>
-              Редактирование профиля
-          </h1>
+          <div class="text-h4 text-on-surface d-flex align-center mb-0">
+            <v-icon class="me-3" color="accent">mdi-account-edit</v-icon>
+            Редактирование профиля
+          </div>
         </v-col>
       </v-row>
       <v-row class="g-4">

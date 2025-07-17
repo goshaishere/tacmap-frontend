@@ -3,10 +3,10 @@
     <v-container>
       <v-row>
         <v-col cols="12">
-          <h1 class="text-h4 text-on-surface mb-4">
-            <v-icon class="me-3">mdi-help-circle</v-icon>
+          <div class="text-h4 text-on-surface d-flex align-center mb-0">
+            <v-icon class="me-3" color="accent">mdi-help-circle</v-icon>
             Справочная информация
-          </h1>
+          </div>
         </v-col>
       </v-row>
 

@@ -1,20 +1,12 @@
 <template>
-  <v-card 
-    class="task-card mb-3" 
-    flat
-    @click="handleCardClick"
-  >
+  <v-card class="task-card mb-3" flat @click="handleCardClick">
     <v-card-text class="pa-4">
       <!-- Заголовок и приоритет -->
       <div class="d-flex align-center justify-space-between mb-3">
         <h3 class="text-h6 font-weight-medium task-title">
           {{ task.title }}
         </h3>
-        <v-chip 
-          :color="getPriorityColor(task.priority)" 
-          size="small"
-          class="priority-chip"
-        >
+        <v-chip :color="getPriorityColor(task.priority)" size="small" class="priority-chip">
           {{ getPriorityLabel(task.priority) }}
         </v-chip>
       </div>
@@ -28,11 +20,7 @@
       <div class="task-meta">
         <!-- Статус -->
         <div class="d-flex align-center mb-2">
-          <v-icon 
-            :color="getStatusIconColor(task.status)" 
-            size="small" 
-            class="me-2"
-          >
+          <v-icon :color="getStatusIconColor(task.status)" size="small" class="me-2">
             {{ getStatusIcon(task.status) }}
           </v-icon>
           <span class="text-caption">{{ getStatusLabel(task.status) }}</span>
@@ -65,125 +53,83 @@
       </div>
 
       <!-- Действия (только на десктопе) -->
-      <div v-if="!$vuetify.display.smAndDown" class="task-actions mt-3 task-card-footer">
-        <v-btn 
-          v-if="task.status === 'created'"
-          color="accent" 
-          variant="outlined" 
-          size="small"
-          @click.stop="openAssignDialog"
-        >
-          Назначить
-        </v-btn>
-        <v-btn 
-          v-if="task.status === 'assigned'"
-          color="primary" 
-          variant="outlined" 
-          size="small"
-          @click.stop="startTask"
-        >
-          Начать
-        </v-btn>
-        <v-btn 
-          v-if="task.status === 'in-progress'"
-          color="success" 
-          variant="outlined" 
-          size="small"
-          @click.stop="completeTask"
-        >
-          Завершить
-        </v-btn>
-        <v-btn 
-          v-if="task.status === 'review'"
-          color="success" 
-          variant="outlined" 
-          size="small"
-          @click.stop="acceptTask"
-        >
-          Принять
-        </v-btn>
-        <v-btn 
-          v-if="task.status === 'review'"
-          color="warning" 
-          variant="outlined" 
-          size="small"
-          @click.stop="returnTask"
-        >
-          Вернуть
-        </v-btn>
-        <v-btn 
-          color="error" 
-          variant="outlined" 
-          size="small"
-          @click.stop="deleteTask"
-        >
-          Удалить
-        </v-btn>
+      <div v-if="!$vuetify.display.smAndDown" class="task-actions mt-3">
+        <v-row>
+          <v-col class="d-flex flex-column ga-2">
+            <v-btn v-if="task.status === 'created'" color="accent" variant="outlined" size="small"
+              @click.stop="openAssignDialog">
+              Назначить
+            </v-btn>
+            <v-btn v-if="task.status === 'assigned'" color="primary" variant="outlined" size="small"
+              @click.stop="startTask">
+              Начать
+            </v-btn>
+            <v-btn v-if="task.status === 'in-progress'" color="success" variant="outlined" size="small"
+              @click.stop="completeTask">
+              Завершить
+            </v-btn>
+            <template v-if="task.status === 'review'">
+              <v-btn color="success" variant="outlined" size="small" @click.stop="acceptTask">
+                Принять
+              </v-btn>
+              <v-btn color="warning" variant="outlined" size="small" @click.stop="returnTask">
+                Вернуть
+              </v-btn>
+            </template>
+          </v-col>
+
+        </v-row>
+        <v-row>
+          <v-col class="d-flex flex-column ga-2">
+            <v-btn color="grey" variant="outlined" size="small" @click.stop="pauseTask">
+              Приостановить
+            </v-btn>
+            <v-btn color="error" variant="outlined" size="small" @click.stop="cancelTask">
+              Отменить
+            </v-btn>
+          </v-col>
+
+        </v-row>
       </div>
-      <!-- Мобильные действия (swipe) -->
+      <!-- Мобильные действия -->
       <div v-if="$vuetify.display.smAndDown" class="task-swipe-actions task-card-footer pa-2">
-        <v-btn 
-          v-if="task.status === 'created'"
-          color="accent" 
-          variant="flat"
-          @click.stop="openAssignDialog"
-        >
-          Назначить
-        </v-btn>
-        <v-btn 
-          v-if="task.status === 'assigned'"
-          color="primary" 
-          variant="flat"
-          @click.stop="startTask"
-        >
-          Начать
-        </v-btn>
-        <v-btn 
-          v-if="task.status === 'in-progress'"
-          color="success" 
-          variant="flat"
-          @click.stop="completeTask"
-        >
-          Завершить
-        </v-btn>
-        <v-btn 
-          v-if="task.status === 'review'"
-          color="success" 
-          variant="flat"
-          @click.stop="acceptTask"
-        >
-          Принять
-        </v-btn>
-        <v-btn 
-          v-if="task.status === 'review'"
-          color="warning" 
-          variant="flat"
-          @click.stop="returnTask"
-        >
-          Вернуть
-        </v-btn>
-        <v-btn 
-          color="error" 
-          variant="flat"
-          @click.stop="deleteTask"
-        >
-          Удалить
-        </v-btn>
+        <div class="main-actions-row d-flex flex-column ga-2 mb-2">
+          <v-btn v-if="task.status === 'created'" color="accent" variant="outlined" size="small"
+            @click.stop="openAssignDialog">
+            Назначить
+          </v-btn>
+          <v-btn v-if="task.status === 'assigned'" color="primary" variant="outlined" size="small" @click.stop="startTask">
+            Начать
+          </v-btn>
+          <v-btn v-if="task.status === 'in-progress'" color="success" variant="outlined" size="small"
+            @click.stop="completeTask">
+            Завершить
+          </v-btn>
+          <template v-if="task.status === 'review'">
+            <v-btn color="success" variant="outlined" size="small" @click.stop="acceptTask">
+              Принять
+            </v-btn>
+            <v-btn color="warning" variant="outlined" size="small" @click.stop="returnTask">
+              Вернуть
+            </v-btn>
+          </template>
+        </div>
+        <div class="stock-actions-row d-flex flex-column ga-2">
+          <v-btn color="grey" variant="outlined" size="small" @click.stop="pauseTask">
+            Приостановить
+          </v-btn>
+          <v-btn color="error" variant="outlined" size="small" @click.stop="cancelTask">
+            Отменить
+          </v-btn>
+        </div>
       </div>
       <!-- Диалог назначения -->
       <v-dialog v-model="assignDialog" max-width="340px">
         <v-card>
           <v-card-title class="text-h6">Назначить исполнителя</v-card-title>
           <v-card-text>
-            <v-select
-              v-model="selectedUser"
-              :items="userOptions"
-              label="Выберите пользователя"
-              item-title="title"
-              item-value="value"
-              return-object
-              variant="outlined"
-            />
+            <v-select v-model="selectedUser" :items="userOptions" label="Выберите пользователя" item-title="title"
+              item-value="value" return-object variant="outlined" />
           </v-card-text>
           <v-card-actions>
             <v-spacer />
@@ -207,7 +153,6 @@ import {
   formatDate,
   getStatusIconColor
 } from '../../utils/taskUtils.js'
-import '../../styles/TaskCard.module.scss'
 import { ref } from 'vue'
 
 const props = defineProps({
@@ -266,35 +211,14 @@ const returnTask = () => {
   tasksStore.updateTaskStatus(props.task.id, 'assigned')
   emit('status-change', { taskId: props.task.id, status: 'assigned' })
 }
-</script> 
-
-<style scoped>
-.task-avatar-row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+const pauseTask = () => {
+  tasksStore.updateTaskStatus(props.task.id, 'on-hold')
+  emit('status-change', { taskId: props.task.id, status: 'on-hold' })
 }
-.task-avatar-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  max-width: 24px;
-  min-height: 24px;
-  max-height: 24px;
-  margin-right: 6px;
+const cancelTask = () => {
+  if (confirm('Вы уверены, что хотите отменить эту задачу?')) {
+    tasksStore.updateTaskStatus(props.task.id, 'cancelled')
+    emit('status-change', { taskId: props.task.id, status: 'cancelled' })
+  }
 }
-.task-avatar-row .text-caption {
-  display: flex;
-  align-items: center;
-  height: 24px;
-  line-height: 24px;
-}
-.task-actions,
-.task-swipe-actions {
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-  align-items: center;
-}
-</style> 
+</script>
