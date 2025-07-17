@@ -23,9 +23,52 @@
         </v-col>
       </v-row>
       <template v-if="isMobile">
+        <div class="mobile-filter-row d-flex align-center mb-2">
+          <v-slide-group
+            class="task-mobile-filter"
+            show-arrows
+          >
+            <v-slide-group-item value="all">
+              <v-chip
+                :variant="!mobileStatusFilter.length ? 'flat' : 'outlined'"
+                color="primary"
+                class="ma-1"
+                @click="resetMobileStatusFilter"
+              >
+                Все
+              </v-chip>
+            </v-slide-group-item>
+            <v-slide-group-item
+              v-for="col in statusColumns"
+              :key="col.status"
+              :value="col.status"
+            >
+              <v-chip
+                :color="col.color"
+                :variant="mobileStatusFilter.includes(col.status) ? 'flat' : 'outlined'"
+                class="ma-1"
+                @click="toggleMobileStatusFilter(col.status)"
+              >
+                {{ col.label }}
+              </v-chip>
+            </v-slide-group-item>
+          </v-slide-group>
+          <v-btn
+            v-if="mobileStatusFilter.length"
+            icon
+            size="small"
+            color="accent"
+            variant="outlined"
+            class="filter-clear-x-outer ms-2"
+            style="border-radius: 50%; border-width: 1.5px;"
+            @click="resetMobileStatusFilter"
+          >
+            <v-icon color="accent">mdi-close</v-icon>
+          </v-btn>
+        </div>
         <v-list class="task-list-mobile">
           <TaskCard
-            v-for="task in allTasks"
+            v-for="task in filteredMobileTasks"
             :key="task.id"
             :task="task"
             class="mb-4"
@@ -234,6 +277,22 @@ const handleTaskAction = ({ taskId, action }) => {
   tasksStore.handleTaskAction(taskId, action)
 }
 
+const mobileStatusFilter = ref([])
+const toggleMobileStatusFilter = (status) => {
+  if (mobileStatusFilter.value.includes(status)) {
+    mobileStatusFilter.value = mobileStatusFilter.value.filter(s => s !== status)
+  } else {
+    mobileStatusFilter.value.push(status)
+  }
+}
+const resetMobileStatusFilter = () => {
+  mobileStatusFilter.value = []
+}
+const filteredMobileTasks = computed(() => {
+  if (!mobileStatusFilter.value.length) return allTasks.value
+  return allTasks.value.filter(t => mobileStatusFilter.value.includes(t.status))
+})
+
 </script> 
 
 <style scoped>
@@ -260,5 +319,43 @@ const handleTaskAction = ({ taskId, action }) => {
   .kanban-column-horizontal {
     max-width: 260px;
   }
+}
+.task-list-mobile {
+  width: 100%;
+  max-width: 100vw;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+@media (max-width: 768px) {
+  .tasks-page {
+    overflow-x: hidden;
+  }
+}
+.task-mobile-filter {
+  width: 100vw;
+  max-width: 100vw;
+  overflow-x: auto;
+  margin-left: -16px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+.filter-clear-x {
+  margin-left: 4px;
+  display: flex;
+  align-items: center;
+}
+.mobile-filter-row {
+  width: 100vw;
+  max-width: 100vw;
+  overflow-x: auto;
+  margin-left: -16px;
+  padding-left: 8px;
+  padding-right: 8px;
+  position: relative;
+}
+.filter-clear-x-outer {
+  margin-left: 8px;
+  flex-shrink: 0;
 }
 </style> 
