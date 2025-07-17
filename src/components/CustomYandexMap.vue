@@ -79,9 +79,11 @@ import { ref, reactive, watch, onUnmounted, nextTick, computed, onMounted } from
 import { useTheme } from 'vuetify'
 import MdiContextMenu from './MdiContextMenu.vue'
 import mdiCategories from '../data/markerTypes.js'
+import { useMapStore } from '../store/map.js'
 
 const center = ref([54, 39])
-const markers = ref([])
+const mapStore = useMapStore()
+const markers = computed(() => mapStore.allMarkers)
 const menu = reactive({ visible: false, x: 0, y: 0, coords: null })
 const containerRef = ref(null)
 const ymapRef = ref(null)
@@ -230,7 +232,7 @@ async function createMarker() {
       ...(popup.hint ? { hintContent: popup.hint } : {})
     }
   }
-  markers.value.push(marker)
+  mapStore.addMarker(marker)
   popup.visible = false
   popup.icon = null
   popup.coords = null
@@ -264,19 +266,6 @@ const isDark = computed(() => {
 })
 const mapFilterClass = computed(() => isDark.value ? 'map-dark-filter' : '')
 
-// --- Управление классом на body для глобального фильтра ---
-// const bodyClass = 'body-dark-filter'
-
-// function updateBodyFilterClass() {
-//   if (isDark.value) {
-//     document.body.classList.add(bodyClass)
-//   } else {
-//     document.body.classList.remove(bodyClass)
-//   }
-// }
-
-// onMounted(updateBodyFilterClass)
-// watch(isDark, updateBodyFilterClass)
 </script>
 
 <style scoped>
@@ -289,8 +278,3 @@ const mapFilterClass = computed(() => isDark.value ? 'map-dark-filter' : '')
   filter: grayscale(0.25) brightness(0.55) contrast(1.15) sepia(0.12) hue-rotate(-5deg) saturate(1.1) !important;
 }
 </style>
-<!-- <style>
-.body-dark-filter {
-  filter: grayscale(0.3) brightness(0.6) contrast(1.2) sepia(0.2) hue-rotate(-10deg) !important;
-}
-</style>  -->
