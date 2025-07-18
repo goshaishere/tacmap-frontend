@@ -73,6 +73,7 @@
           mode="edit"
           @save="onSaveMarker"
           @change-coords="startChangeCoords"
+          @delete-marker="onDeleteMarker"
         />
       </v-dialog>
       <EditMarkerDialog
@@ -93,6 +94,7 @@ import mdiCategories from '../../data/markerTypes.js'
 import { yandexMap, ymapMarker } from 'vue-yandex-maps'
 import { useMarkerBalloon } from '../../composables/useMarkerBalloon.js'
 import EditMarkerDialog from '../EditMarkerDialog.vue'
+import { useMapStore } from '../../store/map.js'
 
 defineExpose({})
 
@@ -128,6 +130,8 @@ const draftDialogOpen = ref(false)
 const draftMarker = ref(null)
 const draftChangeCoordsMode = ref(false)
 const draftCoordsHint = ref('')
+
+const mapStore = useMapStore()
 
 function openEditMarker(marker) {
   markerToEdit.value = { ...marker }
@@ -207,7 +211,7 @@ function onBack() {
 function onMenuIconSelect(icon) {
   if (!menu.coords) return
   draftMarker.value = {
-    id: Date.now() + Math.random(),
+    id: String(Date.now() + Math.random()),
     coords: menu.coords,
     icon: icon.icon,
     label: '',
@@ -284,6 +288,17 @@ async function mdiIconToPngDataUrl(mdiIconName, color = '#1976D2', size = 43) {
 
 function getMapCoordsFromEvent(e) {
   return (e && typeof e.get === 'function') ? e.get('coords') : null
+}
+
+function onDeleteMarker(marker) {
+  mapStore.removeMarker(marker.id)
+  // Также удаляем из localMarkers для локального отображения
+  const idx = localMarkers.value.findIndex(m => m.id === marker.id)
+  if (idx !== -1) {
+    localMarkers.value.splice(idx, 1)
+    updateRenderedMarkers()
+  }
+  editMarkerDialogOpen.value = false
 }
 </script> 
 

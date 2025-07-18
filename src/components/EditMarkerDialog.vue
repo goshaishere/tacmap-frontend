@@ -49,10 +49,11 @@
           </ul>
         </div>
       </v-card-text>
-      <v-card-actions>
+      <v-card-actions class="flex-column align-stretch" style="gap: 8px;">
         <v-btn color="primary" @click="save">Сохранить</v-btn>
         <v-btn @click="close">Отмена</v-btn>
         <v-btn v-if="props.mode === 'edit'" color="secondary" @click="changeCoords">Изменить координаты</v-btn>
+        <v-btn v-if="props.mode === 'edit'" color="error" @click="deleteMarker">Удалить маркер</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -65,7 +66,7 @@ const props = defineProps({
   marker: Object,
   mode: { type: String, default: 'edit' }
 })
-const emit = defineEmits(['update:modelValue', 'save', 'change-coords'])
+const emit = defineEmits(['update:modelValue', 'save', 'change-coords', 'delete-marker'])
 
 const visibleProxy = computed({
   get: () => props.modelValue,
@@ -103,6 +104,10 @@ function removeAttachment(idx) {
 }
 function changeCoords() {
   emit('change-coords')
+  emit('update:modelValue', false)
+}
+function deleteMarker() {
+  emit('delete-marker', { ...localMarker.value })
   emit('update:modelValue', false)
 }
 </script> 

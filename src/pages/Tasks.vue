@@ -127,9 +127,14 @@
         <v-card v-if="selectedTask" class="task-details-card">
           <v-card-title class="d-flex align-center justify-space-between pa-4">
             <span class="text-h6">{{ selectedTask.title }}</span>
-            <v-btn icon @click="showTaskDetails = false">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
+            <div class="d-flex align-center" style="gap: 12px;">
+              <v-chip :color="getPriorityColor(selectedTask.priority)" size="small">
+                {{ getPriorityLabel(selectedTask.priority) }}
+              </v-chip>
+              <v-btn icon @click="showTaskDetails = false">
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </div>
           </v-card-title>
           <v-card-text class="pa-4">
             <p class="text-body-1 mb-4">{{ selectedTask.description }}</p>
@@ -189,7 +194,7 @@ import TaskCard from '../components/tasks/TaskCard.vue'
 import TaskForm from '../components/tasks/TaskForm.vue'
 import draggable from 'vuedraggable'
 import '../styles/TasksPage.module.scss'
-import { getStatusColor, getStatusLabel } from '../utils/taskUtils.js'
+import { getStatusColor, getStatusLabel, getPriorityColor, getPriorityLabel } from '../utils/taskUtils.js'
 
 const tasksStore = useTasksStore()
 const display = useDisplay()

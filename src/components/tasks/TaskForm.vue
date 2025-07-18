@@ -11,9 +11,14 @@
         <span class="text-h6">
           {{ isEditing ? 'Редактировать задачу' : 'Создать задачу' }}
         </span>
-        <v-btn icon @click="closeDialog">
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
+        <div class="d-flex align-center" style="gap: 12px;">
+          <v-chip v-if="isEditing" :color="getPriorityColor(formData.priority)" size="small">
+            {{ getPriorityLabel(formData.priority) }}
+          </v-chip>
+          <v-btn icon @click="closeDialog">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </div>
       </v-card-title>
 
       <v-card-text class="pa-4">
@@ -171,6 +176,7 @@ import { ref, reactive, computed, watch } from 'vue'
 import { useTasksStore } from '../../store/tasks.js'
 import '../../styles/TaskForm.module.scss'
 import MapMarkerPicker from './MapMarkerPicker.vue'
+import { getPriorityColor, getPriorityLabel } from '../../utils/taskUtils.js'
 
 const props = defineProps({
   modelValue: {

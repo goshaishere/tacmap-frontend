@@ -97,6 +97,7 @@
         :marker="markerToEdit"
         @save="onSaveMarker"
         @change-coords="startChangeCoords"
+        @delete-marker="onDeleteMarker"
       />
     </v-dialog>
   </div>
@@ -350,6 +351,11 @@ function onMapClick(e) {
 }
 function onSaveMarker(updatedMarker) {
   mapStore.updateMarker(updatedMarker)
+  editMarkerDialogOpen.value = false
+}
+
+function onDeleteMarker(marker) {
+  mapStore.removeMarker(marker.id)
   editMarkerDialogOpen.value = false
 }
 
