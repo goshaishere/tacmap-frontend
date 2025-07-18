@@ -1,15 +1,24 @@
 <template>
   <div ref="containerRef" style="position:relative;width:100%;height:100%;min-width:0;min-height:0;overflow:hidden;">
-    <yandex-map ref="ymapRef" :coords="center" :zoom="mapZoom" class="adaptive-yandex-map" :class="mapFilterClass" @contextmenu.native.prevent="onMapContextMenu">
+    <yandex-map ref="ymapRef" :coords="center" :zoom="mapZoom" class="adaptive-yandex-map" :class="mapFilterClass" @contextmenu.native.prevent="onMapContextMenu" @click="onMapClick">
       <ymap-marker
         v-for="marker in renderedMarkers"
         :key="marker.id"
         :coords="marker.coords"
         :marker-id="marker.id"
         :icon="marker.icon"
-        :properties="{ iconContent: marker.label, hintContent: marker.hint }"
+        :properties="{
+          iconContent: marker.label,
+          hintContent: marker.hint,
+          balloonContent: markerBalloon.getBalloonContent(marker)
+        }"
+        :options="{
+          hasBalloon: true,
+          hideIconOnBalloonOpen: false
+        }"
       />
     </yandex-map>
+    <div v-if="coordsHint" class="coords-hint" style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:10;background:#fff;padding:8px 16px;border-radius:8px;box-shadow:0 2px 8px #0002;">{{ coordsHint }}</div>
     <MdiContextMenu
       ref="menuComponentRef"
       :visible="menu.visible"
@@ -64,6 +73,17 @@
               </span>
             </template>
           </v-switch>
+          <!-- Универсальный файлпикер для создания -->
+          <div class="mb-2">
+            <label>Вложения:</label>
+            <input type="file" multiple @change="e => markerBalloon.handleFileInput(e, popup)" />
+            <ul v-if="popup.attachments && popup.attachments.length">
+              <li v-for="(att, i) in popup.attachments" :key="i">
+                <a :href="att.url" target="_blank">{{ att.name }}</a>
+                <v-btn icon size="x-small" @click="markerBalloon.removeAttachment(popup, i)"><v-icon>mdi-close</v-icon></v-btn>
+              </li>
+            </ul>
+          </div>
         </v-card-text>
         <v-card-actions class="justify-end">
           <v-btn variant="outlined" color="secondary" @click="popup.visible = false">Отмена</v-btn>
@@ -71,25 +91,67 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog v-model="editMarkerDialogOpen" max-width="400">
+      <EditMarkerDialog
+        v-model="editMarkerDialogOpen"
+        :marker="markerToEdit"
+        @save="onSaveMarker"
+        @change-coords="startChangeCoords"
+      />
+    </v-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, watch, onUnmounted, nextTick, computed, watchEffect } from 'vue'
+import { ref, reactive, watch, onUnmounted, nextTick, computed, watchEffect, onMounted } from 'vue'
 import { useTheme } from 'vuetify'
 import MdiContextMenu from './MdiContextMenu.vue'
 import mdiCategories from '../data/markerTypes.js'
 import { useMapStore } from '../store/map.js'
+import { useMarkerBalloon } from '../composables/useMarkerBalloon.js'
+import EditMarkerDialog from './EditMarkerDialog.vue'
 
 const mapZoom = Number(localStorage.getItem('mapZoom')) || 10
 const mapLat = Number(localStorage.getItem('mapLat')) || 54
 const mapLon = Number(localStorage.getItem('mapLon')) || 39
 const center = ref([mapLat, mapLon])
 const mapStore = useMapStore()
+const ymapRef = ref(null)
+const containerRef = ref(null)
 const allMarkers = computed(() => mapStore.allMarkers)
+
+// Используем composable для балуна и редактирования маркеров
+const markerBalloon = useMarkerBalloon(mapStore, ymapRef, containerRef)
 
 // Для рендера иконок (асинхронно для всех маркеров)
 const renderedMarkers = ref([])
+
+function getAttachmentHtml(att) {
+  const ext = att.name ? att.name.split('.').pop().toLowerCase() : ''
+  if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext)) {
+    return `<div style='margin:4px 0;'><img src='${att.url}' alt='${att.name}' style='max-width:80px;max-height:80px;display:block;border-radius:4px;border:1px solid #ccc;'/><div style='font-size:12px;'>${att.name}</div></div>`
+  } else if (ext === 'pdf') {
+    return `<div style='margin:4px 0;'><span style='color:#e53935;font-weight:bold;'>[PDF]</span> <a href='${att.url}' target='_blank'>${att.name}</a></div>`
+  } else {
+    return `<div style='margin:4px 0;'><span style='color:#888;'>[Файл]</span> <a href='${att.url}' target='_blank'>${att.name}</a></div>`
+  }
+}
+
+function getBalloonContent(marker) {
+  let attachmentsHtml = ''
+  if (marker.attachments && marker.attachments.length) {
+    attachmentsHtml = `<div><b>Вложения:</b><div>${marker.attachments.map(getAttachmentHtml).join('')}</div></div>`
+  }
+  return `
+    <div style='min-width:220px;'>
+      <div style='font-weight:bold;font-size:16px;'>${marker.label || ''}</div>
+      <div style='margin:8px 0;'><b>Описание:</b> ${marker.hint || ''}</div>
+      <div style='margin:8px 0;'><b>Координаты:</b> ${marker.coords ? marker.coords[0].toFixed(6) + ', ' + marker.coords[1].toFixed(6) : ''}</div>
+      ${attachmentsHtml}
+      <button data-marker-id='${marker.id}' class='edit-marker-btn' style='margin-top:8px;padding:4px 12px;'>Редактировать</button>
+    </div>
+  `
+}
 
 watchEffect(async () => {
   const newMarkers = allMarkers.value
@@ -111,6 +173,10 @@ watchEffect(async () => {
         contentLayout: marker.label
           ? `<div style=\"position: absolute; left: 21px; top: 40px; transform: translateX(-50%); font-size: 13px; line-height: 1.2; text-align: center; color: #222; white-space: nowrap; pointer-events: none;\">${marker.label}</div>`
           : ''
+      },
+      balloon: {
+        header: marker.label,
+        body: getBalloonContent(marker)
       }
     }
   }))
@@ -118,8 +184,6 @@ watchEffect(async () => {
 })
 
 const menu = reactive({ visible: false, x: 0, y: 0, coords: null })
-const containerRef = ref(null)
-const ymapRef = ref(null)
 const selectedCategory = ref(null)
 const popup = reactive({
   visible: false,
@@ -127,7 +191,8 @@ const popup = reactive({
   label: '',
   hint: '',
   isOwn: true,
-  coords: null
+  coords: null,
+  attachments: []
 })
 
 // --- Слушатель клика вне меню ---
@@ -242,11 +307,13 @@ async function createMarker() {
     label: popup.label,
     hint: popup.hint,
     isOwn: popup.isOwn !== false,
+    attachments: popup.attachments
   }
   mapStore.addMarker(marker)
   popup.visible = false
   popup.icon = null
   popup.coords = null
+  popup.attachments = [] // Сбрасываем вложения при создании
 }
 
 const theme = useTheme()
@@ -255,6 +322,48 @@ const isDark = computed(() => {
   return currentTheme === 'tacticalDark'
 })
 const mapFilterClass = computed(() => isDark.value ? 'map-dark-filter' : '')
+
+const editMarkerDialogOpen = ref(false)
+const markerToEdit = ref(null)
+const changeCoordsMode = ref(false)
+const coordsHint = ref('')
+
+function openEditMarker(marker) {
+  markerToEdit.value = { ...marker }
+  editMarkerDialogOpen.value = true
+}
+function startChangeCoords() {
+  changeCoordsMode.value = true
+  coordsHint.value = 'Кликните по карте для выбора новой позиции'
+  editMarkerDialogOpen.value = false
+  if (containerRef.value) containerRef.value.classList.add('select-coords-mode')
+}
+function onMapClick(e) {
+  if (changeCoordsMode.value && markerToEdit.value) {
+    const coords = getMapCoordsFromEvent(e)
+    markerToEdit.value.coords = coords
+    changeCoordsMode.value = false
+    coordsHint.value = ''
+    editMarkerDialogOpen.value = true
+    if (containerRef.value) containerRef.value.classList.remove('select-coords-mode')
+  }
+}
+function onSaveMarker(updatedMarker) {
+  mapStore.updateMarker(updatedMarker)
+  editMarkerDialogOpen.value = false
+}
+
+onMounted(() => {
+  editMarkerDialogOpen.value = false
+  markerToEdit.value = null
+  document.body.addEventListener('click', (e) => {
+    if (e.target && e.target.classList.contains('edit-marker-btn')) {
+      const markerId = e.target.getAttribute('data-marker-id')
+      const marker = allMarkers.value.find(m => m.id == markerId)
+      if (marker) openEditMarker(marker)
+    }
+  })
+})
 
 </script>
 
@@ -266,5 +375,21 @@ const mapFilterClass = computed(() => isDark.value ? 'map-dark-filter' : '')
 }
 .map-dark-filter {
   filter: grayscale(0.25) brightness(0.55) contrast(1.15) sepia(0.12) hue-rotate(-5deg) saturate(1.1) !important;
+}
+.coords-hint {
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 8px 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.select-coords-mode, .select-coords-mode * {
+  cursor: crosshair !important;
 }
 </style>

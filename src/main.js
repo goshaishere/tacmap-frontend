@@ -8,8 +8,6 @@ import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import router from './router'
 import { createPinia } from 'pinia'
-import { yandexMap } from 'vue-yandex-maps'
-import ymapSettings from './config/yandex-maps.js'
 import YmapPlugin from 'vue-yandex-maps'
 
 
@@ -66,10 +64,9 @@ const app = createApp(App)
 app.use(vuetify)
 app.use(pinia)
 app.use(router)
-app.use(yandexMap, ymapSettings)
 
 const settings = {
-    apiKey: '', // Можно добавить свой ключ
+    apiKey: '',
     lang: 'ru_RU',
     coordorder: 'latlong',
     version: '2.1'

@@ -27,11 +27,19 @@ export const useMapStore = defineStore('map', () => {
         }
     }
 
+    const updateMarker = (updatedMarker) => {
+        const idx = markers.value.findIndex(m => m.id === updatedMarker.id)
+        if (idx !== -1) {
+            markers.value[idx] = {...markers.value[idx], ...updatedMarker }
+        }
+    }
+
     return {
         markers,
         taskMarkers,
         allMarkers,
         addMarker,
-        pushTaskMarkers
+        pushTaskMarkers,
+        updateMarker
     }
 })
