@@ -1,7 +1,6 @@
 import { createApp } from 'vue'
 import './styles/_globals.scss'
 import App from './App.vue'
-
 import { createVuetify } from 'vuetify'
 import 'vuetify/styles'
 import { aliases, mdi } from 'vuetify/iconsets/mdi'

@@ -2,12 +2,12 @@
   <div ref="containerRef" style="position:relative;width:100%;height:100%;min-width:0;min-height:0;overflow:hidden;">
     <yandex-map ref="ymapRef" :coords="center" :zoom="mapZoom" class="adaptive-yandex-map" :class="mapFilterClass" @contextmenu.native.prevent="onMapContextMenu">
       <ymap-marker
-        v-for="marker in markers"
+        v-for="marker in renderedMarkers"
         :key="marker.id"
         :coords="marker.coords"
         :marker-id="marker.id"
         :icon="marker.icon"
-        :properties="marker.properties"
+        :properties="{ iconContent: marker.label, hintContent: marker.hint }"
       />
     </yandex-map>
     <MdiContextMenu
@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onUnmounted, nextTick, computed, onMounted } from 'vue'
+import { ref, reactive, watch, onUnmounted, nextTick, computed, watchEffect } from 'vue'
 import { useTheme } from 'vuetify'
 import MdiContextMenu from './MdiContextMenu.vue'
 import mdiCategories from '../data/markerTypes.js'
@@ -86,7 +86,37 @@ const mapLat = Number(localStorage.getItem('mapLat')) || 54
 const mapLon = Number(localStorage.getItem('mapLon')) || 39
 const center = ref([mapLat, mapLon])
 const mapStore = useMapStore()
-const markers = computed(() => mapStore.allMarkers)
+const allMarkers = computed(() => mapStore.allMarkers)
+
+// Для рендера иконок (асинхронно для всех маркеров)
+const renderedMarkers = ref([])
+
+watchEffect(async () => {
+  const newMarkers = allMarkers.value
+  const result = await Promise.all(newMarkers.map(async (marker) => {
+    let icon = marker.icon
+    let color = marker.isOwn === false ? '#E53935' : '#3BA55D'
+    if (typeof icon === 'string' && icon.startsWith('mdi-')) {
+      icon = await mdiIconToPngDataUrl(icon, color)
+    } else if (icon && icon.imageHref) {
+      // уже PNG
+    }
+    return {
+      ...marker,
+      icon: {
+        layout: 'default#imageWithContent',
+        imageHref: icon,
+        imageSize: [43, 43],
+        imageOffset: [-21.5, -21.5],
+        contentLayout: marker.label
+          ? `<div style=\"position: absolute; left: 21px; top: 40px; transform: translateX(-50%); font-size: 13px; line-height: 1.2; text-align: center; color: #222; white-space: nowrap; pointer-events: none;\">${marker.label}</div>`
+          : ''
+      }
+    }
+  }))
+  renderedMarkers.value = result
+})
+
 const menu = reactive({ visible: false, x: 0, y: 0, coords: null })
 const containerRef = ref(null)
 const ymapRef = ref(null)
@@ -201,65 +231,22 @@ async function onMenuIconSelect(icon) {
   menu.visible = false
 }
 
+// ПКМ — только ручные маркеры (markers)
 async function createMarker() {
   if (!popup.icon || !popup.coords) return
-  const size = 43
-  const color = popup.isOwn ? '#3BA55D' : '#E53935'
-  const pngDataUrl = await mdiIconToPngDataUrl(popup.icon.icon, color, size)
   const markerId = Date.now() + Math.random()
   const marker = {
     id: markerId,
     coords: popup.coords,
-    icon: {
-      layout: 'default#imageWithContent',
-      imageHref: pngDataUrl,
-      imageSize: [size, size],
-      imageOffset: [-size/2, -size/2],
-      contentLayout: popup.label
-        ? `<div style="
-            position: absolute;
-            left: 21px;
-            top: 40px;
-            transform: translateX(-50%);
-            font-size: 13px;
-            line-height: 1.2;
-            text-align: center;
-            color: #222;
-            white-space: nowrap;
-            pointer-events: none;
-          ">${popup.label}</div>`
-        : ''
-    },
-    properties: {
-      ...(popup.label ? { iconContent: popup.label } : {}),
-      ...(popup.hint ? { hintContent: popup.hint } : {})
-    }
+    icon: popup.icon.icon || popup.icon, // всегда mdi-строка
+    label: popup.label,
+    hint: popup.hint,
+    isOwn: popup.isOwn !== false,
   }
   mapStore.addMarker(marker)
   popup.visible = false
   popup.icon = null
   popup.coords = null
-  setTimeout(() => {
-    const map = ymapRef.value && ymapRef.value.getMap && ymapRef.value.getMap()
-    if (!map) return
-    const geoObjects = map.geoObjects || (map.getGeoObjects && map.getGeoObjects())
-    if (!geoObjects) return
-    let geoObject = null
-    if (typeof geoObjects.each === 'function') {
-      geoObjects.each(obj => {
-        if (obj && obj.properties && (obj.properties.get('marker-id') == markerId || obj.properties.get('id') == markerId)) {
-          geoObject = obj
-        }
-      })
-    }
-    if (!geoObject) return
-    geoObject.events.add('mouseenter', function () {
-      geoObject.hint.open(map, marker.coords)
-    })
-    geoObject.events.add('mouseleave', function () {
-      geoObject.hint.close()
-    })
-  }, 500)
 }
 
 const theme = useTheme()

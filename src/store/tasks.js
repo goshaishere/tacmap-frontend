@@ -1,9 +1,63 @@
 import { defineStore } from 'pinia';
-import { onMounted } from 'vue';
+import { useMapStore } from './map.js'
+import demoMarkers from '../data/demoMarkers.js'
+
+const mapStore = useMapStore();
 
 export const useTasksStore = defineStore('tasks', {
     state: () => ({
-        tasks: [],
+        tasks: [{
+                id: 1,
+                title: 'Разведка местности',
+                description: 'Провести разведку в секторе А-1',
+                status: 'created',
+                priority: 'medium',
+                type: 'reconnaissance',
+                assignedTo: null,
+                dueDate: null,
+                markers: [demoMarkers[0], demoMarkers[1]],
+                comments: [{
+                    id: 1,
+                    author: 'Алексей',
+                    text: 'Проверьте сектор на наличие мин.',
+                    date: '2024-05-01T10:00:00Z',
+                }]
+            },
+            {
+                id: 2,
+                title: 'Назначить медика',
+                description: 'Назначить медика для группы Браво',
+                status: 'assigned',
+                priority: 'high',
+                type: 'medical',
+                assignedTo: { name: 'Иван Петров', avatar: '' },
+                dueDate: null,
+                markers: [demoMarkers[2]],
+                comments: [{
+                    id: 2,
+                    author: 'Сергей',
+                    text: 'Медик должен быть на месте к 12:00.',
+                    date: '2024-05-01T11:00:00Z',
+                }]
+            },
+            {
+                id: 3,
+                title: 'Штурм здания',
+                description: 'Начать штурм здания 12',
+                status: 'in-progress',
+                priority: 'critical',
+                type: 'combat',
+                assignedTo: { name: 'Мария Сидорова', avatar: '' },
+                dueDate: null,
+                markers: [demoMarkers[3]],
+                comments: [{
+                    id: 3,
+                    author: 'Дмитрий',
+                    text: 'Ожидаем подкрепление перед началом штурма.',
+                    date: '2024-05-01T12:00:00Z',
+                }]
+            }
+        ],
         loading: false,
         error: null,
         filters: {
@@ -12,7 +66,6 @@ export const useTasksStore = defineStore('tasks', {
             priority: 'all',
         },
         activeTab: 'all',
-        comments: {}, // { [taskId]: [{id, author, text, date}] }
     }),
     getters: {
         totalTasks: (state) => state.tasks.length,
@@ -39,9 +92,27 @@ export const useTasksStore = defineStore('tasks', {
             }
             return filtered;
         },
-        getCommentsByTaskId: (state) => (taskId) => state.comments[taskId] || [],
+        getCommentsByTaskId: (state) => (taskId) => {
+            const task = state.tasks.find(t => t.id === taskId);
+            return task ? task.comments : [];
+        },
     },
     actions: {
+        addComment(taskId, comment) {
+            const task = this.tasks.find(t => t.id === taskId);
+            if (task) {
+                task.comments.push({
+                    id: Date.now() + Math.random(),
+                    author: comment.author,
+                    text: comment.text,
+                    date: new Date().toISOString(),
+                });
+            }
+        },
+        fetchComments(taskId) {
+            const task = this.tasks.find(t => t.id === taskId);
+            return task ? task.comments : [];
+        },
         async fetchTasks() {
             this.loading = true;
             try {
@@ -59,6 +130,10 @@ export const useTasksStore = defineStore('tasks', {
         async addTask(task) {
             // TODO: заменить на реальный API-запрос
             this.tasks.push(task);
+            // Пушим маркеры задачи на карту
+            if (task.markers) {
+                mapStore.pushTaskMarkers(task.markers);
+            }
         },
         async deleteTask(id) {
             this.tasks = this.tasks.filter(t => t.id !== id);
@@ -72,86 +147,6 @@ export const useTasksStore = defineStore('tasks', {
         setActiveTab(tab) {
             this.activeTab = tab;
         },
-        addDemoTasks() {
-            this.tasks = [{
-                    id: 1,
-                    title: 'Разведка местности',
-                    description: 'Провести разведку в секторе А-1',
-                    status: 'created',
-                    priority: 'medium',
-                    type: 'reconnaissance',
-                    assignedTo: null,
-                    dueDate: null,
-                    location: 'Сектор А-1',
-                },
-                {
-                    id: 2,
-                    title: 'Назначить медика',
-                    description: 'Назначить медика для группы Браво',
-                    status: 'assigned',
-                    priority: 'high',
-                    type: 'medical',
-                    assignedTo: { name: 'Иван Петров', avatar: '' },
-                    dueDate: null,
-                    location: 'База',
-                },
-                {
-                    id: 3,
-                    title: 'Штурм здания',
-                    description: 'Начать штурм здания 12',
-                    status: 'in-progress',
-                    priority: 'critical',
-                    type: 'combat',
-                    assignedTo: { name: 'Мария Сидорова', avatar: '' },
-                    dueDate: null,
-                    location: 'Здание 12',
-                },
-                {
-                    id: 4,
-                    title: 'Проверка связи',
-                    description: 'Провести тест радиосвязи',
-                    status: 'review',
-                    priority: 'low',
-                    type: 'communication',
-                    assignedTo: { name: 'Алексей Козлов', avatar: '' },
-                    dueDate: null,
-                    location: 'Пункт связи',
-                },
-                {
-                    id: 5,
-                    title: 'Доставка боеприпасов',
-                    description: 'Доставить боеприпасы на передовую',
-                    status: 'completed',
-                    priority: 'medium',
-                    type: 'transport',
-                    assignedTo: { name: 'Елена Воробьева', avatar: '' },
-                    dueDate: null,
-                    location: 'Передовая',
-                },
-                {
-                    id: 6,
-                    title: 'Ожидание приказа',
-                    description: 'Ожидать дальнейших указаний',
-                    status: 'on-hold',
-                    priority: 'low',
-                    type: 'support',
-                    assignedTo: null,
-                    dueDate: null,
-                    location: 'Штаб',
-                },
-                {
-                    id: 7,
-                    title: 'Отмена операции',
-                    description: 'Операция отменена по приказу штаба',
-                    status: 'cancelled',
-                    priority: 'critical',
-                    type: 'combat',
-                    assignedTo: null,
-                    dueDate: null,
-                    location: 'Сектор D',
-                },
-            ];
-        },
         updateTaskStatus(id, newStatus) {
             const idx = this.tasks.findIndex(t => t.id === id);
             if (idx !== -1) {
@@ -164,21 +159,5 @@ export const useTasksStore = defineStore('tasks', {
                 this.tasks[idx] = {...this.tasks[idx], ...updatedTask };
             }
         },
-        addComment(taskId, comment) {
-            if (!this.comments[taskId]) {
-                this.comments[taskId] = [];
-            }
-            this.comments[taskId].push({
-                id: Date.now() + Math.random(),
-                author: comment.author,
-                text: comment.text,
-                date: new Date().toISOString(),
-            });
-        },
-        fetchComments(taskId) {
-            // Здесь может быть запрос к API, сейчас просто возвращаем из state
-            return this.comments[taskId] || [];
-        },
-        // Можно добавить updateTask и другие actions
     },
 });

@@ -196,12 +196,6 @@ const display = useDisplay()
 const isMobile = computed(() => display.smAndDown.value)
 const allTasks = computed(() => tasksStore.tasks)
 
-onMounted(() => {
-  if (tasksStore.tasks.length === 0) {
-    tasksStore.addDemoTasks()
-  }
-})
-
 const showCreateDialog = ref(false)
 const showTaskDetails = ref(false)
 const editingTask = ref(null)

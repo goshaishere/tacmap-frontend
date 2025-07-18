@@ -77,16 +77,6 @@
             class="mb-4"
           />
 
-          <!-- Локация -->
-          <v-text-field
-            v-model="formData.location"
-            label="Локация"
-            placeholder="Координаты или адрес"
-            variant="outlined"
-            class="mb-4"
-            prepend-icon="mdi-map-marker"
-          />
-
           <!-- Дополнительные поля -->
           <v-expand-transition>
             <div v-if="showAdvanced">
@@ -120,6 +110,21 @@
                 multiple
                 prepend-icon="mdi-paperclip"
                 class="mb-4"
+              />
+
+              <!-- Метки задачи -->
+              <v-btn
+                color="accent"
+                variant="outlined"
+                class="mb-4"
+                @click="showMarkerPicker = true"
+              >
+                Добавить метки на карте
+              </v-btn>
+              <MapMarkerPicker
+                v-model="showMarkerPicker"
+                :model-markers="formData.markers"
+                @update:modelMarkers="formData.markers = $event"
               />
             </div>
           </v-expand-transition>
@@ -165,6 +170,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { useTasksStore } from '../../store/tasks.js'
 import '../../styles/TaskForm.module.scss'
+import MapMarkerPicker from './MapMarkerPicker.vue'
 
 const props = defineProps({
   modelValue: {
@@ -191,6 +197,7 @@ const form = ref(null)
 const isValid = ref(false)
 const loading = ref(false)
 const showAdvanced = ref(false)
+const showMarkerPicker = ref(false)
 
 // Форма
 const formData = reactive({
@@ -200,10 +207,10 @@ const formData = reactive({
   priority: 'medium',
   assignedTo: null,
   dueDate: '',
-  location: '',
   tags: [],
   dependencies: [],
-  attachments: []
+  attachments: [],
+  markers: [],
 })
 
 // Опции для селектов
@@ -241,6 +248,45 @@ const availableTasks = computed(() => {
   }))
 })
 
+// Добавляю список демо-меток для Питера
+const availableMarkers = [
+  {
+    id: 1,
+    label: 'Площадь Восстания',
+    coords: [59.9311, 30.3609],
+    hint: 'Центр города, метро',
+    icon: 'mdi-map-marker',
+  },
+  {
+    id: 2,
+    label: 'Петропавловская крепость',
+    coords: [59.9502, 30.3165],
+    hint: 'Исторический объект',
+    icon: 'mdi-fort',
+  },
+  {
+    id: 3,
+    label: 'Морской вокзал',
+    coords: [59.9445, 30.2306],
+    hint: 'Порт, причал',
+    icon: 'mdi-ferry',
+  },
+  {
+    id: 4,
+    label: 'Лахта Центр',
+    coords: [60.0088, 30.2595],
+    hint: 'Бизнес-центр',
+    icon: 'mdi-office-building',
+  },
+  {
+    id: 5,
+    label: 'Пулково',
+    coords: [59.8003, 30.2625],
+    hint: 'Аэропорт',
+    icon: 'mdi-airplane',
+  },
+]
+
 // Вычисляемые свойства
 const isEditing = computed(() => !!props.task)
 
@@ -253,10 +299,10 @@ const resetForm = () => {
     priority: 'medium',
     assignedTo: null,
     dueDate: '',
-    location: '',
     tags: [],
     dependencies: [],
-    attachments: []
+    attachments: [],
+    markers: [],
   })
   
   if (form.value) {
@@ -281,6 +327,7 @@ const saveTask = () => {
       status: isEditing.value ? (props.task.status || 'created') : (isAssigned ? 'assigned' : 'created'),
       dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : null,
       id: isEditing.value ? props.task.id : Date.now() + Math.random(),
+      markers: formData.markers,
     }
 
     if (isEditing.value) {
@@ -310,10 +357,10 @@ watch(() => props.task, (newTask) => {
       priority: newTask.priority || 'medium',
       assignedTo: newTask.assignedTo || null,
       dueDate: newTask.dueDate || '',
-      location: newTask.location || '',
       tags: newTask.tags || [],
       dependencies: newTask.dependencies || [],
-      attachments: newTask.attachments || []
+      attachments: newTask.attachments || [],
+      markers: newTask.markers || [],
     })
   } else {
     // Сбрасываем форму
