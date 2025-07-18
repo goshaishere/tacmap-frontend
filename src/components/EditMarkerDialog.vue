@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="visibleProxy" max-width="400">
     <v-card v-if="localMarker">
-      <v-card-title>Редактировать маркер</v-card-title>
+      <v-card-title>{{ props.mode === 'create' ? 'Добавить маркер' : 'Редактировать маркер' }}</v-card-title>
       <v-card-text>
         <v-text-field v-model="localMarker.label" label="Заголовок" />
         <v-textarea v-model="localMarker.hint" label="Описание" />

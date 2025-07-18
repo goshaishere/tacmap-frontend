@@ -286,3 +286,9 @@ function getMapCoordsFromEvent(e) {
   return (e && typeof e.get === 'function') ? e.get('coords') : null
 }
 </script> 
+
+<style scoped>
+.select-coords-mode, .select-coords-mode * {
+  cursor: crosshair !important;
+}
+</style> 
