@@ -41,6 +41,53 @@
                   </v-card-text>
                 </v-card>
         </v-col>
+        <!-- Карта -->
+        <v-col cols="12" md="6">
+          <v-card class="pa-4 mb-4">
+            <v-card-title class="text-h6 text-on-surface mb-2">
+              <v-icon class="me-2">mdi-map</v-icon> Карта
+            </v-card-title>
+            <v-card-text>
+              <div class="d-flex flex-column gap-4">
+                <div>
+                  <div class="text-subtitle-1 font-weight-medium">Стартовый зум</div>
+                  <v-slider
+                    v-model="mapZoom"
+                    :min="2"
+                    :max="19"
+                    step="1"
+                    thumb-label
+                    color="accent"
+                    class="mt-2"
+                  />
+                  <div class="text-caption text-medium-emphasis">Текущий зум: {{ mapZoom }}</div>
+                </div>
+                <div>
+                  <div class="text-subtitle-1 font-weight-medium">Стартовая позиция (широта, долгота)</div>
+                  <div class="d-flex gap-2">
+                    <v-text-field
+                      v-model="mapLat"
+                      label="Широта"
+                      type="number"
+                      variant="outlined"
+                      density="compact"
+                      style="max-width: 140px"
+                    />
+                    <v-text-field
+                      v-model="mapLon"
+                      label="Долгота"
+                      type="number"
+                      variant="outlined"
+                      density="compact"
+                      style="max-width: 140px"
+                    />
+                  </div>
+                </div>
+                <v-btn color="accent" variant="outlined" size="small" @click="saveMapSettings">Сохранить</v-btn>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
         <!-- Уведомления -->
         <v-col cols="12" md="6">
           <v-card class="pa-4 mb-4">
@@ -686,5 +733,18 @@ function importAuthFile(e) {
     } catch { showNotification.value = true; notificationMessage.value = 'Ошибка импорта авторизации'; notificationColor.value = 'error' }
   }
   reader.readAsText(file)
+}
+
+const mapZoom = ref(Number(localStorage.getItem('mapZoom')) || 10)
+const mapLat = ref(Number(localStorage.getItem('mapLat')) || 54)
+const mapLon = ref(Number(localStorage.getItem('mapLon')) || 39)
+
+function saveMapSettings() {
+  localStorage.setItem('mapZoom', mapZoom.value)
+  localStorage.setItem('mapLat', mapLat.value)
+  localStorage.setItem('mapLon', mapLon.value)
+  showNotification.value = true
+  notificationMessage.value = 'Настройки карты сохранены'
+  notificationColor.value = 'success'
 }
 </script> 

@@ -1,5 +1,5 @@
-@import './_mixins.scss';
-@import './_variables.scss';
+@use './_mixins.scss' as *;
+@use './_variables.scss' as *;
 .task-form-card {
     @include rounded;
 }

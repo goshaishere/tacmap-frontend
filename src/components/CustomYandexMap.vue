@@ -1,6 +1,6 @@
 <template>
   <div ref="containerRef" style="position:relative;width:100%;height:100%;min-width:0;min-height:0;overflow:hidden;">
-    <yandex-map ref="ymapRef" :coords="center" :zoom="10" class="adaptive-yandex-map" :class="mapFilterClass" @contextmenu.native.prevent="onMapContextMenu">
+    <yandex-map ref="ymapRef" :coords="center" :zoom="mapZoom" class="adaptive-yandex-map" :class="mapFilterClass" @contextmenu.native.prevent="onMapContextMenu">
       <ymap-marker
         v-for="marker in markers"
         :key="marker.id"
@@ -81,7 +81,10 @@ import MdiContextMenu from './MdiContextMenu.vue'
 import mdiCategories from '../data/markerTypes.js'
 import { useMapStore } from '../store/map.js'
 
-const center = ref([54, 39])
+const mapZoom = Number(localStorage.getItem('mapZoom')) || 10
+const mapLat = Number(localStorage.getItem('mapLat')) || 54
+const mapLon = Number(localStorage.getItem('mapLon')) || 39
+const center = ref([mapLat, mapLon])
 const mapStore = useMapStore()
 const markers = computed(() => mapStore.allMarkers)
 const menu = reactive({ visible: false, x: 0, y: 0, coords: null })

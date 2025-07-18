@@ -1,7 +1,7 @@
 @use 'vuetify/styles' as *;
-@import '@mdi/font/css/materialdesignicons.css';
-@import './_variables.scss';
-@import './_mixins.scss';
+@use '@mdi/font/css/materialdesignicons.css' as *;
+@use './_variables.scss' as *;
+@use './_mixins.scss' as *;
 * {
     box-sizing: border-box;
     margin: 0;
