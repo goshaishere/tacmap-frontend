@@ -1,6 +1,6 @@
 <template>
   <div ref="containerRef" style="position:relative;width:100%;height:100%;min-width:0;min-height:0;overflow:hidden;">
-    <yandex-map ref="ymapRef" :coords="center" :zoom="mapZoom" class="adaptive-yandex-map" :class="mapFilterClass" @contextmenu.native.prevent="onMapContextMenu" @click="onMapClick">
+    <yandex-map v-show="!menu.visible || !menu.forEditIcon" ref="ymapRef" :coords="center" :zoom="mapZoom" class="adaptive-yandex-map" :class="mapFilterClass" @contextmenu.native.prevent="onMapContextMenu" @click="onMapClick" :controls="['zoomControl', 'searchControl', 'geolocationControl', 'trafficControl', 'typeSelector', 'rulerControl', 'routeButtonControl']">
       <ymap-marker
         v-for="marker in renderedMarkers"
         :key="marker.id"
@@ -17,22 +17,40 @@
           hideIconOnBalloonOpen: false
         }"
       />
+      <ymap-marker
+        v-if="renderedTempMarker"
+        :coords="renderedTempMarker.coords"
+        marker-id="temp"
+        :icon="renderedTempMarker.icon"
+        :properties="{
+          iconContent: renderedTempMarker.label,
+          hintContent: renderedTempMarker.hint,
+          balloonContent: markerBalloon.getBalloonContent(renderedTempMarker)
+        }"
+        :options="{
+          hasBalloon: false,
+          hideIconOnBalloonOpen: false,
+          opacity: 0.6
+        }"
+      />
     </yandex-map>
-    <div v-if="coordsHint" class="coords-hint" style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:10;background:#fff;padding:8px 16px;border-radius:8px;box-shadow:0 2px 8px #0002;">{{ coordsHint }}</div>
+    <div v-if="coordsHint && (!menu.visible || !menu.forEditIcon)" class="coords-hint" style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:10;background:#fff;padding:8px 16px;border-radius:8px;box-shadow:0 2px 8px #0002;">{{ coordsHint }}</div>
     <MdiContextMenu
       ref="menuComponentRef"
+      :menu="menu"
       :visible="menu.visible"
       :x="menu.x"
       :y="menu.y"
       :categories="mdiCategories"
       :selectedCategory="selectedCategory"
-      @close="menu.visible = false"
+      @close="onMenuClose"
       @select-category="onSelectCategory"
       @select-icon="onMenuIconSelect"
+      @edit-icon="onMenuIconEdit"
       @back="onBack"
     />
     <!-- Диалог создания метки через Vuetify -->
-    <v-dialog v-model="popup.visible" max-width="400" persistent>
+    <v-dialog v-model="popup.visible" max-width="400" persistent v-show="!menu.visible || !menu.forEditIcon">
       <v-card>
         <v-card-title class="text-h6 font-weight-bold pb-0">Создание метки</v-card-title>
         <v-card-text>
@@ -91,13 +109,15 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-dialog v-model="editMarkerDialogOpen" max-width="400">
+    <v-dialog v-model="editMarkerDialogOpen" max-width="400" v-show="!menu.visible || !menu.forEditIcon">
       <EditMarkerDialog
+        ref="editMarkerDialogRef"
         v-model="editMarkerDialogOpen"
         :marker="markerToEdit"
         @save="onSaveMarker"
         @change-coords="startChangeCoords"
         @delete-marker="onDeleteMarker"
+        @edit-icon="onEditIcon"
       />
     </v-dialog>
   </div>
@@ -112,6 +132,19 @@ import { useMapStore } from '../store/map.js'
 import { useMarkerBalloon } from '../composables/useMarkerBalloon.js'
 import EditMarkerDialog from './EditMarkerDialog.vue'
 
+const theme = useTheme()
+const isDark = computed(() => {
+  const currentTheme = theme.current.value?.name || localStorage.getItem('selectedTheme') || 'tacticalLight'
+  return currentTheme === 'tacticalDark'
+})
+const mapFilterClass = computed(() => isDark.value ? 'map-dark-filter' : '')
+
+const editMarkerDialogOpen = ref(false)
+const markerToEdit = ref(null)
+const changeCoordsMode = ref(false)
+const coordsHint = ref('')
+const tempMarker = ref(null)
+const editMarkerDialogRef = ref(null)
 const mapZoom = Number(localStorage.getItem('mapZoom')) || 10
 const mapLat = Number(localStorage.getItem('mapLat')) || 54
 const mapLon = Number(localStorage.getItem('mapLon')) || 39
@@ -120,14 +153,45 @@ const mapStore = useMapStore()
 const ymapRef = ref(null)
 const containerRef = ref(null)
 const allMarkers = computed(() => mapStore.allMarkers)
-
 // Используем composable для балуна и редактирования маркеров
 const markerBalloon = useMarkerBalloon(mapStore, ymapRef, containerRef)
-
 // Для рендера иконок (асинхронно для всех маркеров)
 const renderedMarkers = ref([])
+const menu = reactive({ visible: false, x: 0, y: 0, coords: null, forEditIcon: false })
+const selectedCategory = ref(null)
+const popup = reactive({
+  visible: false,
+  icon: null,
+  label: '',
+  hint: '',
+  isOwn: true,
+  coords: null,
+  attachments: []
+})
+
+// --- Слушатель клика вне меню ---
+const menuComponentRef = ref(null)
+const renderedTempMarker = computed(() => {
+  if (!tempMarker.value) return null
+  // Используем ту же логику, что и для обычной метки, только opacity 0.6
+  const marker = tempMarker.value
+  return {
+    ...marker,
+    icon: marker.icon, // та же иконка, что и у основной
+    balloon: {
+      header: marker.label,
+      body: getBalloonContent(marker)
+    },
+    options: {
+      hasBalloon: false,
+      hideIconOnBalloonOpen: false,
+      opacity: 0.6
+    }
+  }
+})
 
 function getAttachmentHtml(att) {
+  if (!att || typeof att !== 'object' || !att.url) return ''
   const ext = att.name ? att.name.split('.').pop().toLowerCase() : ''
   if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext)) {
     return `<div style='margin:4px 0;'><img src='${att.url}' alt='${att.name}' style='max-width:80px;max-height:80px;display:block;border-radius:4px;border:1px solid #ccc;'/><div style='font-size:12px;'>${att.name}</div></div>`
@@ -184,20 +248,7 @@ watchEffect(async () => {
   renderedMarkers.value = result
 })
 
-const menu = reactive({ visible: false, x: 0, y: 0, coords: null })
-const selectedCategory = ref(null)
-const popup = reactive({
-  visible: false,
-  icon: null,
-  label: '',
-  hint: '',
-  isOwn: true,
-  coords: null,
-  attachments: []
-})
 
-// --- Слушатель клика вне меню ---
-const menuComponentRef = ref(null)
 
 function onGlobalClick(e) {
   // Если меню не открыто или клик внутри меню — ничего не делаем
@@ -286,8 +337,48 @@ async function mdiIconToPngDataUrl(mdiIconName, color = '#1976D2', size = 43) {
   });
 }
 
-async function onMenuIconSelect(icon) {
+const wasEditDialogOpen = ref(false)
+const wasPopupDialogOpen = ref(false)
+
+function onEditIcon() {
+  if (!markerToEdit.value) return
+  wasEditDialogOpen.value = editMarkerDialogOpen.value
+  editMarkerDialogOpen.value = false
+  nextTick(() => {
+    const dialog = editMarkerDialogRef.value
+    const btn = dialog?.$refs?.editIconBtnRef || (dialog?.editIconBtnRef ?? null)
+    if (btn && btn.$el) {
+      const rect = btn.$el.getBoundingClientRect ? btn.$el.getBoundingClientRect() : btn.getBoundingClientRect()
+      const containerRect = containerRef.value.getBoundingClientRect()
+      menu.x = rect.left - containerRect.left
+      menu.y = rect.bottom - containerRect.top + 4
+    } else {
+      menu.x = 200
+      menu.y = 200
+    }
+    menu.visible = true
+    menu.forEditIcon = true
+    selectedCategory.value = null
+  })
+}
+
+async function onMenuIconEdit(icon) {
+  if (menu.forEditIcon && markerToEdit.value) {
+    markerToEdit.value.icon = icon.icon
+    menu.visible = false
+    menu.forEditIcon = false
+    if (wasEditDialogOpen.value) {
+      editMarkerDialogOpen.value = true
+      wasEditDialogOpen.value = false
+    }
+    if (wasPopupDialogOpen.value) {
+      popup.visible = true
+      wasPopupDialogOpen.value = false
+    }
+    return
+  }
   if (!menu.coords) return
+  wasPopupDialogOpen.value = popup.visible
   popup.icon = icon
   popup.label = ''
   popup.hint = ''
@@ -295,6 +386,63 @@ async function onMenuIconSelect(icon) {
   popup.coords = menu.coords
   popup.visible = true
   menu.visible = false
+  menu.forEditIcon = false
+  if (wasEditDialogOpen.value) {
+    editMarkerDialogOpen.value = true
+    wasEditDialogOpen.value = false
+  }
+  if (wasPopupDialogOpen.value) {
+    popup.visible = true
+    wasPopupDialogOpen.value = false
+  }
+}
+
+async function onMenuIconSelect(icon) {
+  if (menu.forEditIcon && markerToEdit.value) {
+    markerToEdit.value.icon = icon
+    menu.visible = false
+    menu.forEditIcon = false
+    if (wasEditDialogOpen.value) {
+      editMarkerDialogOpen.value = true
+      wasEditDialogOpen.value = false
+    }
+    if (wasPopupDialogOpen.value) {
+      popup.visible = true
+      wasPopupDialogOpen.value = false
+    }
+    return
+  }
+  if (!menu.coords) return
+  wasPopupDialogOpen.value = popup.visible
+  popup.icon = icon
+  popup.label = ''
+  popup.hint = ''
+  popup.isOwn = true
+  popup.coords = menu.coords
+  popup.visible = true
+  menu.visible = false
+  menu.forEditIcon = false
+  if (wasEditDialogOpen.value) {
+    editMarkerDialogOpen.value = true
+    wasEditDialogOpen.value = false
+  }
+  if (wasPopupDialogOpen.value) {
+    popup.visible = true
+    wasPopupDialogOpen.value = false
+  }
+}
+
+function onMenuClose() {
+  menu.visible = false
+  menu.forEditIcon = false
+  if (wasEditDialogOpen.value) {
+    editMarkerDialogOpen.value = true
+    wasEditDialogOpen.value = false
+  }
+  if (wasPopupDialogOpen.value) {
+    popup.visible = true
+    wasPopupDialogOpen.value = false
+  }
 }
 
 // ПКМ — только ручные маркеры (markers)
@@ -317,17 +465,7 @@ async function createMarker() {
   popup.attachments = [] // Сбрасываем вложения при создании
 }
 
-const theme = useTheme()
-const isDark = computed(() => {
-  const currentTheme = theme.current.value?.name || localStorage.getItem('selectedTheme') || 'tacticalLight'
-  return currentTheme === 'tacticalDark'
-})
-const mapFilterClass = computed(() => isDark.value ? 'map-dark-filter' : '')
 
-const editMarkerDialogOpen = ref(false)
-const markerToEdit = ref(null)
-const changeCoordsMode = ref(false)
-const coordsHint = ref('')
 
 function openEditMarker(marker) {
   markerToEdit.value = { ...marker }
@@ -338,11 +476,19 @@ function startChangeCoords() {
   coordsHint.value = 'Кликните по карте для выбора новой позиции'
   editMarkerDialogOpen.value = false
   if (containerRef.value) containerRef.value.classList.add('select-coords-mode')
+  tempMarker.value = null // сбрасываем временную метку
 }
 function onMapClick(e) {
   if (changeCoordsMode.value && markerToEdit.value) {
     const coords = getMapCoordsFromEvent(e)
     markerToEdit.value.coords = coords
+    // Создаём временную метку с прозрачностью
+    tempMarker.value = {
+      ...markerToEdit.value,
+      coords,
+      id: 'temp',
+      temp: true
+    }
     changeCoordsMode.value = false
     coordsHint.value = ''
     editMarkerDialogOpen.value = true
@@ -358,6 +504,10 @@ function onDeleteMarker(marker) {
   mapStore.removeMarker(marker.id)
   editMarkerDialogOpen.value = false
 }
+
+watch(() => editMarkerDialogOpen.value, (val) => {
+  if (!val) tempMarker.value = null // убираем временную метку после закрытия диалога
+})
 
 onMounted(() => {
   editMarkerDialogOpen.value = false

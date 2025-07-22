@@ -32,7 +32,7 @@
             </div>
             <v-row dense>
               <v-col v-for="icon in selectedCategory.items" :key="icon.key" cols="2" class="d-flex justify-center">
-                <v-btn variant="text" rounded class="icon-btn d-flex align-center justify-center" style="width:40px;height:40px;" @click.stop="$emit('select-icon', icon)" :title="icon.label">
+                <v-btn variant="text" rounded class="icon-btn d-flex align-center justify-center" style="width:40px;height:40px;" @click.stop="onIconChange(icon)" :title="icon.label">
                   <v-icon :size="28" color="accent">{{ icon.icon }}</v-icon>
                 </v-btn>
               </v-col>
@@ -46,16 +46,16 @@
 
 <script setup>
 import { ref, watchEffect, nextTick } from 'vue'
-import { onMounted } from 'vue'
 
 const props = defineProps({
+  menu: Object,
   visible: Boolean,
   x: Number,
   y: Number,
   categories: Array, // [{ key, label, icons }]
   selectedCategory: Object
 })
-const emit = defineEmits(['close', 'select-category', 'select-icon', 'back'])
+const emit = defineEmits(['close', 'select-category', 'select-icon', 'back', 'edit-icon'])
 
 const menuRef = ref(null)
 const menuStyle = ref({})
@@ -106,4 +106,14 @@ watchEffect(() => {
     }
   })
 })
+
+const onIconChange = (icon) => {
+  if (props.menu.forEditIcon) {
+    console.log(icon)
+    emit('edit-icon', icon)
+
+  } else {
+    emit('select-icon', icon)
+  }
+} 
 </script>

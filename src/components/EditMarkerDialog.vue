@@ -3,6 +3,11 @@
     <v-card v-if="localMarker">
       <v-card-title>{{ props.mode === 'create' ? 'Добавить маркер' : 'Редактировать маркер' }}</v-card-title>
       <v-card-text>
+        <div class="mb-3 d-flex align-center justify-center" v-if="localMarker && localMarker.icon">
+          <v-icon v-if="typeof localMarker.icon === 'string' && localMarker.icon.startsWith('mdi-')" size="40">{{ localMarker.icon }}</v-icon>
+          <img v-else-if="typeof localMarker.icon === 'string' && localMarker.icon.startsWith('data:image')" :src="localMarker.icon" alt="icon" style="width:40px;height:40px;object-fit:contain;" />
+          <img v-else-if="localMarker.icon.imageHref" :src="localMarker.icon.imageHref" alt="icon" style="width:40px;height:40px;object-fit:contain;" />
+        </div>
         <v-text-field v-model="localMarker.label" label="Заголовок" />
         <v-textarea v-model="localMarker.hint" label="Описание" />
         <v-switch
@@ -50,6 +55,7 @@
         </div>
       </v-card-text>
       <v-card-actions class="flex-column align-stretch" style="gap: 8px;">
+        <v-btn v-if="props.mode === 'edit'" color="primary" @click="$emit('edit-icon')" ref="editIconBtnRef">Редактировать иконку</v-btn>
         <v-btn color="primary" @click="save">Сохранить</v-btn>
         <v-btn @click="close">Отмена</v-btn>
         <v-btn v-if="props.mode === 'edit'" color="secondary" @click="changeCoords">Изменить координаты</v-btn>
@@ -61,6 +67,7 @@
 
 <script setup>
 import { ref, watch, computed, watchEffect } from 'vue'
+const editIconBtnRef = ref(null)
 const props = defineProps({
   modelValue: Boolean,
   marker: Object,
