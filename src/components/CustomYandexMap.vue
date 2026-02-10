@@ -315,8 +315,18 @@ function onBack() {
 }
 
 async function mdiIconToPngDataUrl(mdiIconName, color = '#1976D2', size = 43) {
-  const svgPath = `/node_modules/@mdi/svg/svg/${mdiIconName.replace('mdi-','')}.svg`;
-  let svgText = await fetch(svgPath).then(r => r.text());
+  const iconFile = mdiIconName.replace('mdi-', '') + '.svg'
+  const pathFromBuild = `${import.meta.env.BASE_URL}mdi-icons/${iconFile}`
+  const pathFromDev = `/node_modules/@mdi/svg/svg/${iconFile}`
+  let svgText
+  const r = await fetch(pathFromBuild)
+  if (r.ok) {
+    svgText = await r.text()
+  } else {
+    const rDev = await fetch(pathFromDev)
+    if (!rDev.ok) throw new Error(`Icon not found: ${mdiIconName}`)
+    svgText = await rDev.text()
+  }
   svgText = svgText
     .replace(/fill="[^"]*"/gi, `fill=\"${color}\"`)
     .replace(/stroke="[^"]*"/gi, `stroke=\"${color}\"`);
