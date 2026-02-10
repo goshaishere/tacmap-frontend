@@ -5,110 +5,213 @@
         <v-col cols="12">
           <div class="text-h4 text-on-surface d-flex align-center mb-0">
             <v-icon class="me-3" color="accent">mdi-help-circle</v-icon>
-            Справочная информация
+            {{ $t('help.title') }}
           </div>
         </v-col>
       </v-row>
 
-      <!-- Звания -->
+      <!-- Типизация в системе -->
       <v-row>
         <v-col cols="12">
           <v-card class="mb-6">
             <v-card-title class="d-flex align-center text-on-surface">
-              <v-icon class="me-2">mdi-star</v-icon>
-              Звания
+              <v-icon class="me-2">mdi-sitemap</v-icon>
+              {{ $t('help.typificationTitle') }}
             </v-card-title>
             <v-card-text>
-              <v-row>
-                <v-col v-for="rank in ranks" :key="rank.key" cols="12" md="6" lg="3">
-                  <v-card variant="outlined" class="h-100">
-                    <v-card-text class="text-center">
-                      <v-icon size="48" class="mb-3" :color="rank.key === 'commander' ? 'warning' : 'primary'">
-                        {{ rank.icon }}
-                      </v-icon>
-                      <div class="text-h6 font-weight-bold mb-2">{{ rank.title }}</div>
-                      <div class="text-body-2 text-medium-emphasis">{{ rank.description }}</div>
-                    </v-card-text>
-                  </v-card>
-                </v-col>
-              </v-row>
+              <p class="text-body-2 mb-3">{{ $t('help.typificationIntro') }}</p>
+              <ul class="text-body-2 mb-0">
+                <li class="mb-2"><strong>{{ $t('help.typificationLevel1') }}</strong></li>
+                <li class="mb-2"><strong>{{ $t('help.typificationLevel2') }}</strong></li>
+                <li class="mb-2"><strong>{{ $t('help.typificationLevel3') }}</strong></li>
+                <li class="mb-0"><strong>{{ $t('help.typificationLevel4') }}</strong></li>
+              </ul>
             </v-card-text>
           </v-card>
         </v-col>
       </v-row>
 
-      <!-- Должности -->
-      <v-row>
-        <v-col cols="12">
-          <v-card class="mb-6">
-            <v-card-title class="d-flex align-center text-on-surface">
-              <v-icon class="me-2">mdi-badge-account</v-icon>
-              Должности
-            </v-card-title>
-            <v-card-text>
-              <v-row>
-                <v-col v-for="role in roles" :key="role.key" cols="12" md="6" lg="4">
-                  <v-card variant="outlined" class="h-100">
-                    <v-card-text>
-                      <div class="d-flex align-center mb-3">
-                        <v-icon size="32" class="me-3" color="accent">
-                          {{ role.icon }}
+      <!-- Военный тип: подтипы, уровни структуры, звания, роли, сквады -->
+      <template v-if="companyStore.isMilitary">
+        <v-row>
+          <v-col cols="12">
+            <v-card class="mb-6">
+              <v-card-title class="d-flex align-center text-on-surface">
+                <v-icon class="me-2">mdi-shield</v-icon>
+                {{ $t('help.militaryHelpTitle') }}
+              </v-card-title>
+              <v-card-text>
+                <div class="text-subtitle-2 font-weight-bold mb-2">{{ $t('help.militarySubtypes') }}</div>
+                <v-table density="compact" class="mb-4">
+                  <thead>
+                    <tr>
+                      <th>{{ $t('company.subtype') }}</th>
+                      <th>{{ $t('help.militaryStructureLevels') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="sub in militarySubtypes" :key="sub.key">
+                      <td>{{ sub.title }}</td>
+                      <td>{{ sub.levelsText }}</td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col cols="12">
+            <v-card class="mb-6">
+              <v-card-title class="d-flex align-center text-on-surface">
+                <v-icon class="me-2">mdi-star</v-icon>
+                {{ $t('help.militaryRanks') }}
+              </v-card-title>
+              <v-card-text>
+                <v-row>
+                  <v-col v-for="rank in ranks" :key="rank.key" cols="12" md="6" lg="3">
+                    <v-card variant="outlined" class="h-100">
+                      <v-card-text class="text-center">
+                        <v-icon size="48" class="mb-3" :color="rank.key === 'commander' ? 'warning' : 'primary'">
+                          {{ rank.icon }}
                         </v-icon>
-                        <div class="text-h6 font-weight-bold">{{ role.title }}</div>
-                      </div>
-                      <div class="text-body-2 text-medium-emphasis mb-3">{{ role.description }}</div>
-                      
-                      <!-- Типовые действия для роли -->
-                      <div v-if="actionsByRole[role.key]" class="mt-3">
-                        <div class="text-subtitle-2 font-weight-bold mb-2">Типовые действия:</div>
-                        <div class="d-flex flex-wrap gap-2">
-                          <v-chip
-                            v-for="action in actionsByRole[role.key]"
-                            :key="action.key"
-                            size="small"
-                            variant="outlined"
-                            color="accent"
-                          >
-                            <v-icon size="16" class="me-1">{{ action.icon }}</v-icon>
-                            {{ action.title }}
-                          </v-chip>
-                        </div>
-                      </div>
-                    </v-card-text>
-                  </v-card>
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
+                        <div class="text-h6 font-weight-bold mb-2">{{ rank.title }}</div>
+                        <div class="text-body-2 text-medium-emphasis">{{ rank.description }}</div>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
 
-      <!-- Сквады -->
-      <v-row>
-        <v-col cols="12">
-          <v-card class="mb-6">
-            <v-card-title class="d-flex align-center text-on-surface">
-              <v-icon class="me-2">mdi-account-group</v-icon>
-              Сквады
-            </v-card-title>
-            <v-card-text>
-              <v-row>
-                <v-col v-for="squad in squads" :key="squad.key" cols="12" md="6" lg="4">
-                  <v-card variant="outlined" class="h-100">
-                    <v-card-text class="text-center">
-                      <v-icon size="48" class="mb-3" color="primary">
-                        {{ squad.icon }}
-                      </v-icon>
-                      <div class="text-h6 font-weight-bold mb-2">{{ squad.title }}</div>
-                      <div class="text-body-2 text-medium-emphasis">{{ squad.description }}</div>
-                    </v-card-text>
-                  </v-card>
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
+        <v-row>
+          <v-col cols="12">
+            <v-card class="mb-6">
+              <v-card-title class="d-flex align-center text-on-surface">
+                <v-icon class="me-2">mdi-badge-account</v-icon>
+                {{ $t('help.militaryRoles') }}
+              </v-card-title>
+              <v-card-text>
+                <v-row>
+                  <v-col v-for="role in roles" :key="role.key" cols="12" md="6" lg="4">
+                    <v-card variant="outlined" class="h-100">
+                      <v-card-text>
+                        <div class="d-flex align-center mb-3">
+                          <v-icon size="32" class="me-3" color="accent">{{ role.icon }}</v-icon>
+                          <div class="text-h6 font-weight-bold">{{ role.title }}</div>
+                        </div>
+                        <div class="text-body-2 text-medium-emphasis mb-3">{{ role.description }}</div>
+                        <div v-if="actionsByRole[role.key]" class="mt-3">
+                          <div class="text-subtitle-2 font-weight-bold mb-2">{{ $t('help.roleActions') }}:</div>
+                          <div class="d-flex flex-wrap gap-2">
+                            <v-chip v-for="action in actionsByRole[role.key]" :key="action.key" size="small" variant="outlined" color="accent">
+                              <v-icon size="16" class="me-1">{{ action.icon }}</v-icon>
+                              {{ action.title }}
+                            </v-chip>
+                          </div>
+                        </div>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col cols="12">
+            <v-card class="mb-6">
+              <v-card-title class="d-flex align-center text-on-surface">
+                <v-icon class="me-2">mdi-account-group</v-icon>
+                {{ $t('help.squads') }}
+              </v-card-title>
+              <v-card-text>
+                <v-row>
+                  <v-col v-for="squad in squads" :key="squad.key" cols="12" md="6" lg="4">
+                    <v-card variant="outlined" class="h-100">
+                      <v-card-text class="text-center">
+                        <v-icon size="48" class="mb-3" color="primary">{{ squad.icon }}</v-icon>
+                        <div class="text-h6 font-weight-bold mb-2">{{ squad.title }}</div>
+                        <div class="text-body-2 text-medium-emphasis">{{ squad.description }}</div>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </template>
+
+      <!-- Корпоративный тип: подтипы, уровни структуры, должности -->
+      <template v-else>
+        <v-row>
+          <v-col cols="12">
+            <v-card class="mb-6">
+              <v-card-title class="d-flex align-center text-on-surface">
+                <v-icon class="me-2">mdi-domain</v-icon>
+                {{ $t('help.corporateHelpTitle') }}
+              </v-card-title>
+              <v-card-text>
+                <div class="text-subtitle-2 font-weight-bold mb-2">{{ $t('help.corporateSubtypes') }}</div>
+                <v-table density="compact" class="mb-4">
+                  <thead>
+                    <tr>
+                      <th>{{ $t('company.subtype') }}</th>
+                      <th>{{ $t('help.corporateStructureLevels') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="sub in corporateSubtypes" :key="sub.key">
+                      <td>{{ sub.title }}</td>
+                      <td>{{ sub.levelsText }}</td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col cols="12">
+            <v-card class="mb-6">
+              <v-card-title class="d-flex align-center text-on-surface">
+                <v-icon class="me-2">mdi-badge-account-outline</v-icon>
+                {{ $t('help.corporatePositions') }}
+              </v-card-title>
+              <v-card-text>
+                <v-row>
+                  <v-col v-for="pos in positions" :key="pos.key" cols="12" md="6" lg="4">
+                    <v-card variant="outlined" class="h-100">
+                      <v-card-text>
+                        <div class="d-flex align-center mb-3">
+                          <v-icon size="32" class="me-3" color="accent">{{ pos.icon }}</v-icon>
+                          <div class="text-h6 font-weight-bold">{{ pos.title }}</div>
+                        </div>
+                        <div class="text-body-2 text-medium-emphasis mb-3">{{ pos.description }}</div>
+                        <div v-if="pos.actions && pos.actions.length" class="mt-3">
+                          <div class="text-subtitle-2 font-weight-bold mb-2">{{ $t('help.roleActions') }}:</div>
+                          <div class="d-flex flex-wrap gap-2">
+                            <v-chip v-for="key in pos.actions" :key="key" size="small" variant="outlined" color="accent">
+                              <v-icon v-if="positionActions[key]" size="16" class="me-1">{{ positionActions[key].icon }}</v-icon>
+                              {{ positionActionTitle(key) }}
+                            </v-chip>
+                          </div>
+                        </div>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </template>
 
       <!-- FAQ -->
       <v-row>
@@ -116,7 +219,7 @@
           <v-card>
             <v-card-title class="d-flex align-center text-on-surface">
               <v-icon class="me-2">mdi-frequently-asked-questions</v-icon>
-              Часто задаваемые вопросы
+              {{ $t('help.faq') }}
             </v-card-title>
             <v-card-text>
               <v-expansion-panels variant="accordion">
@@ -238,14 +341,45 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useCompanyStore } from '../store/company.js'
+import { getSubtypes } from '../data/companyTypes.js'
+import { COMPANY_KIND } from '../data/companyTypes.js'
 import { ranks } from '../data/ranks.js'
 import { roles } from '../data/roles.js'
+import { positions, positionActions } from '../data/positions.js'
 import { defaultSquads } from '../data/squads.js'
-import styles from '../styles/HelpPage.module.scss'
 
+const { t } = useI18n()
+const companyStore = useCompanyStore()
 const squads = defaultSquads
 
-// Типовые действия для ролей
+const militarySubtypes = computed(() => {
+  const list = getSubtypes(COMPANY_KIND.military)
+  return list.map(s => ({
+    key: s.key,
+    title: t('company.subtypes.military_' + s.key),
+    levelsText: (s.structureLevels || []).map(l => t('company.structureLevels.' + l)).join(' → '),
+  }))
+})
+
+const corporateSubtypes = computed(() => {
+  const list = getSubtypes(COMPANY_KIND.corporate)
+  return list.map(s => ({
+    key: s.key,
+    title: t('company.subtypes.corporate_' + s.key),
+    levelsText: (s.structureLevels || []).map(l => t('company.structureLevels.' + l)).join(' → '),
+  }))
+})
+
+function positionActionTitle(key) {
+  const action = positionActions[key]
+  if (action && action.key) return t('tasks.actions.' + action.key)
+  return key
+}
+
+// Типовые действия для военных ролей
 const actionsByRole = {
   medic: [
     { key: 'heal', title: 'Оказать помощь', icon: 'mdi-medical-bag' },

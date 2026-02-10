@@ -143,17 +143,21 @@
 </template>
 
 <script setup>
+import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useTasksStore } from '../../store/tasks.js'
 import {
   getPriorityColor,
-  getPriorityLabel,
   getStatusColor,
   getStatusIcon,
-  getStatusLabel,
   formatDate,
   getStatusIconColor
 } from '../../utils/taskUtils.js'
-import { ref } from 'vue'
+
+const { t } = useI18n()
+const statusToKey = (s) => ({ 'in-progress': 'inProgress', 'on-hold': 'onHold' }[s] || s)
+const getStatusLabel = (status) => t('tasks.status.' + statusToKey(status))
+const getPriorityLabel = (priority) => t('tasks.priority.' + (priority || 'medium'))
 
 const props = defineProps({
   task: {

@@ -5,7 +5,7 @@
         <v-col cols="12">
           <div class="text-h4 text-on-surface d-flex align-center mb-0">
             <v-icon class="me-3" color="accent">mdi-cog</v-icon>
-            Настройки
+            {{ t('settings.title') }}
           </div>
         </v-col>
       </v-row>
@@ -14,43 +14,122 @@
         <v-col cols="12" md="6">
           <v-card class="pa-4 mb-4">
             <v-card-title class="text-h6 text-on-surface mb-2">
-              <v-icon class="me-2">mdi-palette</v-icon> Внешний вид
+              <v-icon class="me-2">mdi-palette</v-icon> {{ t('settings.appearance') }}
             </v-card-title>
             <v-card-text>
               <div class="d-flex align-center justify-space-between flex-wrap gap-4">
-                      <div>
-                        <div class="text-subtitle-1 font-weight-medium">Тема оформления</div>
-                  <div class="text-caption text-medium-emphasis">Выберите светлую или тёмную тему</div>
-                      </div>
-                        <v-btn-toggle
-                          v-model="selectedTheme"
-                          mandatory
-                          color="accent"
-                          @update:model-value="onThemeChange"
-                        >
-                          <v-btn value="tacticalLight" size="small">
-                            <v-icon class="me-1">mdi-white-balance-sunny</v-icon>
-                            Светлая
-                          </v-btn>
-                          <v-btn value="tacticalDark" size="small">
-                            <v-icon class="me-1">mdi-weather-night</v-icon>
-                    Тёмная
-                          </v-btn>
-                        </v-btn-toggle>
-                    </div>
-                  </v-card-text>
-                </v-card>
+                <div>
+                  <div class="text-subtitle-1 font-weight-medium">{{ t('settings.themeLabel') }}</div>
+                  <div class="text-caption text-medium-emphasis">{{ t('settings.themeHint') }}</div>
+                </div>
+                <v-btn-toggle
+                  v-model="selectedTheme"
+                  mandatory
+                  color="accent"
+                  @update:model-value="onThemeChange"
+                >
+                  <v-btn value="tacticalLight" size="small">
+                    <v-icon class="me-1">mdi-white-balance-sunny</v-icon>
+                    {{ t('common.themeLight') }}
+                  </v-btn>
+                  <v-btn value="tacticalDark" size="small">
+                    <v-icon class="me-1">mdi-weather-night</v-icon>
+                    {{ t('common.themeDark') }}
+                  </v-btn>
+                </v-btn-toggle>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <!-- Язык -->
+        <v-col cols="12" md="6">
+          <v-card class="pa-4 mb-4">
+            <v-card-title class="text-h6 text-on-surface mb-2">
+              <v-icon class="me-2">mdi-translate</v-icon> {{ t('settings.localeLabel') }}
+            </v-card-title>
+            <v-card-text>
+              <v-select
+                :model-value="locale"
+                @update:model-value="onLocaleChange"
+                :items="localeOptions"
+                item-title="title"
+                item-value="value"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+              />
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <!-- Тип иерархии -->
+        <v-col cols="12" md="6">
+          <v-card class="pa-4 mb-4">
+            <v-card-title class="text-h6 text-on-surface mb-2">
+              <v-icon class="me-2">mdi-sitemap</v-icon> {{ t('hierarchy.type') }}
+            </v-card-title>
+            <v-card-text>
+              <p class="text-caption text-medium-emphasis mb-3">{{ t('hierarchy.switchHint') }}</p>
+              <v-btn-toggle
+                v-model="hierarchyType"
+                mandatory
+                color="accent"
+                @update:model-value="onHierarchyTypeChange()"
+              >
+                <v-btn value="military" size="small">
+                  <v-icon class="me-1">mdi-shield</v-icon>
+                  {{ t('hierarchy.military') }}
+                </v-btn>
+                <v-btn value="corporate" size="small">
+                  <v-icon class="me-1">mdi-domain</v-icon>
+                  {{ t('hierarchy.corporate') }}
+                </v-btn>
+              </v-btn-toggle>
+              <div class="mt-3">
+                <div class="text-subtitle-2 font-weight-medium mb-2">{{ t('hierarchy.subtype') }}</div>
+                <v-select
+                  :model-value="companyStore.companySubtype"
+                  @update:model-value="companyStore.setCompanySubtype"
+                  :items="subtypeOptions"
+                  :item-title="(item) => t('company.subtypes.' + companyStore.hierarchyType + '_' + item.key)"
+                  item-value="key"
+                  variant="outlined"
+                  density="compact"
+                  hide-details
+                >
+                  <template #selection="{ item }">
+                    <v-icon size="small" class="me-2">{{ item.raw?.icon }}</v-icon>
+                    {{ t('company.subtypes.' + companyStore.hierarchyType + '_' + item.raw?.key) }}
+                  </template>
+                  <template #item="{ item, props }">
+                    <v-list-item v-bind="props">
+                      <template #prepend>
+                        <v-icon size="small">{{ item.raw?.icon }}</v-icon>
+                      </template>
+                    </v-list-item>
+                  </template>
+                </v-select>
+              </div>
+              <div class="mt-3 d-flex gap-2">
+                <v-btn color="accent" variant="outlined" size="small" :to="{ name: 'CompanySettings' }">
+                  {{ t('settings.companySettings') }}
+                </v-btn>
+                <v-btn color="accent" variant="outlined" size="small" :to="{ name: 'Profile' }">
+                  {{ t('settings.profileSettings') }}
+                </v-btn>
+              </div>
+            </v-card-text>
+          </v-card>
         </v-col>
         <!-- Карта -->
         <v-col cols="12" md="6">
           <v-card class="pa-4 mb-4">
             <v-card-title class="text-h6 text-on-surface mb-2">
-              <v-icon class="me-2">mdi-map</v-icon> Карта
+              <v-icon class="me-2">mdi-map</v-icon> {{ t('settings.map') }}
             </v-card-title>
             <v-card-text>
               <div class="d-flex flex-column gap-4">
                 <div>
-                  <div class="text-subtitle-1 font-weight-medium">Стартовый зум</div>
+                  <div class="text-subtitle-1 font-weight-medium">{{ t('settings.mapZoom') }}</div>
                   <v-slider
                     v-model="mapZoom"
                     :min="2"
@@ -60,14 +139,14 @@
                     color="accent"
                     class="mt-2"
                   />
-                  <div class="text-caption text-medium-emphasis">Текущий зум: {{ mapZoom }}</div>
+                  <div class="text-caption text-medium-emphasis">{{ mapZoom }}</div>
                 </div>
                 <div>
-                  <div class="text-subtitle-1 font-weight-medium">Стартовая позиция (широта, долгота)</div>
+                  <div class="text-subtitle-1 font-weight-medium">{{ t('settings.mapPosition') }}</div>
                   <div class="d-flex gap-2">
                     <v-text-field
                       v-model="mapLat"
-                      label="Широта"
+                      :label="t('settings.latitude')"
                       type="number"
                       variant="outlined"
                       density="compact"
@@ -75,7 +154,7 @@
                     />
                     <v-text-field
                       v-model="mapLon"
-                      label="Долгота"
+                      :label="t('settings.longitude')"
                       type="number"
                       variant="outlined"
                       density="compact"
@@ -83,7 +162,7 @@
                     />
                   </div>
                 </div>
-                <v-btn color="accent" variant="outlined" size="small" @click="saveMapSettings">Сохранить</v-btn>
+                <v-btn color="accent" variant="outlined" size="small" @click="saveMapSettings">{{ t('settings.saveMap') }}</v-btn>
               </div>
             </v-card-text>
           </v-card>
@@ -92,26 +171,26 @@
         <v-col cols="12" md="6">
           <v-card class="pa-4 mb-4">
             <v-card-title class="text-h6 text-on-surface mb-2">
-              <v-icon class="me-2">mdi-bell</v-icon> Уведомления
+              <v-icon class="me-2">mdi-bell</v-icon> {{ t('settings.notifications') }}
             </v-card-title>
                   <v-card-text>
               <div class="d-flex align-center justify-space-between mb-4">
                       <div>
-                        <div class="text-subtitle-1 font-weight-medium">Включить уведомления</div>
-                  <div class="text-caption text-medium-emphasis">Получать уведомления о новых задачах</div>
+                        <div class="text-subtitle-1 font-weight-medium">{{ t('settings.notificationsEnable') }}</div>
+                  <div class="text-caption text-medium-emphasis">{{ t('settings.notificationsHint') }}</div>
                         </div>
                 <div>
                         <v-switch
                           v-model="notificationsEnabled"
                           color="accent"
                         ></v-switch>
-                        <v-btn color="accent" variant="outlined" size="small" @click="showTestNotification" class="ms-2">Тест</v-btn>
+                        <v-btn color="accent" variant="outlined" size="small" @click="showTestNotification" class="ms-2">{{ t('settings.testNotification') }}</v-btn>
                       </div>
                     </div>
               <div class="d-flex align-center justify-space-between mb-4">
                       <div>
-                        <div class="text-subtitle-1 font-weight-medium">Звуковые уведомления</div>
-                  <div class="text-caption text-medium-emphasis">Воспроизводить звук при получении уведомлений</div>
+                        <div class="text-subtitle-1 font-weight-medium">{{ t('settings.soundEnable') }}</div>
+                  <div class="text-caption text-medium-emphasis">{{ t('settings.soundHint') }}</div>
                       </div>
                       <v-switch
                         v-model="soundEnabled"
@@ -126,13 +205,13 @@
         <v-col cols="12" md="6">
           <v-card class="pa-4 mb-4">
             <v-card-title class="text-h6 text-on-surface mb-2">
-              <v-icon class="me-2">mdi-shield</v-icon> Безопасность
+              <v-icon class="me-2">mdi-shield</v-icon> {{ t('settings.security') }}
             </v-card-title>
                   <v-card-text>
               <div class="d-flex align-center justify-space-between mb-4">
                       <div>
-                        <div class="text-subtitle-1 font-weight-medium">Автоматический выход</div>
-                  <div class="text-caption text-medium-emphasis">Выход из системы после периода неактивности</div>
+                        <div class="text-subtitle-1 font-weight-medium">{{ t('settings.securityAutoLogout') }}</div>
+                  <div class="text-caption text-medium-emphasis">{{ t('settings.securityHint') }}</div>
                       </div>
                       <v-switch
                         v-model="autoLogout"
@@ -141,8 +220,7 @@
                     </div>
                     <div class="d-flex align-center justify-space-between">
                       <div>
-                        <div class="text-subtitle-1 font-weight-medium">Время неактивности</div>
-                  <div class="text-caption text-medium-emphasis">Минуты до автоматического выхода</div>
+                        <div class="text-subtitle-1 font-weight-medium">{{ t('settings.inactivityTime') }}</div>
                       </div>
                       <v-select
                         v-model="inactivityTimeout"
@@ -160,58 +238,58 @@
         <v-col cols="12" md="6">
           <v-card class="pa-4 mb-4">
             <v-card-title class="text-h6 text-on-surface mb-2">
-              <v-icon class="me-2">mdi-database-export</v-icon> Данные
+              <v-icon class="me-2">mdi-database-export</v-icon> {{ t('settings.data') }}
             </v-card-title>
                   <v-card-text>
               <div class="mb-3">
-                <div class="text-subtitle-1 font-weight-medium mb-1">Профиль</div>
-                <v-btn color="accent" variant="outlined" size="small" @click="exportProfile" class="me-2">Экспорт</v-btn>
-                        <v-btn color="accent" variant="text" size="small" @click="importProfile">Импорт</v-btn>
+                <div class="text-subtitle-1 font-weight-medium mb-1">{{ t('settings.dataProfile') }}</div>
+                <v-btn color="accent" variant="outlined" size="small" @click="exportProfile" class="me-2">{{ t('settings.dataExport') }}</v-btn>
+                        <v-btn color="accent" variant="text" size="small" @click="importProfile">{{ t('settings.dataImport') }}</v-btn>
                         <input :ref="el => refs.profileInput.value = el" type="file" accept="application/json" style="display:none" @change="importProfileFile" />
                       </div>
               <div class="mb-3">
-                <div class="text-subtitle-1 font-weight-medium mb-1">Задачи</div>
-                <v-btn color="accent" variant="outlined" size="small" @click="exportTasks" class="me-2">Экспорт</v-btn>
-                        <v-btn color="accent" variant="text" size="small" @click="importTasks">Импорт</v-btn>
+                <div class="text-subtitle-1 font-weight-medium mb-1">{{ t('settings.dataTasks') }}</div>
+                <v-btn color="accent" variant="outlined" size="small" @click="exportTasks" class="me-2">{{ t('settings.dataExport') }}</v-btn>
+                        <v-btn color="accent" variant="text" size="small" @click="importTasks">{{ t('settings.dataImport') }}</v-btn>
                         <input :ref="el => refs.tasksInput.value = el" type="file" accept="application/json" style="display:none" @change="importTasksFile" />
                       </div>
               <div class="mb-3">
-                <div class="text-subtitle-1 font-weight-medium mb-1">Сквады</div>
-                <v-btn color="accent" variant="outlined" size="small" @click="exportSquads" class="me-2">Экспорт</v-btn>
-                        <v-btn color="accent" variant="text" size="small" @click="importSquads">Импорт</v-btn>
+                <div class="text-subtitle-1 font-weight-medium mb-1">{{ t('settings.dataSquads') }}</div>
+                <v-btn color="accent" variant="outlined" size="small" @click="exportSquads" class="me-2">{{ t('settings.dataExport') }}</v-btn>
+                        <v-btn color="accent" variant="text" size="small" @click="importSquads">{{ t('settings.dataImport') }}</v-btn>
                         <input :ref="el => refs.squadsInput.value = el" type="file" accept="application/json" style="display:none" @change="importSquadsFile" />
                       </div>
               <div class="mb-3">
-                <div class="text-subtitle-1 font-weight-medium mb-1">Фракции</div>
-                <v-btn color="accent" variant="outlined" size="small" @click="exportFactions" class="me-2">Экспорт</v-btn>
-                        <v-btn color="accent" variant="text" size="small" @click="importFactions">Импорт</v-btn>
+                <div class="text-subtitle-1 font-weight-medium mb-1">{{ t('settings.dataFactions') }}</div>
+                <v-btn color="accent" variant="outlined" size="small" @click="exportFactions" class="me-2">{{ t('settings.dataExport') }}</v-btn>
+                        <v-btn color="accent" variant="text" size="small" @click="importFactions">{{ t('settings.dataImport') }}</v-btn>
                         <input :ref="el => refs.factionsInput.value = el" type="file" accept="application/json" style="display:none" @change="importFactionsFile" />
                       </div>
               <div class="mb-3">
-                <div class="text-subtitle-1 font-weight-medium mb-1">Настройки</div>
-                <v-btn color="accent" variant="outlined" size="small" @click="exportSettings" class="me-2">Экспорт</v-btn>
-                        <v-btn color="accent" variant="text" size="small" @click="importSettings">Импорт</v-btn>
+                <div class="text-subtitle-1 font-weight-medium mb-1">{{ t('settings.dataSettings') }}</div>
+                <v-btn color="accent" variant="outlined" size="small" @click="exportSettings" class="me-2">{{ t('settings.dataExport') }}</v-btn>
+                        <v-btn color="accent" variant="text" size="small" @click="importSettings">{{ t('settings.dataImport') }}</v-btn>
                         <input :ref="el => refs.settingsInput.value = el" type="file" accept="application/json" style="display:none" @change="importSettingsFile" />
                       </div>
               <div class="mb-3">
-                <div class="text-subtitle-1 font-weight-medium mb-1">Карта</div>
-                <v-btn color="accent" variant="outlined" size="small" @click="exportMap" class="me-2">Экспорт</v-btn>
-                        <v-btn color="accent" variant="text" size="small" @click="importMap">Импорт</v-btn>
+                <div class="text-subtitle-1 font-weight-medium mb-1">{{ t('settings.dataMap') }}</div>
+                <v-btn color="accent" variant="outlined" size="small" @click="exportMap" class="me-2">{{ t('settings.dataExport') }}</v-btn>
+                        <v-btn color="accent" variant="text" size="small" @click="importMap">{{ t('settings.dataImport') }}</v-btn>
                         <input :ref="el => refs.mapInput.value = el" type="file" accept="application/json" style="display:none" @change="importMapFile" />
                       </div>
               <div class="mb-3">
-                <div class="text-subtitle-1 font-weight-medium mb-1">Авторизация</div>
-                <v-btn color="accent" variant="outlined" size="small" @click="exportAuth" class="me-2">Экспорт</v-btn>
-                        <v-btn color="accent" variant="text" size="small" @click="importAuth">Импорт</v-btn>
+                <div class="text-subtitle-1 font-weight-medium mb-1">{{ t('settings.dataAuth') }}</div>
+                <v-btn color="accent" variant="outlined" size="small" @click="exportAuth" class="me-2">{{ t('settings.dataExport') }}</v-btn>
+                        <v-btn color="accent" variant="text" size="small" @click="importAuth">{{ t('settings.dataImport') }}</v-btn>
                         <input :ref="el => refs.authInput.value = el" type="file" accept="application/json" style="display:none" @change="importAuthFile" />
                       </div>
               <div class="mb-3">
-                <div class="text-subtitle-1 font-weight-medium mb-1">Очистить данные</div>
-                <v-btn color="error" variant="outlined" size="small" @click="showClearDialog = true">Очистить</v-btn>
+                <div class="text-subtitle-1 font-weight-medium mb-1">{{ t('settings.dataClear') }}</div>
+                <v-btn color="error" variant="outlined" size="small" @click="showClearDialog = true">{{ t('common.delete') }}</v-btn>
                     </div>
                       <div>
-                <div class="text-subtitle-1 font-weight-medium mb-1">Сброс настроек</div>
-                <v-btn color="warning" variant="outlined" size="small" @click="resetSettings">Сброс</v-btn>
+                <div class="text-subtitle-1 font-weight-medium mb-1">{{ t('settings.dataReset') }}</div>
+                <v-btn color="warning" variant="outlined" size="small" @click="resetSettings">{{ t('settings.dataReset') }}</v-btn>
                     </div>
                   </v-card-text>
                 </v-card>
@@ -220,7 +298,7 @@
         <v-col cols="12" md="6">
           <v-card class="pa-4 mb-4">
             <v-card-title class="text-h6 text-on-surface mb-2">
-              <v-icon class="me-2">mdi-information</v-icon> О приложении
+              <v-icon class="me-2">mdi-information</v-icon> {{ t('settings.about') }}
             </v-card-title>
                   <v-card-text>
                     <div class="text-center">
@@ -228,28 +306,10 @@
                         <v-icon size="32">mdi-map</v-icon>
                       </v-avatar>
                       <div class="text-h6 font-weight-bold mb-1">TacMap</div>
-                      <div class="text-caption text-medium-emphasis mb-3">Версия 1.0.0</div>
-                      <div class="text-body-2 text-medium-emphasis mb-4">
-                        Система тактического управления для координации действий
-                      </div>
+                      <div class="text-caption text-medium-emphasis mb-3">{{ t('settings.aboutVersion') }} 1.0.0</div>
                       <div class="d-flex flex-column flex-sm-row justify-center gap-2">
-                        <v-btn 
-                          color="accent" 
-                          variant="outlined" 
-                          size="small"
-                          href="https://github.com/tacmap"
-                          target="_blank"
-                        >
-                          GitHub
-                        </v-btn>
-                        <v-btn 
-                          color="accent" 
-                          variant="outlined" 
-                          size="small"
-                          href="mailto:support@tacmap.com"
-                        >
-                          Поддержка
-                        </v-btn>
+                        <v-btn color="accent" variant="outlined" size="small" href="https://github.com/tacmap" target="_blank">GitHub</v-btn>
+                        <v-btn color="accent" variant="outlined" size="small" href="mailto:support@tacmap.com">{{ t('settings.close') }}</v-btn>
                       </div>
               </div>
             </v-card-text>
@@ -263,24 +323,15 @@
       <v-card>
         <v-card-title class="text-error">
           <v-icon class="me-2">mdi-alert</v-icon>
-          Подтверждение
+          {{ t('common.confirm') }}
         </v-card-title>
         <v-card-text>
-          <p>Вы уверены, что хотите удалить все данные? Это действие нельзя отменить.</p>
-          <p class="text-caption text-medium-emphasis mt-2">
-            Будут удалены: профиль, задачи, настройки и все сохраненные данные.
-          </p>
+          <p>{{ t('settings.clearConfirm') }}</p>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn variant="text" @click="showClearDialog = false">Отмена</v-btn>
-          <v-btn 
-            color="error" 
-            variant="flat" 
-            @click="clearAllData"
-          >
-            Удалить все
-          </v-btn>
+          <v-btn variant="text" @click="showClearDialog = false">{{ t('common.cancel') }}</v-btn>
+          <v-btn color="error" variant="flat" @click="clearAllData">{{ t('common.delete') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -289,20 +340,20 @@
     <v-snackbar v-model="showNotification" :color="notificationColor" timeout="3000">
       {{ notificationMessage }}
       <template #actions>
-        <v-btn variant="text" @click="showNotification = false">Закрыть</v-btn>
+        <v-btn variant="text" @click="showNotification = false">{{ t('settings.close') }}</v-btn>
       </template>
     </v-snackbar>
 
     <v-dialog v-model="showImportDialog" max-width="400px" persistent>
       <v-card>
-        <v-card-title>Импорт данных</v-card-title>
+        <v-card-title>{{ t('settings.importDialogTitle') }}</v-card-title>
         <v-card-text>
           <input type="file" accept="application/json" @change="importDataFromFile" />
-          <div class="text-caption mt-2">Выберите файл экспорта TacMap (.json)</div>
+          <div class="text-caption mt-2">.json</div>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn variant="text" @click="showImportDialog = false">Отмена</v-btn>
+          <v-btn variant="text" @click="showImportDialog = false">{{ t('common.cancel') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -312,12 +363,42 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import { useTheme } from 'vuetify'
+import { useI18n } from 'vue-i18n'
+import { setLocale } from '../i18n.js'
 import { useProfileStore } from '../store/profile.js'
+import { useCompanyStore } from '../store/company.js'
 import styles from '../styles/SettingsPage.module.scss'
 
+const { t, locale } = useI18n()
 const selectedTheme = ref('tacticalLight')
 const theme = useTheme()
 const profileStore = useProfileStore()
+const companyStore = useCompanyStore()
+
+const localeOptions = [
+  { title: 'Русский', value: 'ru' },
+  { title: 'English', value: 'en' },
+]
+
+function onLocaleChange(value) {
+  setLocale(value)
+  showNotification.value = true
+  notificationMessage.value = t('settings.localeLabel') + ': ' + (value === 'ru' ? 'Русский' : 'English')
+  notificationColor.value = 'success'
+}
+
+const subtypeOptions = computed(() => companyStore.subtypeOptions)
+
+const hierarchyType = computed({
+  get: () => companyStore.hierarchyType,
+  set: (v) => companyStore.setHierarchyType(v)
+})
+
+function onHierarchyTypeChange() {
+  showNotification.value = true
+  notificationMessage.value = t('hierarchy.type') + ' → ' + (companyStore.hierarchyType === 'corporate' ? t('hierarchy.corporate') : t('hierarchy.military'))
+  notificationColor.value = 'success'
+}
 
 // refs для input файлов импорта
 const refs = {

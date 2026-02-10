@@ -159,5 +159,21 @@ export const useTasksStore = defineStore('tasks', {
                 this.tasks[idx] = {...this.tasks[idx], ...updatedTask };
             }
         },
+        handleTaskAction(taskId, action) {
+            const task = this.tasks.find(t => t.id === taskId);
+            if (!task) return;
+            const statusByAction = {
+                assign: 'assigned',
+                start: 'in-progress',
+                complete: 'completed',
+                accept: 'completed',
+                return: 'in-progress',
+                hold: 'on-hold',
+                resume: 'in-progress',
+                cancel: 'cancelled',
+            };
+            const newStatus = statusByAction[action];
+            if (newStatus) this.updateTaskStatus(taskId, newStatus);
+        },
     },
 });

@@ -8,7 +8,7 @@
             <v-card-title class="d-flex align-center justify-space-between">
               <span class="text-h4 text-on-surface d-flex align-center mb-0">
                 <v-icon class="me-3" color="accent">mdi-clipboard-list</v-icon>
-                Управление задачами
+                {{ t('tasks.title') }}
               </span>
               <v-btn 
                 color="accent" 
@@ -16,7 +16,7 @@
                 @click="showCreateDialog = true"
                 prepend-icon="mdi-plus"
               >
-                Создать задачу
+                {{ t('tasks.createTask') }}
               </v-btn>
             </v-card-title>
           </v-card>
@@ -35,7 +35,7 @@
                 class="ma-1"
                 @click="resetMobileStatusFilter"
               >
-                Все
+                {{ t('common.all') }}
               </v-chip>
             </v-slide-group-item>
             <v-slide-group-item
@@ -87,9 +87,12 @@
               class="kanban-column-horizontal"
             >
               <v-card class="themed-kanban" color="surface" flat>
-                <div class="d-flex align-center mb-4 pa-4 pb-2 kanban-card-header">
-                  <v-icon :color="col.color" class="me-2">mdi-checkbox-blank-circle</v-icon>
-                  <span class="text-h6 text-on-surface">{{ col.label }}</span>
+                <div class="d-flex align-center justify-space-between mb-4 pa-4 pb-2 kanban-card-header">
+                  <div class="d-flex align-center">
+                    <v-icon :color="col.color" class="me-2">mdi-checkbox-blank-circle</v-icon>
+                    <span class="text-h6 text-on-surface">{{ col.label }}</span>
+                  </div>
+                  <v-chip size="small" :color="col.color" variant="tonal">{{ tasksByStatus(col.status).length }}</v-chip>
                 </div>
                 <div class="kanban-tasks pa-2">
                   <draggable
@@ -109,7 +112,8 @@
                     </template>
                   </draggable>
                   <div v-if="tasksByStatus(col.status).length === 0" class="empty-state text-center pa-4 text-medium-emphasis">
-                    <span class="text-body-2">Нет задач</span>
+                    <v-icon size="40" color="grey-lighten-1" class="mb-2">mdi-clipboard-outline</v-icon>
+                    <span class="text-body-2 d-block">{{ t('tasks.noTasks') }}</span>
                   </div>
                 </div>
               </v-card>
@@ -143,7 +147,7 @@
                 <v-chip :color="getStatusColor(selectedTask.status)" size="small" class="me-2">
                   {{ getStatusLabel(selectedTask.status) }}
                 </v-chip>
-                <span>{{ selectedTask.assignedTo ? selectedTask.assignedTo.name : 'Не назначена' }}</span>
+                <span>{{ selectedTask.assignedTo ? selectedTask.assignedTo.name : t('tasks.details.notAssigned') }}</span>
               </div>
               <div v-if="selectedTask.dueDate" class="d-flex align-center mb-2">
                 <v-icon size="small" color="grey" class="me-2">mdi-calendar</v-icon>
@@ -156,8 +160,8 @@
             </div>
             <!-- Комментарии -->
             <div class="task-comments mb-2">
-              <h4 class="text-subtitle-1 mb-2">Комментарии</h4>
-              <div v-if="comments.length === 0" class="text-body-2 text-medium-emphasis mb-2">Нет комментариев</div>
+              <h4 class="text-subtitle-1 mb-2">{{ t('tasks.details.comments') }}</h4>
+              <div v-if="comments.length === 0" class="text-body-2 text-medium-emphasis mb-2">{{ t('tasks.details.noComments') }}</div>
               <div v-for="comment in comments" :key="comment.id" class="comment mb-2 pa-2" style="background:#f5f5f5;border-radius:6px;">
                 <div class="d-flex align-center mb-1">
                   <span class="font-weight-bold me-2">{{ comment.author }}</span>
@@ -167,18 +171,18 @@
               </div>
               <v-textarea
                 v-model="newCommentText"
-                label="Добавить комментарий"
+                :label="t('tasks.details.addComment')"
                 auto-grow
                 rows="2"
                 class="mb-2"
               />
-              <v-btn color="primary" @click="addComment" :disabled="!newCommentText.trim()">Отправить</v-btn>
+              <v-btn color="primary" @click="addComment" :disabled="!newCommentText.trim()">{{ t('tasks.details.send') }}</v-btn>
             </div>
           </v-card-text>
           <v-card-actions class="pa-4">
             <v-spacer />
-            <v-btn variant="outlined" @click="editTask(selectedTask)" class="me-2">Редактировать</v-btn>
-            <v-btn color="error" variant="outlined" @click="deleteTask(selectedTask.id)">Удалить</v-btn>
+            <v-btn variant="outlined" @click="editTask(selectedTask)" class="me-2">{{ t('common.edit') }}</v-btn>
+            <v-btn color="error" variant="outlined" @click="deleteTask(selectedTask.id)">{{ t('common.delete') }}</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -188,6 +192,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
 import { useTasksStore } from '../store/tasks.js'
 import TaskCard from '../components/tasks/TaskCard.vue'
@@ -207,15 +212,17 @@ const editingTask = ref(null)
 const selectedTask = ref(null)
 const newCommentText = ref('')
 
-const statusColumns = [
-  { status: 'created', label: 'Создана', color: 'warning' },
-  { status: 'assigned', label: 'Назначена', color: 'info' },
-  { status: 'in-progress', label: 'В работе', color: 'primary' },
-  { status: 'review', label: 'На проверке', color: 'purple' },
-  { status: 'completed', label: 'Завершена', color: 'success' },
-  { status: 'on-hold', label: 'Пауза', color: 'grey' },
-  { status: 'cancelled', label: 'Отменена', color: 'error' },
-]
+const { t } = useI18n()
+
+const statusColumns = computed(() => [
+  { status: 'created', labelKey: 'tasks.status.created', color: 'warning' },
+  { status: 'assigned', labelKey: 'tasks.status.assigned', color: 'info' },
+  { status: 'in-progress', labelKey: 'tasks.status.inProgress', color: 'primary' },
+  { status: 'review', labelKey: 'tasks.status.review', color: 'purple' },
+  { status: 'completed', labelKey: 'tasks.status.completed', color: 'success' },
+  { status: 'on-hold', labelKey: 'tasks.status.onHold', color: 'grey' },
+  { status: 'cancelled', labelKey: 'tasks.status.cancelled', color: 'error' },
+].map(col => ({ ...col, label: t(col.labelKey) })))
 
 const tasksByStatus = (status) => tasksStore.tasks.filter(t => t.status === status)
 
@@ -234,8 +241,8 @@ const editTask = (task) => {
   showCreateDialog.value = true
   showTaskDetails.value = false
 }
-const deleteTask = (taskId) => {
-  if (confirm('Вы уверены, что хотите удалить эту задачу?')) {
+function deleteTask(taskId) {
+  if (confirm(t('tasks.details.deleteConfirm'))) {
     tasksStore.deleteTask(taskId)
     showTaskDetails.value = false
   }

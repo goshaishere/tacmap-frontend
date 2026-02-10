@@ -5,7 +5,7 @@
         <v-col cols="12">
           <div class="text-h4 text-on-surface d-flex align-center mb-0">
             <v-icon class="me-3" color="accent">mdi-account-edit</v-icon>
-            Редактирование профиля
+            {{ t('profile.editProfile') }}
           </div>
         </v-col>
       </v-row>
@@ -13,7 +13,7 @@
         <!-- Основная информация -->
         <v-col cols="12" md="6">
           <v-card class="pa-4 mb-4">
-            <v-card-title class="text-h6 text-on-surface mb-2">Основная информация</v-card-title>
+            <v-card-title class="text-h6 text-on-surface mb-2">{{ t('profile.mainInfo') }}</v-card-title>
             <v-card-text>
               <v-form ref="form" :class="styles['profile-form']">
                 <v-row>
@@ -27,7 +27,7 @@
                   <v-col cols="12" sm="6">
                     <v-text-field 
                       v-model="localProfile.firstName" 
-                      label="Имя" 
+                      :label="t('profile.firstName')" 
                       :rules="[rules.required, rules.minLength, rules.maxLength]"
                       prepend-icon="mdi-account"
                       variant="outlined"
@@ -38,7 +38,7 @@
                   <v-col cols="12" sm="6">
                     <v-text-field 
                       v-model="localProfile.lastName" 
-                      label="Фамилия" 
+                      :label="t('profile.lastName')" 
                       :rules="[rules.required, rules.minLength, rules.maxLength]"
                       prepend-icon="mdi-account"
                       variant="outlined"
@@ -49,7 +49,7 @@
                   <v-col cols="12" sm="6">
                     <v-text-field 
                       v-model="localProfile.callsign" 
-                      label="Позывной" 
+                      :label="t('profile.callsign')" 
                       :rules="[rules.required, rules.minLength, rules.maxLength, rules.callsign]"
                       prepend-icon="mdi-radio"
                       variant="outlined"
@@ -60,7 +60,7 @@
                   <v-col cols="12" sm="6">
                     <v-file-input 
                       v-model="avatarFile" 
-                      label="Аватарка" 
+                      :label="t('profile.avatar')" 
                       accept="image/*"
                       prepend-icon="mdi-camera"
                       variant="outlined"
@@ -76,16 +76,16 @@
         <!-- Звание, должность, сквад, сторона -->
         <v-col cols="12" md="6">
           <v-card class="pa-4 mb-4">
-            <v-card-title class="text-h6 text-on-surface mb-2">Военная информация</v-card-title>
+            <v-card-title class="text-h6 text-on-surface mb-2">{{ companyStore.isCorporate ? t('profile.corporateInfo') : t('profile.militaryInfo') }}</v-card-title>
             <v-card-text>
               <v-form ref="form" :class="styles['profile-form']">
                 <v-row>
-                  <v-col cols="12" sm="6">
+                  <v-col v-if="companyStore.isMilitary" cols="12" sm="6">
                     <v-select
                       v-model="localProfile.rank"
                       :items="ranks"
                       item-title="title"
-                      label="Звание"
+                      :label="t('profile.rank')"
                       return-object
                       :item-props="item => ({ prependIcon: item.icon })"
                       variant="outlined"
@@ -100,55 +100,52 @@
                   </v-col>
                   <v-col cols="12" sm="6">
                     <v-select
-                      v-model="localProfile.role"
-                      :items="roles"
+                      :model-value="companyStore.currentLevel1?.key"
+                      @update:model-value="companyStore.setLevel1"
+                      :items="companyStore.level1Options"
                       item-title="title"
-                      label="Должность"
-                      return-object
-                      :item-props="item => ({ prependIcon: item.icon })"
-                      variant="outlined"
-                      prepend-icon="mdi-badge-account"
-                      :rules="[rules.required]"
-                      required
-                    >
-                      <template #selection="{ item }">
-                        <v-icon v-if="item && item.raw && item.raw.icon" class="me-2">{{ item.raw.icon }}</v-icon>{{ item.raw?.title || '' }}
-                      </template>
-                    </v-select>
-                  </v-col>
-                  <v-col cols="12" sm="6">
-                    <v-select
-                      v-model="localProfile.squad"
-                      :items="squads"
-                      item-title="title"
-                      label="Сквад"
-                      return-object
-                      :item-props="item => ({ prependIcon: item.icon })"
-                      variant="outlined"
-                      prepend-icon="mdi-account-group"
-                      :rules="[rules.required]"
-                      required
-                    >
-                      <template #selection="{ item }">
-                        <v-icon v-if="item && item.raw && item.raw.icon" class="me-2">{{ item.raw.icon }}</v-icon>{{ item.raw?.title || '' }}
-                      </template>
-                    </v-select>
-                  </v-col>
-                  <v-col cols="12" sm="6">
-                    <v-select
-                      v-model="localProfile.faction"
-                      :items="factionsList"
-                      item-title="title"
-                      label="Фракция"
-                      return-object
-                      :item-props="item => ({ prependIcon: item.icon })"
+                      item-value="key"
+                      :label="companyStore.isCorporate ? t('profile.department') : t('profile.faction')"
                       variant="outlined"
                       prepend-icon="mdi-flag"
-                      :rules="[rules.required]"
-                      required
+                      :item-props="item => ({ prependIcon: item.icon })"
                     >
                       <template #selection="{ item }">
-                        <v-icon v-if="item && item.raw && item.raw.icon" class="me-2">{{ item.raw.icon }}</v-icon>{{ item.raw?.title || '' }}
+                        <v-icon v-if="item?.raw?.icon" class="me-2">{{ item.raw.icon }}</v-icon>{{ item.raw?.title || '' }}
+                      </template>
+                    </v-select>
+                  </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-select
+                      :model-value="companyStore.currentLevel2?.key"
+                      @update:model-value="companyStore.setLevel2"
+                      :items="companyStore.level2Options"
+                      item-title="title"
+                      item-value="key"
+                      :label="companyStore.isCorporate ? t('profile.team') : t('profile.squad')"
+                      variant="outlined"
+                      prepend-icon="mdi-account-group"
+                      :item-props="item => ({ prependIcon: item.icon })"
+                    >
+                      <template #selection="{ item }">
+                        <v-icon v-if="item?.raw?.icon" class="me-2">{{ item.raw.icon }}</v-icon>{{ item.raw?.title || '' }}
+                      </template>
+                    </v-select>
+                  </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-select
+                      :model-value="companyStore.currentRoleOrPosition?.key"
+                      @update:model-value="companyStore.setRoleOrPosition"
+                      :items="companyStore.roleOrPositionOptions"
+                      item-title="title"
+                      item-value="key"
+                      :label="companyStore.isCorporate ? t('profile.position') : t('profile.role')"
+                      variant="outlined"
+                      prepend-icon="mdi-badge-account"
+                      :item-props="item => ({ prependIcon: item.icon })"
+                    >
+                      <template #selection="{ item }">
+                        <v-icon v-if="item?.raw?.icon" class="me-2">{{ item.raw.icon }}</v-icon>{{ item.raw?.title || '' }}
                       </template>
                     </v-select>
                   </v-col>
@@ -160,7 +157,7 @@
                   <!-- Предварительный просмотр -->
         <v-col cols="12" md="6">
           <v-card class="pa-4 mb-4">
-            <v-card-title class="text-h6 text-on-surface mb-2">Предварительный просмотр</v-card-title>
+            <v-card-title class="text-h6 text-on-surface mb-2">{{ t('profile.preview') }}</v-card-title>
             <v-card-text>
                     <v-card variant="outlined" class="pa-3">
                 <div :class="styles['profile-preview']">
@@ -174,18 +171,18 @@
                           <div class="text-subtitle-2 text-medium-emphasis text-truncate">{{ localProfile.callsign }}</div>
                         </div>
                   <div :class="styles['profile-preview-actions']">
-                    <v-avatar size="24" :color="localProfile.faction?.color || 'surface-variant'" class="me-2">
-                            <v-icon size="16">{{ localProfile.faction?.icon }}</v-icon>
-                          </v-avatar>
+                    <v-avatar size="24" :color="companyStore.currentLevel1?.colorLight || 'surface-variant'" class="me-2">
+                      <v-icon size="16">{{ companyStore.currentLevel1?.icon }}</v-icon>
+                    </v-avatar>
                     <v-avatar size="24" color="surface-variant" class="me-2">
-                            <v-icon size="16">{{ localProfile.squad?.icon }}</v-icon>
-                          </v-avatar>
-                    <v-avatar size="24" color="surface-variant" class="me-2">
-                            <v-icon size="16">{{ localProfile.rank?.icon }}</v-icon>
-                          </v-avatar>
-                          <v-avatar size="24" color="surface-variant">
-                            <v-icon size="16">{{ localProfile.role?.icon }}</v-icon>
-                          </v-avatar>
+                      <v-icon size="16">{{ companyStore.currentLevel2?.icon }}</v-icon>
+                    </v-avatar>
+                    <v-avatar v-if="companyStore.isMilitary" size="24" color="surface-variant" class="me-2">
+                      <v-icon size="16">{{ localProfile.rank?.icon }}</v-icon>
+                    </v-avatar>
+                    <v-avatar size="24" color="surface-variant">
+                      <v-icon size="16">{{ companyStore.currentRoleOrPosition?.icon }}</v-icon>
+                    </v-avatar>
                         </div>
                       </div>
                     </v-card>
@@ -195,12 +192,12 @@
             <!-- Кнопки действий -->
         <v-col cols="12" md="6">
           <v-card class="pa-4 mb-4">
-            <v-card-title class="text-h6 text-on-surface mb-2">Действия</v-card-title>
+            <v-card-title class="text-h6 text-on-surface mb-2">{{ t('profile.actions') }}</v-card-title>
             <v-card-text>
               <v-row class="w-100" dense>
                 <v-col cols="12" sm="6" :class="styles['profile-actions']">
                   <v-btn block color="accent" variant="flat" prepend-icon="mdi-plus" @click="dialog = true">
-                    Создать сквад
+                    {{ t('profile.createSquad') }}
                   </v-btn>
                 </v-col>
                 <v-col cols="12" sm="6" :class="styles['profile-actions']">
@@ -216,7 +213,7 @@
                 <v-col cols="12" sm="6" class="d-flex gap-2">
                   <v-btn block color="accent" variant="flat" @click="saveProfile" :disabled="!isFormValid || !hasChanges" :loading="isSaving">
                     <v-icon class="me-2">mdi-content-save</v-icon>
-                    Сохранить
+                    {{ t('common.save') }}
                   </v-btn>
                 </v-col>
               </v-row>
@@ -229,27 +226,27 @@
     <!-- Диалог создания сквада -->
     <v-dialog v-model="dialog" max-width="400" persistent>
       <v-card :class="styles['profile-dialog']">
-        <v-card-title>Создать сквад</v-card-title>
+        <v-card-title>{{ t('profile.createSquad') }}</v-card-title>
         <v-card-text>
-          <v-text-field v-model="newSquad.title" label="Название сквада" required></v-text-field>
+          <v-text-field v-model="newSquad.title" :label="t('profile.squadName')" required></v-text-field>
           <v-select
             v-model="newSquad.icon"
             :items="iconOptions"
             item-title="title"
             item-value="icon"
-            label="Иконка"
+            :label="t('profile.icon')"
             :item-props="item => ({ prependIcon: item.icon })"
           >
             <template #selection="{ item }">
               <v-icon class="me-2">{{ item.raw.icon }}</v-icon>{{ item.raw.title }}
             </template>
           </v-select>
-          <v-text-field v-model="newSquad.description" label="Описание"></v-text-field>
+          <v-text-field v-model="newSquad.description" :label="t('profile.description')"></v-text-field>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="accent" variant="outlined" @click="createSquad">Создать</v-btn>
-          <v-btn color="accent" variant="text" @click="dialog = false">Отмена</v-btn>
+          <v-btn color="accent" variant="outlined" @click="createSquad">{{ t('common.create') }}</v-btn>
+          <v-btn color="accent" variant="text" @click="dialog = false">{{ t('common.cancel') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -257,22 +254,22 @@
     <!-- Диалог создания фракции -->
     <v-dialog v-model="dialogFaction" max-width="400" persistent>
       <v-card :class="styles['profile-dialog']">
-        <v-card-title>Создать фракцию</v-card-title>
+        <v-card-title>{{ t('profile.createFaction') }}</v-card-title>
         <v-card-text>
-          <v-text-field v-model="newFaction.title" label="Название фракции" required></v-text-field>
+          <v-text-field v-model="newFaction.title" :label="t('profile.factionName')" required></v-text-field>
           <v-select
             v-model="newFaction.icon"
             :items="iconOptions"
             item-title="title"
             item-value="icon"
-            label="Иконка"
+            :label="t('profile.icon')"
             :item-props="item => ({ prependIcon: item.icon })"
           >
             <template #selection="{ item }">
               <v-icon class="me-2">{{ item.raw.icon }}</v-icon>{{ item.raw.title }}
             </template>
           </v-select>
-          <v-checkbox v-model="useDefaultFactionColors" label="Использовать стандартные цвета темы" class="mt-2 mb-2" />
+          <v-checkbox v-model="useDefaultFactionColors" :label="t('profile.useDefaultColors')" class="mt-2 mb-2" />
           <div v-if="!useDefaultFactionColors" class="d-flex flex-wrap gap-4 mt-2">
             <div>
               <div class="mb-1 text-caption">Кружок (светлая тема)</div>
@@ -294,7 +291,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="accent" variant="outlined" @click="createFaction">Создать</v-btn>
+          <v-btn color="accent" variant="outlined" @click="createFaction">{{ t('common.create') }}</v-btn>
           <v-btn color="accent" variant="text" @click="dialogFaction = false">Отмена</v-btn>
         </v-card-actions>
       </v-card>
@@ -312,13 +309,18 @@
 
 <script setup>
 import { ref, computed, watchEffect, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ranks } from '../data/ranks.js'
 import { roles } from '../data/roles.js'
 import { defaultSquads, createSquad as createSquadFn } from '../data/squads.js'
 import { useProfileStore } from '../store/profile.js'
+import { useCompanyStore } from '../store/company.js'
 import { factions } from '../data/factions.js'
 import { useTheme } from 'vuetify'
 import styles from '../styles/ProfilePage.module.scss'
+
+const { t } = useI18n()
+const companyStore = useCompanyStore()
 
 const FACTIONS_LS_KEY = 'customFactions'
 const SQUADS_LS_KEY = 'customSquads'
@@ -602,7 +604,7 @@ async function saveProfile() {
     originalProfile.value = deepClone(localProfile.value)
     
     showNotification.value = true
-    notificationMessage.value = 'Профиль успешно сохранён!'
+    notificationMessage.value = t('profile.saveSuccess')
     notificationColor.value = 'success'
   } catch (error) {
     showNotification.value = true

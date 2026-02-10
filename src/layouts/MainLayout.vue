@@ -35,30 +35,44 @@
             <template #prepend>
               <v-icon>mdi-account-edit</v-icon>
             </template>
-            <v-list-item-title>Профиль</v-list-item-title>
+            <v-list-item-title>{{ t('nav.profile') }}</v-list-item-title>
           </v-list-item>
           <v-list-item @click="navigate('/settings')">
             <template #prepend>
               <v-icon>mdi-cog</v-icon>
             </template>
-            <v-list-item-title>Настройки</v-list-item-title>
+            <v-list-item-title>{{ t('nav.settings') }}</v-list-item-title>
           </v-list-item>
           <v-list-item @click="navigate('/help')">
             <template #prepend>
               <v-icon>mdi-help-circle</v-icon>
             </template>
-            <v-list-item-title>Помощь</v-list-item-title>
+            <v-list-item-title>{{ t('nav.help') }}</v-list-item-title>
           </v-list-item>
-                
           <v-list-item @click="logout">
             <template #prepend>
               <v-icon>mdi-logout</v-icon>
             </template>
-            <v-list-item-title>Выйти</v-list-item-title>
+            <v-list-item-title>{{ t('nav.logout') }}</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
-      <v-btn icon variant="text" @click="toggleTheme" :title="isDark ? 'Светлая тема' : 'Тёмная тема'">
+      <v-menu location="bottom end">
+        <template #activator="{ props }">
+          <v-btn icon variant="text" v-bind="props" :title="t('settings.language')">
+            <span class="text-body-2">{{ locale.toUpperCase() }}</span>
+          </v-btn>
+        </template>
+        <v-list>
+          <v-list-item @click="setLocale('ru')">
+            <v-list-item-title>Русский</v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="setLocale('en')">
+            <v-list-item-title>English</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+      <v-btn icon variant="text" @click="toggleTheme" :title="isDark ? t('common.themeLight') : t('common.themeDark')">
         <v-icon>{{ isDark ? 'mdi-white-balance-sunny' : 'mdi-weather-night' }}</v-icon>
       </v-btn>
           </div>
@@ -100,39 +114,39 @@
             </template>
           </v-list-item>
         </v-list>
-      <!-- Кружки только в макси-режиме -->
-      <div v-if="!rail" class="d-flex justify-center align-center mb-2 px-4">
+      <!-- Иерархия: уровень 1, уровень 2, звание (только military), роль/должность -->
+      <div v-if="!rail" class="d-flex justify-center align-center mb-2 px-4 flex-wrap">
         <v-tooltip location="top">
           <template #activator="{ props }">
-            <v-avatar size="24" :color="profileStore.user?.faction?.color || 'surface-variant'" class="me-2" v-bind="props">
-              <v-icon size="16">{{ profileStore.user?.faction?.icon }}</v-icon>
+            <v-avatar size="24" :color="companyStore.currentLevel1?.colorLight || 'surface-variant'" class="me-2" v-bind="props">
+              <v-icon size="16">{{ companyStore.currentLevel1?.icon }}</v-icon>
             </v-avatar>
           </template>
-          <span>{{ profileStore.user?.faction?.title || 'Фракция' }}</span>
+          <span>{{ companyStore.currentLevel1?.title || t(companyStore.isCorporate ? 'profile.department' : 'profile.faction') }}</span>
         </v-tooltip>
         <v-tooltip location="top">
           <template #activator="{ props }">
             <v-avatar size="24" color="surface-variant" class="me-2" v-bind="props">
-              <v-icon size="16">{{ profileStore.user?.squad?.icon }}</v-icon>
+              <v-icon size="16">{{ companyStore.currentLevel2?.icon }}</v-icon>
             </v-avatar>
           </template>
-          <span>{{ profileStore.user?.squad?.title || 'Сквад' }}</span>
+          <span>{{ companyStore.currentLevel2?.title || t(companyStore.isCorporate ? 'profile.team' : 'profile.squad') }}</span>
         </v-tooltip>
-        <v-tooltip location="top">
+        <v-tooltip v-if="companyStore.isMilitary" location="top">
           <template #activator="{ props }">
             <v-avatar size="24" color="surface-variant" class="me-2" v-bind="props">
               <v-icon size="16">{{ profileStore.user?.rank?.icon }}</v-icon>
             </v-avatar>
           </template>
-          <span>{{ profileStore.user?.rank?.title || 'Звание' }}</span>
+          <span>{{ profileStore.user?.rank?.title || t('profile.rank') }}</span>
         </v-tooltip>
         <v-tooltip location="top">
           <template #activator="{ props }">
             <v-avatar size="24" color="surface-variant" v-bind="props">
-              <v-icon size="16">{{ profileStore.user?.role?.icon }}</v-icon>
+              <v-icon size="16">{{ companyStore.currentRoleOrPosition?.icon }}</v-icon>
             </v-avatar>
           </template>
-          <span>{{ profileStore.user?.role?.title || 'Должность' }}</span>
+          <span>{{ companyStore.currentRoleOrPosition?.title || t(companyStore.isCorporate ? 'profile.position' : 'profile.role') }}</span>
         </v-tooltip>
       </div>
       <v-divider class="mx-2 mb-2"></v-divider>
@@ -163,12 +177,17 @@
   </v-app>
 </template>
 <script setup>
-import { ref, watch, onMounted, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from 'vuetify'
+import { useI18n } from 'vue-i18n'
+import { setLocale } from '../i18n.js'
 import { useProfileStore } from '../store/profile.js'
-const profileStore = useProfileStore()
+import { useCompanyStore } from '../store/company.js'
 import RoleActions from '../components/RoleActions.vue'
+
+const profileStore = useProfileStore()
+const companyStore = useCompanyStore()
 
 const drawer = ref(false)
 const rail = ref(false)
@@ -223,13 +242,16 @@ function toggleDrawer() {
     drawer.value = !drawer.value
 }
 
-const items = [
-  { to: '/', title: 'Главная', icon: 'mdi-home-city', exact: true },
-  { to: '/map', title: 'Карта', icon: 'mdi-map' },
-  { to: '/tasks', title: 'Задачи', icon: 'mdi-clipboard-list' },
-  { to: '/profile', title: 'Профиль', icon: 'mdi-account' },
-  { to: '/messages', title: 'Сообщения', icon: 'mdi-message' }
-]
+const { t, locale } = useI18n()
+
+const items = computed(() => [
+  { to: '/', title: t('nav.home'), icon: 'mdi-home-city', exact: true },
+  { to: '/map', title: t('nav.map'), icon: 'mdi-map' },
+  { to: '/tasks', title: t('nav.tasks'), icon: 'mdi-clipboard-list' },
+  { to: '/profile', title: t('nav.profile'), icon: 'mdi-account' },
+  { to: '/settings/company', title: t('settings.companySettings'), icon: 'mdi-sitemap' },
+  { to: '/messages', title: t('nav.messages'), icon: 'mdi-message' }
+])
 function navigate(to) {
   if (route.path !== to) {
     router.push(to)

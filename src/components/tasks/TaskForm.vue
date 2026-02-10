@@ -9,7 +9,7 @@
       <!-- Заголовок -->
       <v-card-title class="d-flex align-center justify-space-between pa-4">
         <span class="text-h6">
-          {{ isEditing ? 'Редактировать задачу' : 'Создать задачу' }}
+          {{ isEditing ? t('tasks.form.edit') : t('tasks.form.create') }}
         </span>
         <div class="d-flex align-center" style="gap: 12px;">
           <v-chip v-if="isEditing" :color="getPriorityColor(formData.priority)" size="small">
@@ -26,8 +26,8 @@
           <!-- Название -->
           <v-text-field
             v-model="formData.title"
-            label="Название задачи"
-            placeholder="Введите название задачи"
+            :label="t('tasks.form.title')"
+            :placeholder="t('tasks.form.titlePlaceholder')"
             variant="outlined"
             :rules="[v => !!v || 'Название обязательно']"
             required
@@ -37,8 +37,8 @@
           <!-- Описание -->
           <v-textarea
             v-model="formData.description"
-            label="Описание"
-            placeholder="Подробное описание задачи"
+            :label="t('tasks.form.description')"
+            :placeholder="t('tasks.form.descriptionPlaceholder')"
             variant="outlined"
             :rows="$vuetify.display.smAndDown ? 3 : 4"
             auto-grow
@@ -49,7 +49,7 @@
           <v-select
             v-model="formData.type"
             :items="taskTypeOptions"
-            label="Тип задачи"
+            :label="t('tasks.form.type')"
             variant="outlined"
             class="mb-4"
           />
@@ -58,7 +58,7 @@
           <v-select
             v-model="formData.priority"
             :items="priorityOptions"
-            label="Приоритет"
+            :label="t('tasks.form.priority')"
             variant="outlined"
             class="mb-4"
           />
@@ -67,7 +67,7 @@
           <v-select
             v-model="formData.assignedTo"
             :items="assignedToOptions"
-            label="Назначить"
+            :label="t('tasks.form.assignee')"
             variant="outlined"
             clearable
             class="mb-4"
@@ -76,7 +76,7 @@
           <!-- Дата выполнения -->
           <v-text-field
             v-model="formData.dueDate"
-            label="Дата выполнения"
+            :label="t('tasks.form.dueDate')"
             type="datetime-local"
             variant="outlined"
             class="mb-4"
@@ -124,7 +124,7 @@
                 class="mb-4"
                 @click="showMarkerPicker = true"
               >
-                Добавить метки на карте
+                {{ t('tasks.form.addMarkers') }}
               </v-btn>
               <MapMarkerPicker
                 v-model="showMarkerPicker"
@@ -143,7 +143,7 @@
             <v-icon class="me-2">
               {{ showAdvanced ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
             </v-icon>
-            {{ showAdvanced ? 'Скрыть' : 'Расширенные настройки' }}
+            {{ showAdvanced ? t('tasks.form.advancedHide') : t('tasks.form.advanced') }}
           </v-btn>
         </v-form>
       </v-card-text>
@@ -156,7 +156,7 @@
           @click="closeDialog"
           class="me-2"
         >
-          Отмена
+          {{ t('common.cancel') }}
         </v-btn>
         <v-btn
           color="primary"
@@ -164,7 +164,7 @@
           :disabled="!isValid"
           @click="saveTask"
         >
-          {{ isEditing ? 'Сохранить' : 'Создать' }}
+          {{ isEditing ? t('common.save') : t('common.create') }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -173,10 +173,16 @@
 
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useTasksStore } from '../../store/tasks.js'
+import { useCompanyStore } from '../../store/company.js'
+import { positionActions } from '../../data/positions.js'
 import '../../styles/TaskForm.module.scss'
 import MapMarkerPicker from './MapMarkerPicker.vue'
 import { getPriorityColor, getPriorityLabel } from '../../utils/taskUtils.js'
+
+const { t } = useI18n()
+const companyStore = useCompanyStore()
 
 const props = defineProps({
   modelValue: {
@@ -219,8 +225,8 @@ const formData = reactive({
   markers: [],
 })
 
-// Опции для селектов
-const taskTypeOptions = [
+// Типы задач: военные (из ролей) + корпоративные (из должностей)
+const militaryTaskTypes = [
   { title: 'Разведка', value: 'reconnaissance' },
   { title: 'Боевая задача', value: 'combat' },
   { title: 'Поддержка', value: 'support' },
@@ -228,13 +234,31 @@ const taskTypeOptions = [
   { title: 'Транспорт', value: 'transport' },
   { title: 'Связь', value: 'communication' }
 ]
-
-const priorityOptions = [
-  { title: 'Низкий', value: 'low' },
-  { title: 'Средний', value: 'medium' },
-  { title: 'Высокий', value: 'high' },
-  { title: 'Критический', value: 'critical' }
+const corporateTaskTypes = [
+  { title: 'Согласование', value: 'approval' },
+  { title: 'Ревью', value: 'review' },
+  { title: 'Назначение', value: 'assignment' },
+  { title: 'Встреча', value: 'meeting' },
+  { title: 'Планирование', value: 'planning' },
+  { title: 'Отчёт', value: 'report' },
+  { title: 'Анализ', value: 'analysis' },
+  { title: 'Разработка', value: 'development' },
+  { title: 'Исправление', value: 'fix' },
+  { title: 'Деплой', value: 'deployment' },
+  { title: 'Дизайн', value: 'design' },
+  { title: 'Поддержка', value: 'support' }
 ]
+
+const taskTypeOptions = computed(() =>
+  companyStore.isCorporate ? corporateTaskTypes : militaryTaskTypes
+)
+
+const priorityOptions = computed(() => [
+  { value: 'low' },
+  { value: 'medium' },
+  { value: 'high' },
+  { value: 'critical' }
+].map(p => ({ ...p, title: t('tasks.priority.' + p.value) })))
 
 const assignedToOptions = [
   { title: 'Иван Петров', value: 'user1' },

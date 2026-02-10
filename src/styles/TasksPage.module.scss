@@ -1,0 +1,77 @@
+.tasks-page {
+  min-height: 100%;
+}
+
+.kanban-header-card {
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.kanban-board-horizontal {
+  overflow-x: auto;
+  padding-bottom: 16px;
+  scrollbar-width: thin;
+}
+
+.kanban-board-row {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  min-width: min-content;
+}
+
+.kanban-column-horizontal {
+  flex: 0 0 280px;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.themed-kanban {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+
+.kanban-card-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+}
+
+.kanban-tasks {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 120px;
+}
+
+.empty-state {
+  border: 1px dashed rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  margin: 8px;
+}
+
+.task-list-mobile {
+  width: 100%;
+  max-width: 100vw;
+  margin: 0;
+  padding: 0;
+}
+
+.task-mobile-filter {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.filter-clear-x-outer {
+  flex-shrink: 0;
+}
+
+@media (max-width: 960px) {
+  .kanban-column-horizontal {
+    min-width: 260px;
+  }
+}

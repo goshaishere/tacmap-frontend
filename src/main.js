@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import './styles/_globals.scss'
 import App from './App.vue'
+import { i18n } from './i18n.js'
 import { createVuetify } from 'vuetify'
 import 'vuetify/styles'
 import { aliases, mdi } from 'vuetify/iconsets/mdi'
@@ -61,6 +62,7 @@ const vuetify = createVuetify({
 const pinia = createPinia()
 
 const app = createApp(App)
+app.use(i18n)
 app.use(vuetify)
 app.use(pinia)
 app.use(router)

@@ -27,50 +27,65 @@
 </template>
 <script setup>
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useProfileStore } from '../store/profile.js'
+import { useCompanyStore } from '../store/company.js'
+import { positionActions } from '../data/positions.js'
 import '../styles/RoleActions.module.scss'
 
+const { t } = useI18n()
 const profileStore = useProfileStore()
+const companyStore = useCompanyStore()
 
 const actionsByRole = {
   medic: [
-    { key: 'heal', title: 'Оказать помощь', icon: 'mdi-medical-bag' },
-    { key: 'evac', title: 'Эвакуировать', icon: 'mdi-helicopter' },
+    { key: 'heal', titleKey: 'tasks.actions.heal', icon: 'mdi-medical-bag' },
+    { key: 'evac', titleKey: 'tasks.actions.evac', icon: 'mdi-helicopter' },
   ],
   sniper: [
-    { key: 'cover', title: 'Прикрыть', icon: 'mdi-crosshairs' },
-    { key: 'eliminate', title: 'Устранить цель', icon: 'mdi-target' },
+    { key: 'cover', titleKey: 'tasks.actions.cover', icon: 'mdi-crosshairs' },
+    { key: 'eliminate', titleKey: 'tasks.actions.eliminate', icon: 'mdi-target' },
   ],
   assault: [
-    { key: 'breach', title: 'Взломать', icon: 'mdi-door' },
-    { key: 'storm', title: 'Штурмовать', icon: 'mdi-shield' },
-    { key: 'suppress', title: 'Подавить', icon: 'mdi-robot-industrial' },
+    { key: 'breach', titleKey: 'tasks.actions.breach', icon: 'mdi-door' },
+    { key: 'storm', titleKey: 'tasks.actions.storm', icon: 'mdi-shield' },
+    { key: 'suppress', titleKey: 'tasks.actions.suppress', icon: 'mdi-robot-industrial' },
   ],
   tech: [
-    { key: 'repair', title: 'Починить', icon: 'mdi-tools' },
-    { key: 'deploy', title: 'Развернуть оборудование', icon: 'mdi-radar' },
+    { key: 'repair', titleKey: 'tasks.actions.repair', icon: 'mdi-tools' },
+    { key: 'deploy', titleKey: 'tasks.actions.deploy', icon: 'mdi-radar' },
   ],
   squad_leader: [
-    { key: 'command', title: 'Отдать приказ', icon: 'mdi-account-group' },
-    { key: 'mark', title: 'Отметить цель', icon: 'mdi-map-marker' },
+    { key: 'command', titleKey: 'tasks.actions.command', icon: 'mdi-account-group' },
+    { key: 'mark', titleKey: 'tasks.actions.mark', icon: 'mdi-map-marker' },
   ],
   machine_gunner: [
-    { key: 'suppress', title: 'Подавить', icon: 'mdi-robot-industrial' },
-    { key: 'cover', title: 'Прикрыть', icon: 'mdi-shield' },
+    { key: 'suppress', titleKey: 'tasks.actions.suppress', icon: 'mdi-robot-industrial' },
+    { key: 'cover', titleKey: 'tasks.actions.cover', icon: 'mdi-shield' },
   ],
   scout: [
-    { key: 'recon', title: 'Разведать', icon: 'mdi-binoculars' },
-    { key: 'mark', title: 'Отметить цель', icon: 'mdi-map-marker' },
+    { key: 'recon', titleKey: 'tasks.actions.recon', icon: 'mdi-binoculars' },
+    { key: 'mark', titleKey: 'tasks.actions.mark', icon: 'mdi-map-marker' },
   ],
   grenadier: [
-    { key: 'blast', title: 'Взорвать', icon: 'mdi-bomb' },
-    { key: 'smoke', title: 'Дымовая завеса', icon: 'mdi-smoke' },
+    { key: 'blast', titleKey: 'tasks.actions.blast', icon: 'mdi-bomb' },
+    { key: 'smoke', titleKey: 'tasks.actions.smoke', icon: 'mdi-smoke' },
   ],
 }
 
 const roleActions = computed(() => {
-  const role = profileStore.user.role?.key
-  return actionsByRole[role] || []
+  if (companyStore.isCorporate) {
+    const pos = companyStore.currentRoleOrPosition
+    if (!pos || !pos.actions || !pos.actions.length) return []
+    return pos.actions.map(key => ({
+      key,
+      title: t('tasks.actions.' + key) || key,
+      icon: positionActions[key]?.icon || 'mdi-circle-small',
+    }))
+  }
+  const role = companyStore.currentRoleOrPosition?.key || profileStore.user.role?.key
+  const list = actionsByRole[role] || []
+  return list.map(a => ({ ...a, title: t(a.titleKey) || a.key }))
 })
 
 // Пример структуры задач (taskCounts): ключ — тип действия, значение — количество задач

@@ -1,10 +1,10 @@
 <template>
   <AuthLayout>
-    <v-card-title>Вход</v-card-title>
+    <v-card-title>{{ $t('auth.login') }}</v-card-title>
     <v-card-text>
       <v-form>
-        <v-text-field label="Email" type="email" required></v-text-field>
-        <v-text-field label="Пароль" type="password" required></v-text-field>
+        <v-text-field :label="$t('auth.email')" type="email" required></v-text-field>
+        <v-text-field :label="$t('auth.password')" type="password" required></v-text-field>
       </v-form>
     </v-card-text>
     <v-card-actions>
