@@ -8,6 +8,7 @@ import { defaultTeams } from '../data/teams.js'
 import { positions } from '../data/positions.js'
 import { getSubtypes, getSubtype, getStructureLevelKeys, CORPORATE_SUBTYPES, MILITARY_SUBTYPES } from '../data/companyTypes.js'
 
+const LS_COMPANY_DATA = 'companyData'
 const LS_HIERARCHY_TYPE = 'companyHierarchy'
 const LS_COMPANY_SUBTYPE = 'companySubtype'
 const LS_COMPANY_SETTINGS = 'companySettings'
@@ -15,6 +16,19 @@ const LS_COMPANY_STRUCTURE = 'companyStructure'
 const LS_COMPANY_EMPLOYEES = 'companyEmployees'
 const LS_COMPANY_NAME = 'companyName'
 const LS_SCOPE_ROOT = 'companyScopeRootId'
+
+/** Типовой JSON структуры организации для сохранения/загрузки */
+export function buildCompanyData(type, subtype, scopeRootId, name, structure, employees, settings) {
+  return {
+    type: type || 'corporate',
+    subtype: subtype || 'classic',
+    scopeRootId: scopeRootId ?? null,
+    name: name || '',
+    structure: Array.isArray(structure) ? structure : [],
+    employees: Array.isArray(employees) ? employees : [],
+    settings: settings || { military: {}, corporate: {} },
+  }
+}
 
 function load(key, def) {
   try {
@@ -34,57 +48,119 @@ function save(key, value) {
 function loadCompanySettings() {
   try {
     const raw = localStorage.getItem(LS_COMPANY_SETTINGS)
-    if (!raw) return getDefaultCompanySettings()
+    const def = getDefaultCompanySettings()
+    if (!raw) return def
     const data = JSON.parse(raw)
     return {
-      military: data.military || getDefaultCompanySettings().military,
-      corporate: data.corporate || getDefaultCompanySettings().corporate,
+      military: { ...def.military, ...(data.military || {}) },
+      corporate: { ...def.corporate, ...(data.corporate || {}) },
     }
   } catch {
     return getDefaultCompanySettings()
   }
 }
 
+function persistCompanyData(state) {
+  const data = buildCompanyData(
+    state.hierarchyType,
+    state.companySubtype,
+    state.scopeRootId,
+    state.companyName,
+    state.companyStructure,
+    state.companyEmployees,
+    state.companySettings
+  )
+  save(LS_COMPANY_DATA, data)
+}
+
 function getDefaultCompanySettings() {
   return {
-    military: { factionKey: factions[0]?.key, squadKey: defaultSquads[0]?.key, roleKey: roles[0]?.key },
-    corporate: { departmentKey: defaultDepartments[0]?.key, teamKey: defaultTeams[0]?.key, positionKey: positions[0]?.key },
+    military: {
+      factionKey: factions[0]?.key,
+      squadKey: defaultSquads[0]?.key,
+      roleKey: roles[0]?.key,
+      level1NodeId: null,
+      level2NodeId: null,
+    },
+    corporate: {
+      departmentKey: defaultDepartments[0]?.key,
+      teamKey: defaultTeams[0]?.key,
+      positionKey: positions[0]?.key,
+      level1NodeId: null,
+      level2NodeId: null,
+    },
   }
 }
 
-function getAllFactions() {
-  let custom = []
-  try { const raw = localStorage.getItem('customFactions'); if (raw) custom = JSON.parse(raw) } catch {}
-  return [...factions, ...custom.filter(f => !factions.some(d => d.key === f.key))]
+const LS_CUSTOM_FACTIONS = 'customFactions'
+const LS_CUSTOM_SQUADS = 'customSquads'
+const LS_CUSTOM_DEPARTMENTS = 'customDepartments'
+const LS_CUSTOM_TEAMS = 'customTeams'
+
+function loadCustomFactions() {
+  try { const raw = localStorage.getItem(LS_CUSTOM_FACTIONS); return raw ? JSON.parse(raw) : [] } catch { return [] }
 }
-function getAllSquads() {
-  let custom = []
-  try { const raw = localStorage.getItem('customSquads'); if (raw) custom = JSON.parse(raw) } catch {}
-  return [...defaultSquads, ...custom.filter(s => !defaultSquads.some(d => d.key === s.key))]
+function loadCustomSquads() {
+  try { const raw = localStorage.getItem(LS_CUSTOM_SQUADS); return raw ? JSON.parse(raw) : [] } catch { return [] }
 }
-function getAllDepartments() {
-  let custom = []
-  try { const raw = localStorage.getItem('customDepartments'); if (raw) custom = JSON.parse(raw) } catch {}
-  return [...defaultDepartments, ...custom.filter(d => !defaultDepartments.some(x => x.key === d.key))]
+function loadCustomDepartments() {
+  try { const raw = localStorage.getItem(LS_CUSTOM_DEPARTMENTS); return raw ? JSON.parse(raw) : [] } catch { return [] }
 }
-function getAllTeams() {
-  let custom = []
-  try { const raw = localStorage.getItem('customTeams'); if (raw) custom = JSON.parse(raw) } catch {}
-  return [...defaultTeams, ...custom.filter(t => !defaultTeams.some(x => x.key === t.key))]
+function loadCustomTeams() {
+  try { const raw = localStorage.getItem(LS_CUSTOM_TEAMS); return raw ? JSON.parse(raw) : [] } catch { return [] }
+}
+
+function loadFromCompanyData() {
+  try {
+    const raw = localStorage.getItem(LS_COMPANY_DATA)
+    if (!raw) return null
+    const data = JSON.parse(raw)
+    if (!data || typeof data !== 'object') return null
+    return data
+  } catch {
+    return null
+  }
 }
 
 export const useCompanyStore = defineStore('company', () => {
-  const hierarchyType = ref(load(LS_HIERARCHY_TYPE, 'military'))
-  let loadedSubtype = load(LS_COMPANY_SUBTYPE, 'army')
+  const fromData = loadFromCompanyData()
+  const defaults = getDefaultCompanySettings()
+
+  const hierarchyType = ref(fromData ? fromData.type : load(LS_HIERARCHY_TYPE, 'military'))
+  let loadedSubtype = fromData ? fromData.subtype : load(LS_COMPANY_SUBTYPE, 'army')
   const kind = hierarchyType.value
   const subsForKind = getSubtypes(kind)
-  if (!subsForKind.some(s => s.key === loadedSubtype)) loadedSubtype = subsForKind[0]?.key || 'army'
+  if (!subsForKind.some(s => s.key === loadedSubtype)) loadedSubtype = subsForKind[0]?.key || (kind === 'military' ? 'army' : 'classic')
   const companySubtype = ref(loadedSubtype)
-  const companySettings = ref(loadCompanySettings())
-  const companyStructure = ref(load(LS_COMPANY_STRUCTURE, []))
-  const companyEmployees = ref(load(LS_COMPANY_EMPLOYEES, []))
-  const companyName = ref(load(LS_COMPANY_NAME, ''))
-  const scopeRootId = ref(load(LS_SCOPE_ROOT, null))
+  const companySettings = ref(fromData?.settings ? { military: { ...defaults.military, ...fromData.settings.military }, corporate: { ...defaults.corporate, ...fromData.settings.corporate } } : loadCompanySettings())
+  const companyStructure = ref(Array.isArray(fromData?.structure) ? fromData.structure : load(LS_COMPANY_STRUCTURE, []))
+  const companyEmployees = ref(Array.isArray(fromData?.employees) ? fromData.employees : load(LS_COMPANY_EMPLOYEES, []))
+  const companyName = ref(fromData?.name ?? load(LS_COMPANY_NAME, ''))
+  const scopeRootId = ref(fromData?.scopeRootId !== undefined ? fromData.scopeRootId : load(LS_SCOPE_ROOT, null))
+
+  const customFactions = ref(loadCustomFactions())
+  const customSquads = ref(loadCustomSquads())
+  const customDepartments = ref(loadCustomDepartments())
+  const customTeams = ref(loadCustomTeams())
+
+  function refreshCustomLists() {
+    customFactions.value = loadCustomFactions()
+    customSquads.value = loadCustomSquads()
+    customDepartments.value = loadCustomDepartments()
+    customTeams.value = loadCustomTeams()
+  }
+
+  function persist() {
+    persistCompanyData({
+      hierarchyType: hierarchyType.value,
+      companySubtype: companySubtype.value,
+      companySettings: companySettings.value,
+      companyStructure: companyStructure.value,
+      companyEmployees: companyEmployees.value,
+      companyName: companyName.value,
+      scopeRootId: scopeRootId.value,
+    })
+  }
 
   const isCorporate = computed(() => hierarchyType.value === 'corporate')
   const isMilitary = computed(() => hierarchyType.value === 'military')
@@ -97,13 +173,51 @@ export const useCompanyStore = defineStore('company', () => {
   const structureLevelKeys = computed(() =>
     currentSubtypeConfig.value ? currentSubtypeConfig.value.structureLevels : [])
 
+  // Узлы структуры на уровне levelIndex (0 = первый уровень иерархии, 1 = второй)
+  function structureNodesAtLevel(levelIndex) {
+    const keys = structureLevelKeys.value
+    const levelKey = keys[levelIndex]
+    if (!levelKey) return []
+    return companyStructure.value
+      .filter(n => n.levelKey === levelKey)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  }
+
   const level1Options = computed(() => {
-    if (hierarchyType.value === 'corporate') return getAllDepartments()
-    return getAllFactions()
+    const nodes = structureNodesAtLevel(0)
+    if (nodes.length > 0) {
+      return nodes.map(n => ({
+        key: n.id,
+        title: n.name || n.levelKey,
+        icon: n.icon || 'mdi-folder-outline',
+      }))
+    }
+    if (hierarchyType.value === 'corporate') {
+      return [...defaultDepartments, ...customDepartments.value.filter(d => !defaultDepartments.some(x => x.key === d.key))]
+    }
+    return [...factions, ...customFactions.value.filter(f => !factions.some(d => d.key === f.key))]
   })
   const level2Options = computed(() => {
-    if (hierarchyType.value === 'corporate') return getAllTeams()
-    return getAllSquads()
+    const level1Id = hierarchyType.value === 'corporate'
+      ? companySettings.value.corporate.level1NodeId
+      : companySettings.value.military.level1NodeId
+    const nodes = structureNodesAtLevel(1)
+    let list = nodes
+    if (level1Id && nodes.length > 0) {
+      const asChild = nodes.filter(n => n.parentId === level1Id)
+      if (asChild.length > 0) list = asChild
+    }
+    if (list.length > 0) {
+      return list.map(n => ({
+        key: n.id,
+        title: n.name || n.levelKey,
+        icon: n.icon || 'mdi-folder-outline',
+      }))
+    }
+    if (hierarchyType.value === 'corporate') {
+      return [...defaultTeams, ...customTeams.value.filter(t => !defaultTeams.some(x => x.key === t.key))]
+    }
+    return [...defaultSquads, ...customSquads.value.filter(s => !defaultSquads.some(d => d.key === s.key))]
   })
   const roleOrPositionOptions = computed(() => {
     if (hierarchyType.value === 'corporate') return positions
@@ -111,11 +225,23 @@ export const useCompanyStore = defineStore('company', () => {
   })
 
   const currentLevel1 = computed(() => {
-    const key = hierarchyType.value === 'corporate' ? companySettings.value.corporate.departmentKey : companySettings.value.military.factionKey
+    const st = hierarchyType.value === 'corporate' ? companySettings.value.corporate : companySettings.value.military
+    const nodeId = st.level1NodeId
+    if (nodeId) {
+      const node = companyStructure.value.find(n => n.id === nodeId)
+      if (node) return { key: node.id, title: node.name || node.levelKey, icon: node.icon || 'mdi-folder-outline' }
+    }
+    const key = hierarchyType.value === 'corporate' ? st.departmentKey : st.factionKey
     return level1Options.value.find(o => o.key === key) || level1Options.value[0]
   })
   const currentLevel2 = computed(() => {
-    const key = hierarchyType.value === 'corporate' ? companySettings.value.corporate.teamKey : companySettings.value.military.squadKey
+    const st = hierarchyType.value === 'corporate' ? companySettings.value.corporate : companySettings.value.military
+    const nodeId = st.level2NodeId
+    if (nodeId) {
+      const node = companyStructure.value.find(n => n.id === nodeId)
+      if (node) return { key: node.id, title: node.name || node.levelKey, icon: node.icon || 'mdi-folder-outline' }
+    }
+    const key = hierarchyType.value === 'corporate' ? st.teamKey : st.squadKey
     return level2Options.value.find(o => o.key === key) || level2Options.value[0]
   })
   const currentRoleOrPosition = computed(() => {
@@ -171,6 +297,7 @@ export const useCompanyStore = defineStore('company', () => {
       companySubtype.value = firstKey
       save(LS_COMPANY_SUBTYPE, firstKey)
     }
+    persist()
   }
 
   function setCompanySubtype(key) {
@@ -178,16 +305,19 @@ export const useCompanyStore = defineStore('company', () => {
     if (!subs.some(s => s.key === key)) return
     companySubtype.value = key
     save(LS_COMPANY_SUBTYPE, key)
+    persist()
   }
 
   function setCompanyName(name) {
     companyName.value = name || ''
     save(LS_COMPANY_NAME, companyName.value)
+    persist()
   }
 
   function setScopeRoot(nodeId) {
     scopeRootId.value = nodeId || null
     save(LS_SCOPE_ROOT, scopeRootId.value)
+    persist()
   }
 
   function clearScopeRootIfInvalid() {
@@ -197,44 +327,56 @@ export const useCompanyStore = defineStore('company', () => {
     if (!exists) {
       scopeRootId.value = null
       save(LS_SCOPE_ROOT, null)
+      persist()
     }
   }
 
   function setMilitarySettings(payload) {
     const s = { ...companySettings.value }
-    const updates = Object.fromEntries(Object.entries(payload || {}).filter(([, v]) => v != null))
+    const updates = Object.fromEntries(Object.entries(payload || {}).filter(([, v]) => v !== undefined))
     s.military = { ...s.military, ...updates }
     companySettings.value = s
     save(LS_COMPANY_SETTINGS, JSON.stringify(s))
+    persist()
   }
 
   function setCorporateSettings(payload) {
     const s = { ...companySettings.value }
-    const updates = Object.fromEntries(Object.entries(payload || {}).filter(([, v]) => v != null))
+    const updates = Object.fromEntries(Object.entries(payload || {}).filter(([, v]) => v !== undefined))
     s.corporate = { ...s.corporate, ...updates }
     companySettings.value = s
     save(LS_COMPANY_SETTINGS, JSON.stringify(s))
+    persist()
   }
 
   function setLevel1(key) {
-    if (hierarchyType.value === 'corporate') setCorporateSettings({ departmentKey: key })
-    else setMilitarySettings({ factionKey: key })
+    const isNode = companyStructure.value.some(n => n.id === key)
+    if (hierarchyType.value === 'corporate') {
+      setCorporateSettings(isNode ? { level1NodeId: key, departmentKey: null } : { level1NodeId: null, departmentKey: key })
+    } else {
+      setMilitarySettings(isNode ? { level1NodeId: key, factionKey: null } : { level1NodeId: null, factionKey: key })
+    }
   }
   function setLevel2(key) {
-    if (hierarchyType.value === 'corporate') setCorporateSettings({ teamKey: key })
-    else setMilitarySettings({ squadKey: key })
+    const isNode = companyStructure.value.some(n => n.id === key)
+    if (hierarchyType.value === 'corporate') {
+      setCorporateSettings(isNode ? { level2NodeId: key, teamKey: null } : { level2NodeId: null, teamKey: key })
+    } else {
+      setMilitarySettings(isNode ? { level2NodeId: key, squadKey: null } : { level2NodeId: null, squadKey: key })
+    }
   }
   function setRoleOrPosition(key) {
     if (hierarchyType.value === 'corporate') setCorporateSettings({ positionKey: key })
     else setMilitarySettings({ roleKey: key })
   }
 
-  function addStructureNode(parentId, levelKey, name) {
+  function addStructureNode(parentId, levelKey, name, icon = '') {
     const id = 'n_' + Date.now() + '_' + Math.random().toString(36).slice(2)
     const maxOrder = companyStructure.value.filter(n => n.parentId === parentId).reduce((m, n) => Math.max(m, n.order ?? 0), -1)
-    const node = { id, parentId: parentId ?? null, levelKey, name: name || '', order: maxOrder + 1 }
+    const node = { id, parentId: parentId ?? null, levelKey, name: name || '', icon: icon || '', order: maxOrder + 1 }
     companyStructure.value = [...companyStructure.value, node]
     save(LS_COMPANY_STRUCTURE, companyStructure.value)
+    persist()
     return node
   }
 
@@ -243,6 +385,7 @@ export const useCompanyStore = defineStore('company', () => {
     if (idx === -1) return
     companyStructure.value = companyStructure.value.map((n, i) => i === idx ? { ...n, ...patch } : n)
     save(LS_COMPANY_STRUCTURE, companyStructure.value)
+    persist()
   }
 
   function removeStructureNode(id) {
@@ -262,6 +405,7 @@ export const useCompanyStore = defineStore('company', () => {
     companyEmployees.value = companyEmployees.value.map(e => toRemove.has(e.unitId) ? { ...e, unitId: null } : e)
     save(LS_COMPANY_STRUCTURE, companyStructure.value)
     save(LS_COMPANY_EMPLOYEES, companyEmployees.value)
+    persist()
   }
 
   function addEmployee(emp) {
@@ -269,6 +413,7 @@ export const useCompanyStore = defineStore('company', () => {
     const employee = { id, firstName: emp.firstName || '', lastName: emp.lastName || '', email: emp.email || '', positionKey: emp.positionKey || null, roleKey: emp.roleKey || null, unitId: emp.unitId || null }
     companyEmployees.value = [...companyEmployees.value, employee]
     save(LS_COMPANY_EMPLOYEES, companyEmployees.value)
+    persist()
     return employee
   }
 
@@ -277,11 +422,13 @@ export const useCompanyStore = defineStore('company', () => {
     if (idx === -1) return
     companyEmployees.value = companyEmployees.value.map((e, i) => i === idx ? { ...e, ...patch } : e)
     save(LS_COMPANY_EMPLOYEES, companyEmployees.value)
+    persist()
   }
 
   function removeEmployee(id) {
     companyEmployees.value = companyEmployees.value.filter(e => e.id !== id)
     save(LS_COMPANY_EMPLOYEES, companyEmployees.value)
+    persist()
   }
 
   function assignEmployeeToUnit(employeeId, unitId) {
@@ -324,6 +471,7 @@ export const useCompanyStore = defineStore('company', () => {
     currentLevel1,
     currentLevel2,
     currentRoleOrPosition,
+    refreshCustomLists,
     setHierarchyType,
     setCompanySubtype,
     setCompanyName,

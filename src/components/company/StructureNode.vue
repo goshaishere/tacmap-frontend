@@ -1,7 +1,7 @@
 <template>
   <div class="structure-node mb-2">
     <div class="d-flex align-center py-2 px-3 rounded" style="background: rgba(0,0,0,0.03);">
-      <v-icon size="small" class="me-2">mdi-folder-outline</v-icon>
+      <v-icon size="small" class="me-2">{{ node.icon || 'mdi-folder-outline' }}</v-icon>
       <span class="flex-grow-1">{{ node.name || t('company.structureLevels.' + node.levelKey) }}</span>
       <v-btn icon variant="text" size="x-small" @click="$emit('add-child', node.id)">
         <v-icon>mdi-plus</v-icon>

@@ -38,6 +38,11 @@
                   </v-btn>
                 </v-btn-toggle>
               </div>
+              <div class="mt-3">
+                <v-btn color="accent" variant="outlined" size="small" :to="{ name: 'ThemeSettings' }" prepend-icon="mdi-palette">
+                  {{ t('settings.themeSettings') }}
+                </v-btn>
+              </div>
             </v-card-text>
           </v-card>
         </v-col>
@@ -116,6 +121,47 @@
                 <v-btn color="accent" variant="outlined" size="small" :to="{ name: 'Profile' }">
                   {{ t('settings.profileSettings') }}
                 </v-btn>
+              </div>
+              <!-- Уровень структуры (точка входа в иерархию) -->
+              <div class="mt-4 pt-4" style="border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));">
+                <div class="text-subtitle-2 font-weight-medium text-on-surface mb-2">{{ t('company.scopeLevel') }}</div>
+                <p class="text-caption text-medium-emphasis mb-2">{{ t('company.scopeLevelHint') }}</p>
+                <v-radio-group
+                  :model-value="scopeRadioValue"
+                  @update:model-value="onScopeModeChange"
+                  hide-details
+                  density="compact"
+                  class="mb-2"
+                >
+                  <v-radio value="whole" :label="t('company.scopeWhole')" />
+                  <v-radio value="unit" :label="t('company.scopeUnit')" />
+                </v-radio-group>
+                <v-select
+                  v-if="scopeRadioValue === 'unit'"
+                  :model-value="companyStore.scopeRootId"
+                  @update:model-value="(id) => { companyStore.setScopeRoot(id); if (id == null) scopeModeUnit.value = false }"
+                  :items="scopeSelectItems"
+                  item-title="title"
+                  item-value="id"
+                  :label="t('company.scopeSelect')"
+                  variant="outlined"
+                  density="compact"
+                  clearable
+                  hide-details
+                  :placeholder="t('company.scopeWhole')"
+                >
+                  <template #selection="{ item }">
+                    <span>{{ item.raw?.title }}</span>
+                  </template>
+                  <template #item="{ item, props: p }">
+                    <v-list-item v-bind="p">
+                      <template #prepend>
+                        <span v-if="item.raw?.depth != null" :style="{ width: (item.raw.depth * 16) + 'px', display: 'inline-block' }" />
+                      </template>
+                      <v-list-item-title>{{ item.raw?.title }}</v-list-item-title>
+                    </v-list-item>
+                  </template>
+                </v-select>
               </div>
             </v-card-text>
           </v-card>
@@ -394,6 +440,27 @@ const hierarchyType = computed({
   set: (v) => companyStore.setHierarchyType(v)
 })
 
+const scopeModeUnit = ref(!!companyStore.scopeRootId)
+const scopeRadioValue = computed(() =>
+  (companyStore.scopeRootId !== null || scopeModeUnit.value) ? 'unit' : 'whole'
+)
+function onScopeModeChange(val) {
+  if (val === 'whole') {
+    scopeModeUnit.value = false
+    companyStore.setScopeRoot(null)
+  } else {
+    scopeModeUnit.value = true
+  }
+}
+const scopeSelectItems = computed(() => [
+  { id: null, title: t('company.scopeWhole'), depth: 0 },
+  ...companyStore.scopePickerOptions.map(o => ({
+    id: o.id,
+    title: '\u2003'.repeat(o.depth) + (o.name || t('company.structureLevels.' + o.levelKey)),
+    depth: o.depth
+  }))
+])
+
 function onHierarchyTypeChange() {
   showNotification.value = true
   notificationMessage.value = t('hierarchy.type') + ' → ' + (companyStore.hierarchyType === 'corporate' ? t('hierarchy.corporate') : t('hierarchy.military'))
@@ -437,6 +504,7 @@ onMounted(() => {
             theme.change('tacticalLight')
   }
   isThemeInitialized.value = true
+  companyStore.clearScopeRootIfInvalid()
 })
 
 // Синхронизация selectedTheme с глобальной темой Vuetify

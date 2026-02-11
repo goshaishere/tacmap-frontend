@@ -202,7 +202,7 @@
                 </v-col>
                 <v-col cols="12" sm="6" :class="styles['profile-actions']">
                   <v-btn block color="accent" variant="flat" prepend-icon="mdi-plus" @click="dialogFaction = true">
-                    Добавить фракцию
+                    {{ t('profile.createFaction') }}
                   </v-btn>
                 </v-col>
                 <v-col cols="12" sm="6" class="d-flex gap-2">
@@ -308,7 +308,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watchEffect, watch } from 'vue'
+import { ref, computed, watchEffect, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ranks } from '../data/ranks.js'
 import { roles } from '../data/roles.js'
@@ -357,6 +357,10 @@ function saveSquadsToLS(list) {
 const factionsList = ref(loadFactionsFromLS())
 const squads = ref(loadSquadsFromLS())
 const profileStore = useProfileStore()
+
+onMounted(() => {
+  companyStore.refreshCustomLists()
+})
 const form = ref(null)
 const isFormValid = ref(true)
 const isSaving = ref(false)
@@ -571,6 +575,7 @@ function createSquad() {
   })
   squads.value.push(squad)
   saveSquadsToLS(squads.value)
+  companyStore.refreshCustomLists()
   dialog.value = false
   newSquad.value = { title: '', icon: '', description: '' }
 }
@@ -650,6 +655,7 @@ function createFaction() {
     iconColorDark,
   })
   saveFactionsToLS(factionsList.value)
+  companyStore.refreshCustomLists()
   dialogFaction.value = false
   newFaction.value = { title: '', icon: '', colorLight: '#1976D2', colorDark: '#90CAF9', iconColorLight: '#fff', iconColorDark: '#222' }
   useDefaultFactionColors.value = true

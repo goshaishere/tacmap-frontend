@@ -23,55 +23,6 @@
         </v-col>
       </v-row>
 
-      <!-- Уровень объединения / точка входа в иерархию -->
-      <v-row>
-        <v-col cols="12">
-          <v-card class="pa-4 mb-4">
-            <v-card-title class="text-subtitle-1 text-on-surface mb-2">
-              {{ t('company.scopeLevel') }}
-            </v-card-title>
-            <v-card-text>
-              <p class="text-caption text-medium-emphasis mb-3">{{ t('company.scopeLevelHint') }}</p>
-              <v-radio-group
-                :model-value="scopeRadioValue"
-                @update:model-value="onScopeModeChange"
-                hide-details
-                class="mb-3"
-              >
-                <v-radio value="whole" :label="t('company.scopeWhole')" />
-                <v-radio value="unit" :label="t('company.scopeUnit')" />
-              </v-radio-group>
-              <v-select
-                v-if="scopeRadioValue === 'unit'"
-                :model-value="companyStore.scopeRootId"
-                @update:model-value="(id) => { companyStore.setScopeRoot(id); if (id == null) scopeModeUnit.value = false }"
-                :items="scopeSelectItems"
-                item-title="title"
-                item-value="id"
-                :label="t('company.scopeSelect')"
-                variant="outlined"
-                density="compact"
-                clearable
-                :placeholder="t('company.scopeWhole')"
-                class="mt-2"
-              >
-                <template #selection="{ item }">
-                  <span>{{ item.raw?.title }}</span>
-                </template>
-                <template #item="{ item, props: p }">
-                  <v-list-item v-bind="p">
-                    <template #prepend>
-                      <span v-if="item.raw?.depth != null" :style="{ width: (item.raw.depth * 16) + 'px', display: 'inline-block' }" />
-                    </template>
-                    <v-list-item-title>{{ item.raw?.title }}</v-list-item-title>
-                  </v-list-item>
-                </template>
-              </v-select>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-
       <v-tabs v-model="activeTab" color="accent" class="mb-4">
         <v-tab value="structure">{{ t('company.structure') }}</v-tab>
         <v-tab value="employees">{{ t('company.employees') }}</v-tab>
@@ -183,7 +134,7 @@
       </v-window>
 
       <!-- Диалог добавления/редактирования подразделения -->
-      <v-dialog v-model="unitDialog" max-width="400" persistent>
+      <v-dialog v-model="unitDialog" max-width="440" persistent>
         <v-card>
           <v-card-title>{{ editingUnit ? t('company.editUnit') : t('company.addUnit') }}</v-card-title>
           <v-card-text>
@@ -192,17 +143,51 @@
               :items="levelKeyOptions"
               :item-title="(item) => t('company.structureLevels.' + item.value)"
               item-value="value"
-              :label="t('company.unitName')"
+              :label="t('company.unitType')"
               variant="outlined"
               class="mb-3"
               :disabled="!!editingUnit"
             />
-            <v-text-field
-              v-model="newUnitName"
-              :label="t('company.unitName')"
+            <v-select
+              v-model="newUnitIcon"
+              :items="structureIconOptions"
+              item-title="title"
+              item-value="icon"
+              :label="t('company.unitIcon')"
               variant="outlined"
-              hide-details
-            />
+              class="mb-3"
+              :item-props="item => ({ prependIcon: item.raw?.icon })"
+            >
+              <template #item="{ item, props }">
+                <v-list-item v-bind="props">
+                  <template #prepend>
+                    <v-icon class="me-2">{{ item?.raw?.icon || item?.icon }}</v-icon>
+                  </template>
+                  {{ item?.raw?.title ?? item?.title }}
+                </v-list-item>
+              </template>
+              <template #selection="{ item }">
+                <v-icon class="me-2" size="small">{{ item?.raw?.icon || item?.icon }}</v-icon>
+                {{ item?.raw?.title ?? item?.title }}
+              </template>
+            </v-select>
+            <div class="d-flex align-center gap-2 mb-3">
+              <v-text-field
+                v-model="newUnitName"
+                :label="t('company.unitName')"
+                variant="outlined"
+                hide-details
+                class="flex-grow-1"
+              />
+              <v-btn
+                variant="outlined"
+                size="small"
+                :disabled="!newUnitLevelKey"
+                @click="generateUnitNameFromType"
+              >
+                {{ t('company.generateFromType') }}
+              </v-btn>
+            </div>
           </v-card-text>
           <v-card-actions>
             <v-spacer />
@@ -274,9 +259,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCompanyStore } from '../store/company.js'
+import { STRUCTURE_ICON_OPTIONS } from '../data/structureIcons.js'
 import StructureNode from '../components/company/StructureNode.vue'
 
 const { t } = useI18n()
@@ -291,35 +277,12 @@ const editingUnit = ref(null)
 const editingEmployee = ref(null)
 const newUnitName = ref('')
 const newUnitLevelKey = ref('')
+const newUnitIcon = ref('mdi-folder-outline')
+const structureIconOptions = STRUCTURE_ICON_OPTIONS
 const newEmployee = ref({ firstName: '', lastName: '', email: '', positionKey: null, roleKey: null, unitId: null })
 const removeConfirmText = ref('')
 const removeTarget = ref(null)
 const removeType = ref('') // 'unit' | 'employee'
-const scopeModeUnit = ref(!!companyStore.scopeRootId)
-
-const scopeRadioValue = computed(() =>
-  (companyStore.scopeRootId !== null || scopeModeUnit.value) ? 'unit' : 'whole'
-)
-
-function onScopeModeChange(val) {
-  if (val === 'whole') {
-    scopeModeUnit.value = false
-    companyStore.setScopeRoot(null)
-  } else {
-    scopeModeUnit.value = true
-  }
-}
-
-const scopeSelectItems = computed(() => [
-  { id: null, title: t('company.scopeWhole'), depth: 0 },
-  ...companyStore.scopePickerOptions.map(o => ({
-    id: o.id,
-    title: '\u2003'.repeat(o.depth) + (o.name || t('company.structureLevels.' + o.levelKey)),
-    depth: o.depth
-  }))
-])
-
-onMounted(() => companyStore.clearScopeRootIfInvalid())
 
 const canAddRoot = computed(() => companyStore.structureLevelKeys.length > 0)
 
@@ -347,22 +310,28 @@ function openAddUnitDialog(parentId) {
   editingUnit.value = null
   newUnitName.value = ''
   newUnitLevelKey.value = companyStore.structureLevelKeys[0] || ''
+  newUnitIcon.value = 'mdi-folder-outline'
   unitDialog.value = true
 }
 
 function openEditUnitDialog(node) {
   editingUnit.value = node
   parentIdForAdd.value = null
-  newUnitName.value = node.name
+  newUnitName.value = node.name || ''
   newUnitLevelKey.value = node.levelKey
+  newUnitIcon.value = node.icon || 'mdi-folder-outline'
   unitDialog.value = true
+}
+
+function generateUnitNameFromType() {
+  if (newUnitLevelKey.value) newUnitName.value = t('company.structureLevels.' + newUnitLevelKey.value)
 }
 
 function saveUnit() {
   if (editingUnit.value) {
-    companyStore.updateStructureNode(editingUnit.value.id, { name: newUnitName.value })
+    companyStore.updateStructureNode(editingUnit.value.id, { name: newUnitName.value, icon: newUnitIcon.value })
   } else {
-    companyStore.addStructureNode(parentIdForAdd.value, newUnitLevelKey.value, newUnitName.value)
+    companyStore.addStructureNode(parentIdForAdd.value, newUnitLevelKey.value, newUnitName.value, newUnitIcon.value)
   }
   unitDialog.value = false
 }

@@ -5,18 +5,41 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useTheme } from 'vuetify'
+import { applyCustomThemeFromStorage, clearCustomThemeOverlay, getUseCustomTheme } from './utils/themeOverlay.js'
 import MainLayout from './layouts/MainLayout.vue'
 import AuthLayout from './layouts/AuthLayout.vue'
-import MessagesLayout from './layouts/MessagesLayout.vue'
 
 const route = useRoute()
+const theme = useTheme()
+
 const layout = computed(() => {
   if (route.meta.layout === 'auth') return AuthLayout
-  if (route.meta.layout === 'messages') return MessagesLayout
   return MainLayout
 })
+
+function applyOverlay() {
+  if (getUseCustomTheme()) {
+    const name = theme.current.value?.name || localStorage.getItem('selectedTheme') || 'tacticalLight'
+    const isDark = name === 'tacticalDark'
+    applyCustomThemeFromStorage(isDark)
+  } else {
+    clearCustomThemeOverlay()
+  }
+}
+
+onMounted(() => {
+  applyOverlay()
+  window.addEventListener('customThemeUpdated', applyOverlay)
+})
+
+watch(
+  () => theme.current.value?.name,
+  () => applyOverlay(),
+  { immediate: false }
+)
 </script>
 
 <style>

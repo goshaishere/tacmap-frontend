@@ -14,6 +14,12 @@ export default [
     { path: '/settings', component: Settings, name: 'Settings', meta: { requiresAuth: true } },
     { path: '/settings/company', component: CompanySettings, name: 'CompanySettings', meta: { requiresAuth: true } },
     {
+        path: '/settings/theme',
+        component: () => import('./pages/ThemeSettings.vue'),
+        name: 'ThemeSettings',
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/profile',
         component: () => import('./pages/Profile.vue'),
         name: 'Profile',
@@ -34,7 +40,7 @@ export default [
         path: '/messages',
         component: () => import('./pages/Messages.vue'),
         name: 'Messages',
-        meta: { requiresAuth: true, layout: 'messages' }
+        meta: { requiresAuth: true }
     },
     { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound },
 ]

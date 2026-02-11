@@ -10,7 +10,7 @@ import * as directives from 'vuetify/directives'
 import router from './router'
 import { createPinia } from 'pinia'
 import YmapPlugin from 'vue-yandex-maps'
-
+import { defaultLight, defaultDark } from './config/themeDefaults.js'
 
 const vuetify = createVuetify({
     components,
@@ -24,36 +24,12 @@ const vuetify = createVuetify({
         defaultTheme: 'tacticalLight',
         themes: {
             tacticalLight: {
-                dark: false,
-                colors: {
-                    background: '#F5F6FA', // светлый фон
-                    surface: '#FFFFFF', // белый surface
-                    primary: '#3BA55D', // тактический зелёный
-                    secondary: '#2C3E50', // глубокий серо-синий
-                    accent: '#6B8E23', // олива
-                    info: '#2196F3',
-                    success: '#43A047',
-                    warning: '#FFC107',
-                    error: '#E53935',
-                    'on-primary': '#FFFFFF',
-                    'on-surface': '#232B2F', // тёмный текст на светлом
-                },
+                dark: defaultLight.dark,
+                colors: { ...defaultLight.colors },
             },
             tacticalDark: {
-                dark: true,
-                colors: {
-                    background: '#12181B',
-                    surface: '#181F22',
-                    primary: '#3BA55D',
-                    secondary: '#22313A',
-                    accent: '#ddb77b', // койот
-                    info: '#64B5F6',
-                    success: '#66BB6A',
-                    warning: '#FFD54F',
-                    error: '#EF5350',
-                    'on-primary': '#FFFFFF',
-                    'on-surface': '#B0BEC5',
-                },
+                dark: defaultDark.dark,
+                colors: { ...defaultDark.colors },
             },
         },
     },
